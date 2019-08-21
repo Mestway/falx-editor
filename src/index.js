@@ -1,1 +1,1 @@
-import FormContainer from "./js/FalxPanel.jsx";
+import App from "./js/App.jsx";
