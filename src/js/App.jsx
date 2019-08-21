@@ -4,12 +4,14 @@ import Navbar from 'react-bootstrap/Navbar';
 import Files from 'react-files'
 
 import Falx from "./Falx.jsx"
+import '../scss/App.scss';
+
 
 class App extends Component {
   render() {
     return (
-      <div className="app">
-        <Navbar bg="dark" variant="dark">
+      <div id="app">
+        <Navbar id="nav-bar" bg="dark" variant="dark">
           <Navbar.Brand href="#home">
             {'Falx'}
           </Navbar.Brand>

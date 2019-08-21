@@ -1,13 +1,14 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import Input from "./Input.jsx";
-import Button from 'react-bootstrap/Button'
-import ButtonGroup from 'react-bootstrap/ButtonGroup'
+import Button from 'react-bootstrap/Button';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Navbar from 'react-bootstrap/Navbar';
+import SplitPane from 'react-split-pane';
 
 import VegaLite from 'react-vega-lite';
 
-import Files from 'react-files'
+import Files from 'react-files';
 
 // Import React Table
 import ReactTable from "react-table";
@@ -62,8 +63,20 @@ class Falx extends Component {
       }
     }
 
-    const visSpec = {
+    const inpVisSpec = {
       "mark": "bar",
+      "width": 150,
+      "height": 150,
+      "encoding": {
+        "x": {"field": "a", "type": "ordinal"},
+        "y": {"field": "b", "type": "quantitative"}
+      }
+    };
+
+    const outVisSpec = {
+      "mark": "bar",
+      "width": 150,
+      "height": 150,
       "encoding": {
         "x": {"field": "a", "type": "ordinal"},
         "y": {"field": "b", "type": "quantitative"}
@@ -78,9 +91,30 @@ class Falx extends Component {
       ]
     };
 
+      /*<div id="control-panel">
+          
+        </div>
+        <div id="editor">
+          <div className='input-panel'>
+            <ReactTable
+              data={this.state.data}
+              //resolveData={data => this.state.data.map(row => row)}
+              columns={columns}
+              pageSize={Math.min(this.state.data.length, 15)}
+              showPaginationBottom={this.state.data.length > 15}
+              className="-striped -highlight"
+            />
+            <VegaLite spec={inpVisSpec} data={visData} />
+          </div>
+          <div className='output-display'>
+            <VegaLite spec={outVisSpec} data={visData} />
+          </div>
+        </div>
+        <div id="status-panel"></div>*/
+
     return (
-      <div className="falx">
-        <div className="control-panel">
+      <SplitPane className="editor" split="vertical" minSize={200} defaultSize={200}>
+        <div id="control-panel">
           <ButtonGroup vertical>
             <Button variant="outline-primary">
               <Files
@@ -101,24 +135,29 @@ class Falx extends Component {
             </Button>
           </ButtonGroup>
         </div>
-        <div className="editor container">
-          <div className="row mt-2">
-            <div className='col-4'>
+        <SplitPane split="vertical" minSize={200} defaultSize={400}>
+          <div className="input-panel">
+            <div className="table-display">
               <ReactTable
-                data={this.state.data}
-                //resolveData={data => this.state.data.map(row => row)}
-                columns={columns}
-                pageSize={Math.min(this.state.data.length, 15)}
-                showPaginationBottom={this.state.data.length > 15}
-                className="-striped -highlight"
+                  data={this.state.data}
+                  //resolveData={data => this.state.data.map(row => row)}
+                  columns={columns}
+                  pageSize={Math.min(this.state.data.length, 15)}
+                  showPaginationBottom={this.state.data.length > 15}
+                  className="-striped -highlight"
               />
             </div>
-            <div className='col-8'>
-              <VegaLite spec={visSpec} data={visData} />
+            <div className="example-vis-display">
+              <VegaLite spec={inpVisSpec} data={visData} />
+            </div>
+            <div className="example-display">
+              <VegaLite spec={inpVisSpec} data={visData} />
             </div>
           </div>
-        </div>
-      </div>
+          <div>
+          </div>
+        </SplitPane>
+       </SplitPane>
     );
   }
 }
