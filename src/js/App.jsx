@@ -11,7 +11,7 @@ class App extends Component {
   render() {
     return (
       <div id="app">
-        <Navbar className="Navbar navbar navbar-light bg-light bordered">
+        <Navbar className="Navbar bordered">
           <Navbar.Brand href="#home">
             {'Falx'}
           </Navbar.Brand>

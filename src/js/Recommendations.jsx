@@ -37,8 +37,8 @@ class Recommendations extends Component {
 
       let specCopy = Object.assign({}, spec);
 
-      specCopy["width"] = 80;
-      specCopy["height"] = 80;
+      specCopy["width"] = 90;
+      specCopy["height"] = 90;
 
       return (
         <div key={index} className={classes} onClick={() => {this.setFocusIndex(index);}}>
