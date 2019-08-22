@@ -9,7 +9,6 @@ $body-height: (100vh - $nav-height);
 
 #control-panel {
   height: $body-height;
-  background-color: $light-grey;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,7 +20,6 @@ $body-height: (100vh - $nav-height);
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  background-color: $highlight-grey;
 };
 
 .input-panel .table-display, 
