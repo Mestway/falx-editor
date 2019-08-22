@@ -40,6 +40,7 @@
     "array-flat-polyfill": "^1.0.1",
     "bootstrap": "^4.3.1",
     "react": "^16.9.0",
+    "react-animate-on-change": "^2.2.0",
     "react-bootstrap": "^1.0.0-beta.11",
     "react-dom": "^16.9.0",
     "react-files": "^2.4.8",

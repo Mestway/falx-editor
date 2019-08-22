@@ -5,13 +5,14 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Navbar from 'react-bootstrap/Navbar';
 import SplitPane from 'react-split-pane';
-
+import classNames from 'classnames';
+import ReactTable from "react-table";
 import VegaLite from 'react-vega-lite';
-
 import Files from 'react-files';
 
+import Recommendations from "./Recommendations.jsx"
+
 // Import React Table
-import ReactTable from "react-table";
 import "react-table/react-table.css";
 import '../scss/Falx.scss';
 
@@ -63,54 +64,75 @@ class Falx extends Component {
       }
     }
 
-    const inpVisSpec = {
-      "mark": "bar",
-      "width": 150,
-      "height": 150,
-      "encoding": {
-        "x": {"field": "a", "type": "ordinal"},
-        "y": {"field": "b", "type": "quantitative"}
-      }
-    };
+    // const contextCharts = [
+    //   (
+    //     <div key={index} className={classes}>
+    //       <VegaLiteChart vlSpec={spec} renderer="canvas" actions={false} />
+    //       <div className="backdrop"></div>
+    //       <div className="cost">
+    //         {`${index === 0 ? 'cost: ' : ''}${this.props.results.models[index].costs[0]}`}
+    //       </div>
+    //     </div>
+    //   )
+    // ];
 
-    const outVisSpec = {
-      "mark": "bar",
-      "width": 150,
-      "height": 150,
-      "encoding": {
-        "x": {"field": "a", "type": "ordinal"},
-        "y": {"field": "b", "type": "quantitative"}
-      }
-    };
+    // const ani = <AnimateOnChange
+    //   baseClassName="chart"
+    //   animationClassName="update"
+    //   animate={this.state.updateFocus}>
+    //     <VegaLiteChart vlSpec={focusSpec} renderer="svg" />
+    // </AnimateOnChange>
 
-    const visData = {
-      "values": [
-        {"a": "A","b": 20}, {"a": "B","b": 34}, {"a": "C","b": 55},
-        {"a": "D","b": 19}, {"a": "E","b": 40}, {"a": "F","b": 34},
-        {"a": "G","b": 91}, {"a": "H","b": 78}, {"a": "I","b": 25}
+    const data = [
+      {"a": "A","b": 20}, {"a": "B","b": 34}, {"a": "C","b": 55},
+      {"a": "D","b": 19}, {"a": "E","b": 40}, {"a": "F","b": 34},
+      {"a": "G","b": 91}, {"a": "H","b": 78}, {"a": "I","b": 25}
+    ]
+    const specs = [
+        {
+          "mark": "line",
+          "encoding": {
+            "x": {"field": "a", "type": "ordinal"},
+            "y": {"field": "b", "type": "quantitative"}
+        }
+        },{
+          "mark": "bar",
+          "encoding": {
+            "x": {"field": "a", "type": "ordinal"},
+            "y": {"field": "b", "type": "quantitative"}
+          }
+        },{
+          "mark": "point",
+          "encoding": {
+            "x": {"field": "a", "type": "ordinal"},
+            "y": {"field": "b", "type": "quantitative"}
+          }
+        },{
+          "mark": "circle",
+          "encoding": {
+            "x": {"field": "a", "type": "ordinal"},
+            "y": {"field": "b", "type": "quantitative"}
+          }
+        },{
+          "mark": "rect",
+          "encoding": {
+            "x": {"field": "a", "type": "ordinal"},
+            "y": {"field": "b", "type": "quantitative"}
+          }
+        },{
+          "mark": "text",
+          "encoding": {
+            "x": {"field": "a", "type": "ordinal"},
+            "y": {"field": "b", "type": "quantitative"}
+          }
+        },{
+          "mark": "bar",
+          "encoding": {
+            "y": {"field": "a", "type": "ordinal"},
+            "x": {"field": "b", "type": "quantitative"}
+          }
+        }
       ]
-    };
-
-      /*<div id="control-panel">
-          
-        </div>
-        <div id="editor">
-          <div className='input-panel'>
-            <ReactTable
-              data={this.state.data}
-              //resolveData={data => this.state.data.map(row => row)}
-              columns={columns}
-              pageSize={Math.min(this.state.data.length, 15)}
-              showPaginationBottom={this.state.data.length > 15}
-              className="-striped -highlight"
-            />
-            <VegaLite spec={inpVisSpec} data={visData} />
-          </div>
-          <div className='output-display'>
-            <VegaLite spec={outVisSpec} data={visData} />
-          </div>
-        </div>
-        <div id="status-panel"></div>*/
 
     return (
       <SplitPane className="editor" split="vertical" minSize={200} defaultSize={200}>
@@ -135,7 +157,7 @@ class Falx extends Component {
             </Button>
           </ButtonGroup>
         </div>
-        <SplitPane split="vertical" minSize={200} defaultSize={400}>
+        <SplitPane split="vertical" minSize={300} defaultSize={300}>
           <div className="input-panel">
             <div className="table-display">
               <ReactTable
@@ -148,14 +170,26 @@ class Falx extends Component {
               />
             </div>
             <div className="example-vis-display">
-              <VegaLite spec={inpVisSpec} data={visData} />
-            </div>
-            <div className="example-display">
-              <VegaLite spec={inpVisSpec} data={visData} />
+              <VegaLite spec={{
+                  "mark": "bar",
+                  "width": 150,
+                  "height": 150,
+                  "encoding": {
+                    "x": {"field": "x", "type": "nominal", "scale": {"domain": ["A","B"," ","  ","   "]}},
+                    "y": {"field": "y", "type": "quantitative", "scale": {"domain": [0, 100]}}
+                  }
+                }} data={{
+                "values": [
+                  {"x": "A","y": 20}, {"x": "B","y": 34}
+                ]
+              }} />
+              <ul>
+                <li>Rect(x=A, y=20)</li>
+                <li>Rect(x=B, y=34)</li>
+              </ul>
             </div>
           </div>
-          <div>
-          </div>
+          <Recommendations specs={specs} data={data}/>
         </SplitPane>
        </SplitPane>
     );
