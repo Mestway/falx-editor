@@ -33,11 +33,9 @@ class Recommendations extends Component {
     this.state.focusIndex = focusIndex;
   }
   render() {
-
     const visData = {
       "values": this.state.data
     };
-
     const contextCharts = this.state.specs.map((spec, index) => {
       const classes = classNames({
         'context-chart': true,

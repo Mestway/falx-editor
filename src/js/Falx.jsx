@@ -1,8 +1,13 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
+
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Navbar from 'react-bootstrap/Navbar';
+import Nav from 'react-bootstrap/Nav';
+
+import Octicon from 'react-octicon'
+
 import SplitPane from 'react-split-pane';
 import classNames from 'classnames';
 import ReactTable from "react-table";
@@ -31,7 +36,11 @@ class Falx extends Component {
           "x": {"field": "a", "type": "ordinal"},
           "y": {"field": "b", "type": "quantitative"}
         }
-      }
+      },
+      tags: [
+        "Rect(x=A, y=20)",
+        "Rect(x=B, y=34)"
+      ]
     };
     this.onFilesChange = this.onFilesChange.bind(this);
   }
@@ -49,6 +58,11 @@ class Falx extends Component {
   }
   onFilesError(error, file) {
     console.log('error code ' + error.code + ': ' + error.message)
+  }
+  removeTag(i) {
+    const newTags = [ ...this.state.tags ];
+    newTags.splice(i, 1);
+    this.setState({ tags: newTags });
   }
   render() {
 
@@ -134,63 +148,75 @@ class Falx extends Component {
       ]
 
     return (
-      <SplitPane className="editor" split="vertical" minSize={200} defaultSize={200}>
-        <div id="control-panel">
-          <ButtonGroup vertical>
-            <Button variant="outline-primary">
-              <Files
-                className='files-dropzone'
-                onChange={this.onFilesChange}
-                onError={this.onFilesError}
-                accepts={['image/png', '.csv', '.json']}
-                //multiple
-                //maxFiles={1}
-                maxFileSize={1000000}
-                minFileSize={0}
-                clickable>
-                Load Data
-              </Files>
-            </Button>
-            <Button variant="outline-primary">
-              Add Component
-            </Button>
-          </ButtonGroup>
-        </div>
-        <SplitPane split="vertical" minSize={300} defaultSize={300}>
+      <div className="editor">
+        <SplitPane className="editor-plane" split="vertical" minSize={400} defaultSize={400}>
           <div className="input-panel">
+            <Nav className="justify-content-center cntl-btns">
+              <Nav.Item>
+                <Files
+                  className='files-dropzone'
+                  onChange={this.onFilesChange}
+                  onError={this.onFilesError}
+                  accepts={['.csv', '.json']}
+                  //multiple
+                  //maxFiles={1}
+                  maxFileSize={1000000}
+                  minFileSize={0}
+                  clickable>
+                  <a href="#" className="nav-link">Load Data</a>
+                </Files>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link>Load Template</Nav.Link>
+              </Nav.Item>
+            </Nav>
             <div className="table-display">
               <ReactTable
-                  data={this.state.data}
-                  //resolveData={data => this.state.data.map(row => row)}
-                  columns={columns}
-                  pageSize={Math.min(this.state.data.length, 15)}
-                  showPaginationBottom={this.state.data.length > 15}
-                  className="-striped -highlight"
+                data={this.state.data}
+                //resolveData={data => this.state.data.map(row => row)}
+                columns={columns}
+                pageSize={Math.min(this.state.data.length, 10)}
+                showPaginationBottom={true}
+                showPageSizeOptions={false}
+                className="-striped -highlight"
               />
             </div>
-            <div className="example-vis-display">
-              <VegaLite spec={{
-                  "mark": "bar",
-                  "width": 150,
-                  "height": 150,
-                  "encoding": {
-                    "x": {"field": "x", "type": "nominal", "scale": {"domain": ["A","B"," ","  ","   "]}},
-                    "y": {"field": "y", "type": "quantitative", "scale": {"domain": [0, 100]}}
-                  }
-                }} data={{
-                "values": [
-                  {"x": "A","y": 20}, {"x": "B","y": 34}
-                ]
-              }} />
-              <ul>
-                <li>Rect(x=A, y=20)</li>
-                <li>Rect(x=B, y=34)</li>
-              </ul>
+            <div className="example-chart">
+              <div className="element-disp">
+                <div className="input-tag">
+                  <ul className="input-tag__tags">
+                    { this.state.tags.map((tag, i) => (
+                      <li key={tag}>
+                        {tag}
+                        <Octicon className="button" name="x" onClick={() => { this.removeTag(i); }}/>
+                      </li>
+                    ))}
+                    <li id="add-btn-li" key="plus">
+                        <Octicon name="plus" className="add-btn"/>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div className="chart-disp">
+                <VegaLite spec={{
+                    "mark": "bar",
+                    "width": 150,
+                    "height": 150,
+                    "encoding": {
+                      "x": {"field": "x", "type": "nominal", "scale": {"domain": ["A","B"," ","  ","   "]}},
+                      "y": {"field": "y", "type": "quantitative", "scale": {"domain": [0, 100]}}
+                    }
+                  }} data={{
+                  "values": [
+                    {"x": "A","y": 20}, {"x": "B","y": 34}
+                  ]
+                }}/>
+              </div>
             </div>
           </div>
           <Recommendations specs={specs} data={data}/>
         </SplitPane>
-       </SplitPane>
+       </div>
     );
   }
 }
