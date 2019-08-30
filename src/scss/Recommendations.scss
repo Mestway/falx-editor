@@ -259,12 +259,8 @@
       }
 
       .expand-icon {
-        width: 16px;
-        height: 16px;
-
-        &.expand-collapse {
-          transform: rotate(180deg);
-        }
+        padding-left: 10px;
+        font-size: 20px;
       }
     }
 

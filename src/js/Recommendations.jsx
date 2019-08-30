@@ -6,7 +6,8 @@ import VegaLite from 'react-vega-lite';
 import AnimateOnChange from 'react-animate-on-change';
 import ReactJson from 'react-json-view'
 
-import expandButton from '../images/expand.svg';
+//import expandButton from '../images/expand.svg';
+import Octicon from 'react-octicon'
 
 import '../scss/Recommendations.scss';
 
@@ -55,6 +56,8 @@ class Recommendations extends Component {
       );
     });
 
+    const expandButton =  this.state.showInfoPane ? (<Octicon className="expand-icon" name="triangle-right"/>) : (<Octicon className="expand-icon" name="triangle-left"/>);
+
     return (
       <SplitPane className="Recommendations" split="vertical" 
         primary="second"
@@ -84,10 +87,11 @@ class Recommendations extends Component {
         </div>
         <div className="info">
           <button className="expand-button" onClick={() => { this.setState({ showInfoPane: !this.state.showInfoPane }); }}>
-            <img className={classNames({
+            {expandButton}
+            {/*<img className={classNames({
               'expand-icon': true,
               'expand-collapse': this.state.showInfoPane
-             })} src={expandButton}/>
+             })} src={expandButton}/>*/}
           </button>
           <div className="raw-container">
             <div className="raw">

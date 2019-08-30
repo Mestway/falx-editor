@@ -1,7 +1,7 @@
 {
   "name": "falx-interface",
   "version": "1.0.0",
-  "description": "This is the user interface for Falx visualization synthesizer.",
+  "description": "This is the editor for Falx visualization synthesizer.",
   "main": "index.js",
   "scripts": {
     "build": "webpack --mode production",
@@ -45,6 +45,7 @@
     "react": "^16.9.0",
     "react-animate-on-change": "^2.2.0",
     "react-bootstrap": "^1.0.0-beta.11",
+    "react-contextmenu": "^2.11.0",
     "react-dom": "^16.9.0",
     "react-files": "^2.4.8",
     "react-json-view": "^1.19.1",
@@ -52,6 +53,7 @@
     "react-split-pane": "^0.1.87",
     "react-table": "^6.10.0",
     "react-tag-autocomplete": "^6.0.0-beta.1",
+    "react-tooltip": "^3.10.0",
     "react-vega": "^6.0.1",
     "react-vega-lite": "^6.0.1",
     "vega": "^5.3.3",

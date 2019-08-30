@@ -1,18 +1,21 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
+import classNames from 'classnames';
+
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 
-import Octicon from 'react-octicon'
-
-import SplitPane from 'react-split-pane';
-import classNames from 'classnames';
-import ReactTable from "react-table";
-import VegaLite from 'react-vega-lite';
+import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Files from 'react-files';
+import Octicon from 'react-octicon'
+import ReactTable from "react-table";
+import ReactTooltip from 'react-tooltip'
+import SplitPane from 'react-split-pane';
+import VegaLite from 'react-vega-lite';
+
 
 import Recommendations from "./Recommendations.jsx"
 
@@ -38,8 +41,12 @@ class Falx extends Component {
         }
       },
       tags: [
-        "Rect(x=A, y=20)",
-        "Rect(x=B, y=34)"
+        {"type": "rect", "props": {"x": "A", "y": 20}},
+        {"type": "rect", "props": {"x": "B", "y": 34}},
+      ],
+      tempTags: [
+        {"type": "rect", "props": {"x": "A", "y": 20}},
+        {"type": "rect", "props": {"x": "B", "y": 34}},
       ]
     };
     this.onFilesChange = this.onFilesChange.bind(this);
@@ -61,11 +68,28 @@ class Falx extends Component {
   }
   removeTag(i) {
     const newTags = [ ...this.state.tags ];
+    const newTempTags = [ ...this.state.tempTags ];
     newTags.splice(i, 1);
-    this.setState({ tags: newTags });
+    newTempTags.splice(i, 1);
+    this.setState({ tags: newTags, tempTags: newTempTags });
+  }
+  handleClick(e, data) {
+    console.log(data.foo);
+  }
+  updateTempTagProperty(index, prop, value) {
+    const newTempTags = [ ...this.state.tempTags ];
+    newTempTags[index]["props"][prop] = value;
+    this.setState({ tempTags: newTempTags });
+  }
+  revertTempTagProperty() {
+    const tags = [ ...this.state.tags ];
+    this.setState({ tempTags: JSON.parse(JSON.stringify(tags)) });
+  }
+  updateTagProperty() {
+    const tempTags = [ ...this.state.tempTags ];
+    this.setState({ tags: JSON.parse(JSON.stringify(tempTags)) });
   }
   render() {
-
     const columns = []
     if (this.state.data.length > 0) {
       const keys = Object.keys(this.state.data[0]);
@@ -76,25 +100,6 @@ class Falx extends Component {
         })
       }
     }
-
-    // const contextCharts = [
-    //   (
-    //     <div key={index} className={classes}>
-    //       <VegaLiteChart vlSpec={spec} renderer="canvas" actions={false} />
-    //       <div className="backdrop"></div>
-    //       <div className="cost">
-    //         {`${index === 0 ? 'cost: ' : ''}${this.props.results.models[index].costs[0]}`}
-    //       </div>
-    //     </div>
-    //   )
-    // ];
-
-    // const ani = <AnimateOnChange
-    //   baseClassName="chart"
-    //   animationClassName="update"
-    //   animate={this.state.updateFocus}>
-    //     <VegaLiteChart vlSpec={focusSpec} renderer="svg" />
-    // </AnimateOnChange>
 
     const data = [
       {"a": "A","b": 20}, {"a": "B","b": 34}, {"a": "C","b": 55},
@@ -147,6 +152,50 @@ class Falx extends Component {
         }
       ]
 
+    function tagToString(tagObj) {
+      const content = "".concat(Object.keys(tagObj["props"]).map(function(key, index) {
+        return tagObj["props"][key] + "→" + key;
+      }));
+      return tagObj["type"] + "(" + content + ")";
+    }
+
+    const elementTags = this.state.tags.map(function(tag, i) {
+      const tagStr = tagToString(tag);
+
+      const elementEditor = Object.keys(tag["props"]).map(function(key, idx) {
+        return (
+          <MenuItem key={"element-editor" + i + key} preventClose={true} data={{ item: 'item 1' }}>
+            <label htmlFor={"element-editor-input-" + i + key}>{key}: </label>
+            <input type="text" className="element-prop-editor" 
+                   id={"element-editor-input-" + i + key} 
+                   value={this.state.tempTags[i]["props"][key]}
+                   onChange={(e) => this.updateTempTagProperty(i, key, e.target.value)}/>
+          </MenuItem>
+        );
+      }.bind(this));
+
+      return (
+        <li key={tagStr}>
+          <ContextMenuTrigger id={"tag" + i} holdToDisplay={0}>
+            {tagStr}
+          </ContextMenuTrigger>
+          <ContextMenu id={"tag" + i} preventHideOnContextMenu={true} 
+                       preventHideOnResize={true} preventHideOnScroll={true}
+                       onHide={()=>{this.revertTempTagProperty();}}>
+            {elementEditor}
+            <MenuItem>
+              <Button variant="success" size="sm" onClick={() => {this.updateTagProperty(); }}>
+                Save
+              </Button>
+              <Button variant="danger" size="sm" onClick={() => { this.removeTag(i); }}>
+                Delete
+              </Button>
+            </MenuItem>
+          </ContextMenu>
+        </li>
+      )
+    }.bind(this));
+
     return (
       <div className="editor">
         <SplitPane className="editor-plane" split="vertical" minSize={400} defaultSize={400}>
@@ -185,14 +234,20 @@ class Falx extends Component {
               <div className="element-disp">
                 <div className="input-tag">
                   <ul className="input-tag__tags">
-                    { this.state.tags.map((tag, i) => (
-                      <li key={tag}>
-                        {tag}
-                        <Octicon className="button" name="x" onClick={() => { this.removeTag(i); }}/>
-                      </li>
-                    ))}
+                    {elementTags}
                     <li id="add-btn-li" key="plus">
-                        <Octicon name="plus" className="add-btn"/>
+                      <ContextMenuTrigger id="some_unique_identifier" holdToDisplay={0}>
+                        <Octicon name="plus" data-tip="Add new element" className="add-btn"/>
+                      </ContextMenuTrigger>
+                      <ContextMenu id="some_unique_identifier" preventHideOnContextMenu={true} 
+                                   preventHideOnResize={true} preventHideOnScroll={true}>
+                        <MenuItem onClick={this.handleClick} preventClose={true} data={{ item: 'item 1' }}>
+                          <input type="text" name="fname" /></MenuItem>
+                        <MenuItem onClick={this.handleClick} preventClose={true} data={{ item: 'item 2' }}>Menu Item 2</MenuItem>
+                        <MenuItem divider />
+                        <MenuItem onClick={this.handleClick} preventClose={true} data={{ item: 'item 3' }}>Menu Item 3</MenuItem>
+                      </ContextMenu>
+                      <ReactTooltip />
                     </li>
                   </ul>
                 </div>
@@ -221,7 +276,5 @@ class Falx extends Component {
   }
 }
 
-// const wrapper = document.getElementById("falx-interface");
-// wrapper ? ReactDOM.render(<Falx />, wrapper) : false;
 export default Falx;
 
