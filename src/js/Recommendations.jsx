@@ -88,10 +88,6 @@ class Recommendations extends Component {
         <div className="info">
           <button className="expand-button" onClick={() => { this.setState({ showInfoPane: !this.state.showInfoPane }); }}>
             {expandButton}
-            {/*<img className={classNames({
-              'expand-icon': true,
-              'expand-collapse': this.state.showInfoPane
-             })} src={expandButton}/>*/}
           </button>
           <div className="raw-container">
             <div className="raw">

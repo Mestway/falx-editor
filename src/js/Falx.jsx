@@ -119,49 +119,31 @@ class Falx extends Component {
         "encoding": {
           "x": {"field": "a", "type": "ordinal"},
           "y": {"field": "b", "type": "quantitative"}
-      }
-      },{
-        "mark": "bar",
-        "encoding": {
-          "x": {"field": "a", "type": "ordinal"},
-          "y": {"field": "b", "type": "quantitative"}
-        }
-      },{
-        "mark": "point",
-        "encoding": {
-          "x": {"field": "a", "type": "ordinal"},
-          "y": {"field": "b", "type": "quantitative"}
-        }
-      },{
-        "mark": "circle",
-        "encoding": {
-          "x": {"field": "a", "type": "ordinal"},
-          "y": {"field": "b", "type": "quantitative"}
-        }
-      },{
-        "mark": "rect",
-        "encoding": {
-          "x": {"field": "a", "type": "ordinal"},
-          "y": {"field": "b", "type": "quantitative"}
-        }
-      },{
-        "mark": "text",
-        "encoding": {
-          "x": {"field": "a", "type": "ordinal"},
-          "y": {"field": "b", "type": "quantitative"}
-        }
-      },{
-        "mark": "bar",
-        "encoding": {
-          "y": {"field": "a", "type": "ordinal"},
-          "x": {"field": "b", "type": "quantitative"}
         }
       }
     ]
-    this.setState({
-      synthResult: synthResult,
-      status: "idle"
-    })
+
+    fetch("http://127.0.0.1:5000/falx")
+      .then(res => res.json())
+      .then(
+        (result) => {
+          this.setState({
+            synthResult: result,
+            status: "idle"
+          })
+        },
+        // Note: it's important to handle errors here
+        // instead of a catch() block so that we don't swallow
+        // exceptions from actual bugs in components.
+        (error) => {
+          this.setState({
+            synthResult: [],
+            status: "Error"
+          });
+        }
+      )
+
+    
   }
   renderElementTags() {
     // Render element tags that displays current visual elements created by the user
