@@ -41,13 +41,15 @@ class Falx extends Component {
         }
       },
       tags: [
-        {"type": "rect", "props": {"x": "A", "y": 20}},
-        {"type": "rect", "props": {"x": "B", "y": 34}},
+        {"type": "bar", "props": {"x": "A", "y": 20, "color": "", "x2": "", "y2": ""}},
+        {"type": "bar", "props": {"x": "B", "y": 34, "color": "", "x2": "", "y2": ""}},
       ],
       tempTags: [
-        {"type": "rect", "props": {"x": "A", "y": 20}},
-        {"type": "rect", "props": {"x": "B", "y": 34}},
-      ]
+        {"type": "bar", "props": {"x": "A", "y": 20, "color": "", "x2": "", "y2": ""}},
+        {"type": "bar", "props": {"x": "B", "y": 34, "color": "", "x2": "", "y2": ""}},
+      ],
+      synthResult: [],
+      status: "No result to show"
     };
     this.onFilesChange = this.onFilesChange.bind(this);
   }
@@ -67,27 +69,213 @@ class Falx extends Component {
     console.log('error code ' + error.code + ': ' + error.message)
   }
   removeTag(i) {
+    // add a tag
     const newTags = [ ...this.state.tags ];
     const newTempTags = [ ...this.state.tempTags ];
     newTags.splice(i, 1);
     newTempTags.splice(i, 1);
     this.setState({ tags: newTags, tempTags: newTempTags });
   }
-  handleClick(e, data) {
-    console.log(data.foo);
+  addTagElement(tagName) {
+    // add a new element to tags of the current input example
+    const newTags = [ ...this.state.tags ];
+    const newTempTags = [ ...this.state.tempTags ];
+    var newTag = null
+    if (tagName === "bar") {
+      newTag = {"type": "bar", "props": {"x": "", "y": "", "color": "", "x2": "", "y2": ""}}
+    }
+    if (tagName === "point") {
+      newTag = {"type": "point", "props": {"x": "", "y": "", "color": "", "size": ""}}
+    }
+    if (tagName === "line") {
+      newTag = {"type": "line", "props": {"x1": "", "y1": "", "x2": "", "y2": "", "color": ""}}
+    }
+    newTags.push(newTag);
+    newTempTags.push(JSON.parse(JSON.stringify(newTag)));
+    this.setState({ tags: newTags, tempTags: newTempTags });
   }
   updateTempTagProperty(index, prop, value) {
+    // update the temporary tag information
     const newTempTags = [ ...this.state.tempTags ];
     newTempTags[index]["props"][prop] = value;
     this.setState({ tempTags: newTempTags });
   }
   revertTempTagProperty() {
+    // when the menu is closed, revert temp tag properties to current set properties
     const tags = [ ...this.state.tags ];
     this.setState({ tempTags: JSON.parse(JSON.stringify(tags)) });
   }
   updateTagProperty() {
     const tempTags = [ ...this.state.tempTags ];
     this.setState({ tags: JSON.parse(JSON.stringify(tempTags)) });
+  }
+  runSynthesis() {
+    console.log(this.state.data);
+    console.log(this.state.tags);
+    this.setState({ status: "Running..." })
+    const synthResult = [
+      {
+        "mark": "line",
+        "encoding": {
+          "x": {"field": "a", "type": "ordinal"},
+          "y": {"field": "b", "type": "quantitative"}
+      }
+      },{
+        "mark": "bar",
+        "encoding": {
+          "x": {"field": "a", "type": "ordinal"},
+          "y": {"field": "b", "type": "quantitative"}
+        }
+      },{
+        "mark": "point",
+        "encoding": {
+          "x": {"field": "a", "type": "ordinal"},
+          "y": {"field": "b", "type": "quantitative"}
+        }
+      },{
+        "mark": "circle",
+        "encoding": {
+          "x": {"field": "a", "type": "ordinal"},
+          "y": {"field": "b", "type": "quantitative"}
+        }
+      },{
+        "mark": "rect",
+        "encoding": {
+          "x": {"field": "a", "type": "ordinal"},
+          "y": {"field": "b", "type": "quantitative"}
+        }
+      },{
+        "mark": "text",
+        "encoding": {
+          "x": {"field": "a", "type": "ordinal"},
+          "y": {"field": "b", "type": "quantitative"}
+        }
+      },{
+        "mark": "bar",
+        "encoding": {
+          "y": {"field": "a", "type": "ordinal"},
+          "x": {"field": "b", "type": "quantitative"}
+        }
+      }
+    ]
+    this.setState({
+      synthResult: synthResult,
+      status: "idle"
+    })
+  }
+  renderElementTags() {
+    // Render element tags that displays current visual elements created by the user
+
+    function tagToString(tagObj) {
+      // maps each tag to a string
+      const content = "".concat(Object.keys(tagObj["props"])
+        .filter(function(key) { 
+          return tagObj["props"][key] != ""; })
+        .map(function(key) {
+          return key + "→" + tagObj["props"][key];
+        }));
+      return tagObj["type"] + "(" + content + ")";
+    }
+
+    const elementTags = this.state.tags.map(function(tag, i) {
+      const tagStr = tagToString(tag);
+      // create a editor memu for each element
+      const elementEditor = Object.keys(tag["props"])
+        .map(function(key) {
+          return (
+            <MenuItem key={"element-editor" + i + key} preventClose={true} data={{ item: 'item 1' }}>
+              <label htmlFor={"element-editor-input-" + i + key}>{key}</label>
+              <input type="text" className="element-prop-editor" 
+                     name={"input-box" + Math.random()} // use this to prevent Chrome to auto complete
+                     id={"element-editor-input-" + i + key}
+                     placeholder="empty"
+                     value={this.state.tempTags[i]["props"][key]}
+                     onChange={(e) => this.updateTempTagProperty(i, key, e.target.value)}
+                     onKeyUp={(e) => { if (e.key === "Enter") { this.updateTagProperty();}}}/>
+            </MenuItem>
+        );
+      }.bind(this));
+
+      return (
+        <li key={tagStr}>
+          <ContextMenuTrigger className="tag-item" id={"tag" + i} holdToDisplay={0}>
+            {tagStr}
+          </ContextMenuTrigger>
+          <ContextMenu id={"tag" + i} preventHideOnContextMenu={true} 
+                       preventHideOnResize={true} preventHideOnScroll={true}
+                       onShow={()=>{this.revertTempTagProperty();}}>
+            {elementEditor}
+            <MenuItem>
+              <Button className="left-btn" variant="link" onClick={() => {this.updateTagProperty(); }}>
+                Save Edits
+              </Button>
+              <Button className="right-btn" variant="link" onClick={() => { this.removeTag(i); }}>
+                <Octicon name="trashcan"/>
+              </Button>
+            </MenuItem>
+          </ContextMenu>
+        </li>
+      )
+    }.bind(this));
+
+    return elementTags;
+  }
+  renderExampleVisualization() {
+    // visualize example tags created by the users in a VegaLite chart
+
+    const markTypes = [...new Set(this.state.tags.map((d, i) => {return d["type"];}))];
+    var previewElements = []
+    for (const i in this.state.tags){
+      const markType = this.state.tags[i]["type"];
+      const tagObj = this.state.tags[i];
+      function removeUnusedProps(props) {
+        // remove unused props from the dict
+        return Object.keys(props)
+                .filter((key) => {return props[key] != "";})
+                .reduce((map, key) => { map[key] = props[key]; return map; }, {});
+      }
+      if (markType == "line") {
+        var props_l = {"mark": markType, "x": tagObj["props"]["x1"], "y": tagObj["props"]["y1"], "color": tagObj["props"]["color"]};
+        var props_r = {"mark": markType, "x": tagObj["props"]["x2"], "y": tagObj["props"]["y2"], "color": tagObj["props"]["color"]};
+        previewElements.push(removeUnusedProps(props_l));
+        previewElements.push(removeUnusedProps(props_r));
+      } else {
+        var props = removeUnusedProps(tagObj["props"]);
+        props["mark"] = markType;
+        previewElements.push(props);
+      } 
+    }
+
+    if (markTypes.length == 0) {
+      return (<div className="grey-message">No element to preview</div>);
+    }
+
+    const xValues = [...new Set(previewElements.map((d) => {return d["x"];}))].filter((x) => {return x != undefined;});
+    const yValues = [...new Set(previewElements.map((d) => {return d["y"];}))].filter((x) => {return x != undefined;});
+
+    const xDomain = [""].concat(xValues.concat([" "]));
+
+    const layerSpecs = markTypes.map((mark) => {
+      return {
+        "mark": {"type": mark, "opacity": 0.8 },
+        "transform": [{"filter": "datum.mark == \"" + mark + "\""}],
+        "encoding": {
+          "x": {"field": "x", "type": "nominal", "scale": {"domain": xDomain}},
+          "y": {"field": "y", "type": "quantitative"}
+        }
+      }
+    })
+
+    const spec = {
+      "width": 150,
+      "height": 150,
+      "layer": layerSpecs
+    };
+    const data = {
+      "values": previewElements
+    };
+
+    return (<VegaLite spec={spec} data={data}/>);
   }
   render() {
     const columns = []
@@ -100,101 +288,13 @@ class Falx extends Component {
         })
       }
     }
+    const data = this.state.data;
+    const specs = this.state.synthResult;
 
-    const data = [
-      {"a": "A","b": 20}, {"a": "B","b": 34}, {"a": "C","b": 55},
-      {"a": "D","b": 19}, {"a": "E","b": 40}, {"a": "F","b": 34},
-      {"a": "G","b": 91}, {"a": "H","b": 78}, {"a": "I","b": 25}
-    ]
-    const specs = [
-        {
-          "mark": "line",
-          "encoding": {
-            "x": {"field": "a", "type": "ordinal"},
-            "y": {"field": "b", "type": "quantitative"}
-        }
-        },{
-          "mark": "bar",
-          "encoding": {
-            "x": {"field": "a", "type": "ordinal"},
-            "y": {"field": "b", "type": "quantitative"}
-          }
-        },{
-          "mark": "point",
-          "encoding": {
-            "x": {"field": "a", "type": "ordinal"},
-            "y": {"field": "b", "type": "quantitative"}
-          }
-        },{
-          "mark": "circle",
-          "encoding": {
-            "x": {"field": "a", "type": "ordinal"},
-            "y": {"field": "b", "type": "quantitative"}
-          }
-        },{
-          "mark": "rect",
-          "encoding": {
-            "x": {"field": "a", "type": "ordinal"},
-            "y": {"field": "b", "type": "quantitative"}
-          }
-        },{
-          "mark": "text",
-          "encoding": {
-            "x": {"field": "a", "type": "ordinal"},
-            "y": {"field": "b", "type": "quantitative"}
-          }
-        },{
-          "mark": "bar",
-          "encoding": {
-            "y": {"field": "a", "type": "ordinal"},
-            "x": {"field": "b", "type": "quantitative"}
-          }
-        }
-      ]
-
-    function tagToString(tagObj) {
-      const content = "".concat(Object.keys(tagObj["props"]).map(function(key, index) {
-        return tagObj["props"][key] + "→" + key;
-      }));
-      return tagObj["type"] + "(" + content + ")";
-    }
-
-    const elementTags = this.state.tags.map(function(tag, i) {
-      const tagStr = tagToString(tag);
-
-      const elementEditor = Object.keys(tag["props"]).map(function(key, idx) {
-        return (
-          <MenuItem key={"element-editor" + i + key} preventClose={true} data={{ item: 'item 1' }}>
-            <label htmlFor={"element-editor-input-" + i + key}>{key}: </label>
-            <input type="text" className="element-prop-editor" 
-                   id={"element-editor-input-" + i + key} 
-                   value={this.state.tempTags[i]["props"][key]}
-                   onChange={(e) => this.updateTempTagProperty(i, key, e.target.value)}/>
-          </MenuItem>
-        );
-      }.bind(this));
-
-      return (
-        <li key={tagStr}>
-          <ContextMenuTrigger id={"tag" + i} holdToDisplay={0}>
-            {tagStr}
-          </ContextMenuTrigger>
-          <ContextMenu id={"tag" + i} preventHideOnContextMenu={true} 
-                       preventHideOnResize={true} preventHideOnScroll={true}
-                       onHide={()=>{this.revertTempTagProperty();}}>
-            {elementEditor}
-            <MenuItem>
-              <Button variant="success" size="sm" onClick={() => {this.updateTagProperty(); }}>
-                Save
-              </Button>
-              <Button variant="danger" size="sm" onClick={() => { this.removeTag(i); }}>
-                Delete
-              </Button>
-            </MenuItem>
-          </ContextMenu>
-        </li>
-      )
-    }.bind(this));
+    const elementTags = this.renderElementTags();
+    const recommendations = (specs.length > 0 ? 
+                              (<Recommendations specs={specs} data={data}/>) : 
+                              (<div className="output-panel">{this.state.status}</div>));
 
     return (
       <div className="editor">
@@ -202,16 +302,9 @@ class Falx extends Component {
           <div className="input-panel">
             <Nav className="justify-content-center cntl-btns">
               <Nav.Item>
-                <Files
-                  className='files-dropzone'
-                  onChange={this.onFilesChange}
-                  onError={this.onFilesError}
-                  accepts={['.csv', '.json']}
-                  //multiple
-                  //maxFiles={1}
-                  maxFileSize={1000000}
-                  minFileSize={0}
-                  clickable>
+                <Files className='files-dropzone' onChange={this.onFilesChange}
+                  onError={this.onFilesError} accepts={['.csv', '.json']} maxFileSize={1000000}
+                  minFileSize={0} clickable>
                   <a href="#" className="nav-link">Load Data</a>
                 </Files>
               </Nav.Item>
@@ -219,18 +312,18 @@ class Falx extends Component {
                 <Nav.Link>Load Template</Nav.Link>
               </Nav.Item>
             </Nav>
-            <div className="table-display">
-              <ReactTable
-                data={this.state.data}
-                //resolveData={data => this.state.data.map(row => row)}
-                columns={columns}
-                pageSize={Math.min(this.state.data.length, 10)}
-                showPaginationBottom={true}
-                showPageSizeOptions={false}
-                className="-striped -highlight"
-              />
-            </div>
-            <div className="example-chart">
+            <div className="input-display">
+              <div className="table-display">
+                <ReactTable
+                  data={this.state.data}
+                  //resolveData={data => this.state.data.map(row => row)}
+                  columns={columns}
+                  pageSize={Math.min(this.state.data.length, 10)}
+                  showPaginationBottom={true}
+                  showPageSizeOptions={false}
+                  className="-striped -highlight"
+                />
+              </div>
               <div className="element-disp">
                 <div className="input-tag">
                   <ul className="input-tag__tags">
@@ -241,11 +334,17 @@ class Falx extends Component {
                       </ContextMenuTrigger>
                       <ContextMenu id="some_unique_identifier" preventHideOnContextMenu={true} 
                                    preventHideOnResize={true} preventHideOnScroll={true}>
-                        <MenuItem onClick={this.handleClick} preventClose={true} data={{ item: 'item 1' }}>
-                          <input type="text" name="fname" /></MenuItem>
-                        <MenuItem onClick={this.handleClick} preventClose={true} data={{ item: 'item 2' }}>Menu Item 2</MenuItem>
-                        <MenuItem divider />
-                        <MenuItem onClick={this.handleClick} preventClose={true} data={{ item: 'item 3' }}>Menu Item 3</MenuItem>
+                        <MenuItem>
+                          <Button className="add-btn-menu-btn" variant="outline-primary" onClick={() => {this.addTagElement("bar") ;}}>
+                            bar
+                          </Button>
+                          <Button className="add-btn-menu-btn" variant="outline-primary" onClick={() => {this.addTagElement("point") ;}}>
+                            point
+                          </Button>
+                          <Button className="add-btn-menu-btn" variant="outline-primary" onClick={() => {this.addTagElement("line") ;}}>
+                            line
+                          </Button>
+                        </MenuItem>
                       </ContextMenu>
                       <ReactTooltip />
                     </li>
@@ -253,23 +352,16 @@ class Falx extends Component {
                 </div>
               </div>
               <div className="chart-disp">
-                <VegaLite spec={{
-                    "mark": "bar",
-                    "width": 150,
-                    "height": 150,
-                    "encoding": {
-                      "x": {"field": "x", "type": "nominal", "scale": {"domain": ["A","B"," ","  ","   "]}},
-                      "y": {"field": "y", "type": "quantitative", "scale": {"domain": [0, 100]}}
-                    }
-                  }} data={{
-                  "values": [
-                    {"x": "A","y": 20}, {"x": "B","y": 34}
-                  ]
-                }}/>
+                {this.renderExampleVisualization()}
+              </div>
+              <div className="bottom-cntl">
+                <Button variant="outline-primary" onClick={() => {this.runSynthesis();}}>
+                  Synthesize
+                </Button>
               </div>
             </div>
           </div>
-          <Recommendations specs={specs} data={data}/>
+          { recommendations }
         </SplitPane>
        </div>
     );
