@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
-import classNames from 'classnames';
-
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Navbar from 'react-bootstrap/Navbar';
@@ -17,7 +15,6 @@ import SplitPane from 'react-split-pane';
 import VegaLite from 'react-vega-lite';
 import { Handler } from 'vega-tooltip';
 
-
 import Recommendations from "./Recommendations.jsx"
 
 // Import React Table
@@ -29,9 +26,31 @@ class Falx extends Component {
     super();
     this.state = {
       data: [
-        {"a": "A","b": 20}, {"a": "B","b": 34}, {"a": "C","b": 55},
-        {"a": "D","b": 19}, {"a": "E","b": 40}, {"a": "F","b": 34},
-        {"a": "G","b": 91}, {"a": "H","b": 78}, {"a": "I","b": 25}
+        {
+          "Bucket": "Bucket E",
+          "Budgeted": 100,
+          "Actual": 115
+        },
+        {
+          "Bucket": "Bucket D",
+          "Budgeted": 100,
+          "Actual": 90
+        },
+        {
+          "Bucket": "Bucket C",
+          "Budgeted": 125,
+          "Actual": 115
+        },
+        {
+          "Bucket": "Bucket B",
+          "Budgeted": 125,
+          "Actual": 140
+        },
+        {
+          "Bucket": "Bucket A",
+          "Budgeted": 140,
+          "Actual": 150
+        }
       ],
       spec: {
         "description": "A simple bar chart with embedded data.",
@@ -42,13 +61,15 @@ class Falx extends Component {
         }
       },
       tags: [
-        {"type": "line", "props": {"x1": "A", "y1": 20, "color": "", "x2": "B", "y2": 10}},
-        {"type": "line", "props": {"x1": "C", "y1": 34, "color": "", "x2": "D", "y2": 15}},
+        {"type": "bar", "props": {"x": "Bucket E", "y": 115, "color": "Actual", "x2": "", "y2": ""}},
+        {"type": "bar", "props": {"x": "Bucket D", "y": 90, "color": "Actual", "x2": "", "y2": ""}},
+        {"type": "bar", "props": {"x": "Bucket D", "y": 100, "color": "Budgeted", "x2": "", "y2": ""}},
       ],
       tempTags: [
-        {"type": "line", "props": {"x1": "A", "y1": 20, "color": "", "x2": "B", "y2": 10}},
-        {"type": "line", "props": {"x1": "C", "y1": 34, "color": "", "x2": "D", "y2": 15}},
-      ], // the
+        {"type": "bar", "props": {"x": "Bucket E", "y": 115, "color": "Actual", "x2": "", "y2": ""}},
+        {"type": "bar", "props": {"x": "Bucket D", "y": 90, "color": "Actual", "x2": "", "y2": ""}},
+        {"type": "bar", "props": {"x": "Bucket D", "y": 100, "color": "Budgeted", "x2": "", "y2": ""}},
+      ],
       synthResult: [],
       status: "No result to show"
     };
@@ -143,16 +164,20 @@ class Falx extends Component {
   }
   renderElementTags() {
     // Render element tags that displays current visual elements created by the user
-
     function tagToString(tagObj) {
       // maps each tag to a string
-      const content = "".concat(Object.keys(tagObj["props"])
-        .filter(function(key) { 
-          return tagObj["props"][key] != ""; })
-        .map(function(key) {
-          return key + "→" + tagObj["props"][key];
-        }));
-      return tagObj["type"] + "(" + content + ")";
+      const tagObjKeys = Object.keys(tagObj["props"])
+        .filter(function(key) { return tagObj["props"][key] != ""; })
+
+      const content = tagObjKeys
+        .map(function(key, i) {
+          const sep = (i == tagObjKeys.length - 1) ? "" : ", ";
+          return (<span key={i}>
+                    <span className="tag-label">{key}:</span>
+                    {tagObj["props"][key]}{sep}
+                  </span>);
+        });
+      return <div>{tagObj["type"]}({content})</div>;
     }
 
     const elementTags = this.state.tags.map(function(tag, i) {
@@ -175,7 +200,7 @@ class Falx extends Component {
       }.bind(this));
 
       return (
-        <li key={tagStr}>
+        <li key={i}>
           <ContextMenuTrigger className="tag-item" id={"tag" + i} holdToDisplay={0}>
             {tagStr}
           </ContextMenuTrigger>
@@ -206,21 +231,26 @@ class Falx extends Component {
     for (const i in this.state.tags){
       const markType = this.state.tags[i]["type"];
       const tagObj = this.state.tags[i];
-      function removeUnusedProps(props) {
-        // remove unused props from the dict
+
+      // the function to remove unused properties
+      const removeUnusedProps = (props) => {
         return Object.keys(props)
                 .filter((key) => {return props[key] != "";})
                 .reduce((map, key) => { map[key] = props[key]; return map; }, {});
       }
+
       if (markType == "line") {
         // use detail to distinguish line value from another
         var props_l = {"mark": markType, "x": tagObj["props"]["x1"], "y": tagObj["props"]["y1"], "color": tagObj["props"]["color"], "detail": i};
         var props_r = {"mark": markType, "x": tagObj["props"]["x2"], "y": tagObj["props"]["y2"], "color": tagObj["props"]["color"], "detail": i};
+        props_l["element-id"] = i;
+        props_r["element-id"] = i;
         previewElements.push(removeUnusedProps(props_l));
         previewElements.push(removeUnusedProps(props_r));
       } else {
         var props = removeUnusedProps(tagObj["props"]);
         props["mark"] = markType;
+        props["element-id"] = i;
         previewElements.push(props);
       } 
     }
@@ -246,6 +276,7 @@ class Falx extends Component {
     }
 
     function decideEncodingType(mark, channel, vType) {
+      // given mark type, channel and value type, decide the encoding type
       if (channel == "color") 
         return "nominal";
       if (mark == "bar") {
@@ -266,23 +297,32 @@ class Falx extends Component {
       var xDomain = [""].concat(globalFieldValues["x"].values.concat([" "]));
 
     const layerSpecs = markTypes.map((mark) => {
+      // obtain elements related to this layer
       const relatedElements = previewElements.filter((x) => (x["mark"] == mark));
       const fieldValues = processElementValues(relatedElements)
       var encoding = {}
-      var tooltip = []
+      var tooltip = [{"field": "element-id", "type": "nominal", "title": "ID"}]
       for (const channel in fieldValues) {
         encoding[channel] = {"field": channel}
         if (channel != "x2" && channel != "y2") {
+          // x2, y2 requires no type information as they should be consistent with x,y enc type
           encoding[channel]["type"] = decideEncodingType(mark, channel, fieldValues[channel].type);
         }
         if (channel == "x" && globalFieldValues["x"].vtype == "string") {
+          // extend the deomain a little bit to make display more beautiful
           encoding[channel]["scale"] = {"domain": xDomain};
         }
-        tooltip.push({"field": channel, "type": decideEncodingType(mark, channel, fieldValues[channel].type)})
+        // add tooltip to the example chart
+        if (channel != "detail")
+          tooltip.push({"field": channel, "type": decideEncodingType(mark, channel, fieldValues[channel].type)})
       }
       encoding["tooltip"] = tooltip;
+      const markObj = {"type": mark, "opacity": 0.8 }
+      if (mark == "line") {
+        markObj["point"] = true;
+      }
       return {
-        "mark": {"type": mark, "opacity": 0.8 },
+        "mark": markObj,
         "transform": [{"filter": "datum.mark == \"" + mark + "\""}],
         "encoding": encoding,
       }
@@ -389,4 +429,3 @@ class Falx extends Component {
 }
 
 export default Falx;
-
