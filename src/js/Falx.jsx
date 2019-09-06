@@ -15,6 +15,7 @@ import ReactTable from "react-table";
 import ReactTooltip from 'react-tooltip'
 import SplitPane from 'react-split-pane';
 import VegaLite from 'react-vega-lite';
+import { Handler } from 'vega-tooltip';
 
 
 import Recommendations from "./Recommendations.jsx"
@@ -41,13 +42,13 @@ class Falx extends Component {
         }
       },
       tags: [
-        {"type": "bar", "props": {"x": "A", "y": 20, "color": "", "x2": "", "y2": ""}},
-        {"type": "bar", "props": {"x": "B", "y": 34, "color": "", "x2": "", "y2": ""}},
+        {"type": "line", "props": {"x1": "A", "y1": 20, "color": "", "x2": "B", "y2": 10}},
+        {"type": "line", "props": {"x1": "C", "y1": 34, "color": "", "x2": "D", "y2": 15}},
       ],
       tempTags: [
-        {"type": "bar", "props": {"x": "A", "y": 20, "color": "", "x2": "", "y2": ""}},
-        {"type": "bar", "props": {"x": "B", "y": 34, "color": "", "x2": "", "y2": ""}},
-      ],
+        {"type": "line", "props": {"x1": "A", "y1": 20, "color": "", "x2": "B", "y2": 10}},
+        {"type": "line", "props": {"x1": "C", "y1": 34, "color": "", "x2": "D", "y2": 15}},
+      ], // the
       synthResult: [],
       status: "No result to show"
     };
@@ -113,18 +114,18 @@ class Falx extends Component {
     console.log(this.state.data);
     console.log(this.state.tags);
     this.setState({ status: "Running..." })
-    const synthResult = [
-      {
-        "mark": "line",
-        "encoding": {
-          "x": {"field": "a", "type": "ordinal"},
-          "y": {"field": "b", "type": "quantitative"}
-        }
-      }
-    ]
 
-    fetch("http://127.0.0.1:5000/falx")
-      .then(res => res.json())
+    fetch("http://127.0.0.1:5000/falx", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        "data": this.state.data,
+        "tags": this.state.tags,
+      })
+    }).then(res => res.json())
       .then(
         (result) => {
           this.setState({
@@ -132,18 +133,13 @@ class Falx extends Component {
             status: "idle"
           })
         },
-        // Note: it's important to handle errors here
-        // instead of a catch() block so that we don't swallow
-        // exceptions from actual bugs in components.
         (error) => {
           this.setState({
             synthResult: [],
             status: "Error"
           });
         }
-      )
-
-    
+      );
   }
   renderElementTags() {
     // Render element tags that displays current visual elements created by the user
@@ -217,8 +213,9 @@ class Falx extends Component {
                 .reduce((map, key) => { map[key] = props[key]; return map; }, {});
       }
       if (markType == "line") {
-        var props_l = {"mark": markType, "x": tagObj["props"]["x1"], "y": tagObj["props"]["y1"], "color": tagObj["props"]["color"]};
-        var props_r = {"mark": markType, "x": tagObj["props"]["x2"], "y": tagObj["props"]["y2"], "color": tagObj["props"]["color"]};
+        // use detail to distinguish line value from another
+        var props_l = {"mark": markType, "x": tagObj["props"]["x1"], "y": tagObj["props"]["y1"], "color": tagObj["props"]["color"], "detail": i};
+        var props_r = {"mark": markType, "x": tagObj["props"]["x2"], "y": tagObj["props"]["y2"], "color": tagObj["props"]["color"], "detail": i};
         previewElements.push(removeUnusedProps(props_l));
         previewElements.push(removeUnusedProps(props_r));
       } else {
@@ -232,19 +229,62 @@ class Falx extends Component {
       return (<div className="grey-message">No element to preview</div>);
     }
 
-    const xValues = [...new Set(previewElements.map((d) => {return d["x"];}))].filter((x) => {return x != undefined;});
-    const yValues = [...new Set(previewElements.map((d) => {return d["y"];}))].filter((x) => {return x != undefined;});
+    function processElementValues(elements) {
+      // processing data type and values
+      var fieldValues = {};
+      const channels = ["x", "y", "color", "size", "x2", "y2", "detail"];
+      for (const i in channels) {
+        const channel = channels[i];
+        const values = [...new Set(elements.map((d) => {return d[channel];}))]
+                          .filter((d) => {return d != undefined;});
+        const dType = values.reduce((res, d) => {return res && !isNaN(Number(d))}, true) ? "number" : "string";
+        if (values.length > 0) {
+          fieldValues[channel] = {values: values, type: dType};
+        }
+      }
+      return fieldValues;
+    }
 
-    const xDomain = [""].concat(xValues.concat([" "]));
+    function decideEncodingType(mark, channel, vType) {
+      if (channel == "color") 
+        return "nominal";
+      if (mark == "bar") {
+        if (channel == "x"){
+          return vType === "string" ? "nominal" : "quantitative";
+        } else {
+          return vType === "string" ? "nominal" : "quantitative"
+        }
+      } else {
+        return vType === "string" ? "nominal" : "quantitative"
+      }
+    }
+
+    const globalFieldValues = processElementValues(previewElements);
+
+    // add place holder to make it a bit more spacious
+    if ("x" in globalFieldValues && globalFieldValues["x"].type == "string")
+      var xDomain = [""].concat(globalFieldValues["x"].values.concat([" "]));
 
     const layerSpecs = markTypes.map((mark) => {
+      const relatedElements = previewElements.filter((x) => (x["mark"] == mark));
+      const fieldValues = processElementValues(relatedElements)
+      var encoding = {}
+      var tooltip = []
+      for (const channel in fieldValues) {
+        encoding[channel] = {"field": channel}
+        if (channel != "x2" && channel != "y2") {
+          encoding[channel]["type"] = decideEncodingType(mark, channel, fieldValues[channel].type);
+        }
+        if (channel == "x" && globalFieldValues["x"].vtype == "string") {
+          encoding[channel]["scale"] = {"domain": xDomain};
+        }
+        tooltip.push({"field": channel, "type": decideEncodingType(mark, channel, fieldValues[channel].type)})
+      }
+      encoding["tooltip"] = tooltip;
       return {
         "mark": {"type": mark, "opacity": 0.8 },
         "transform": [{"filter": "datum.mark == \"" + mark + "\""}],
-        "encoding": {
-          "x": {"field": "x", "type": "nominal", "scale": {"domain": xDomain}},
-          "y": {"field": "y", "type": "quantitative"}
-        }
+        "encoding": encoding,
       }
     })
 
@@ -257,7 +297,7 @@ class Falx extends Component {
       "values": previewElements
     };
 
-    return (<VegaLite spec={spec} data={data}/>);
+    return (<VegaLite spec={spec} data={data} tooltip={new Handler().call}/>);
   }
   render() {
     const columns = []
@@ -272,12 +312,10 @@ class Falx extends Component {
     }
     const data = this.state.data;
     const specs = this.state.synthResult;
-
     const elementTags = this.renderElementTags();
     const recommendations = (specs.length > 0 ? 
                               (<Recommendations specs={specs} data={data}/>) : 
                               (<div className="output-panel">{this.state.status}</div>));
-
     return (
       <div className="editor">
         <SplitPane className="editor-plane" split="vertical" minSize={400} defaultSize={400}>
