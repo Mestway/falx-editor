@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
+import Dropdown from 'react-bootstrap/Dropdown';
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Files from 'react-files';
@@ -16,6 +17,7 @@ import VegaLite from 'react-vega-lite';
 import { Handler } from 'vega-tooltip';
 
 import Recommendations from "./Recommendations.jsx"
+import ChartTemplates from "./ChartTemplates.jsx"
 
 // Import React Table
 import "react-table/react-table.css";
@@ -52,23 +54,16 @@ class Falx extends Component {
           "Actual": 150
         }
       ],
-      spec: {
-        "description": "A simple bar chart with embedded data.",
-        "mark": "bar",
-        "encoding": {
-          "x": {"field": "a", "type": "ordinal"},
-          "y": {"field": "b", "type": "quantitative"}
-        }
-      },
+      spec: null,
       tags: [
-        {"type": "bar", "props": {"x": "Bucket E", "y": 115, "color": "Actual", "x2": "", "y2": ""}},
-        {"type": "bar", "props": {"x": "Bucket D", "y": 90, "color": "Actual", "x2": "", "y2": ""}},
-        {"type": "bar", "props": {"x": "Bucket D", "y": 100, "color": "Budgeted", "x2": "", "y2": ""}},
+        {"type": "bar", "props": { "x": "Actual", "y": 115,  "color": "Actual", "x2": "", "y2": "", "column": "Bucket E"}},
+        {"type": "bar", "props": { "x": "Actual", "y": 90,"color": "Actual", "x2": "", "y2": "", "column": "Bucket D"}},
+        {"type": "bar", "props": { "x": "Budgeted","y": 100,  "color": "Budgeted", "x2": "", "y2": "", "column": "Bucket D"}},
       ],
       tempTags: [
-        {"type": "bar", "props": {"x": "Bucket E", "y": 115, "color": "Actual", "x2": "", "y2": ""}},
-        {"type": "bar", "props": {"x": "Bucket D", "y": 90, "color": "Actual", "x2": "", "y2": ""}},
-        {"type": "bar", "props": {"x": "Bucket D", "y": 100, "color": "Budgeted", "x2": "", "y2": ""}},
+        {"type": "bar", "props": { "x": "Actual", "y": 115,  "color": "Actual", "x2": "", "y2": "", "column": "Bucket E"}},
+        {"type": "bar", "props": { "x": "Actual", "y": 90,"color": "Actual", "x2": "", "y2": "", "column": "Bucket D"}},
+        {"type": "bar", "props": { "x": "Budgeted","y": 100,  "color": "Budgeted", "x2": "", "y2": "", "column": "Bucket D"}},
       ],
       synthResult: [],
       status: "No result to show"
@@ -104,13 +99,13 @@ class Falx extends Component {
     const newTempTags = [ ...this.state.tempTags ];
     var newTag = null
     if (tagName === "bar") {
-      newTag = {"type": "bar", "props": {"x": "", "y": "", "color": "", "x2": "", "y2": ""}}
+      newTag = {"type": "bar", "props": {"x": "", "y": "", "color": "", "x2": "", "y2": "", "column": ""}}
     }
     if (tagName === "point") {
-      newTag = {"type": "point", "props": {"x": "", "y": "", "color": "", "size": ""}}
+      newTag = {"type": "point", "props": {"x": "", "y": "", "color": "", "size": "", "column": ""}}
     }
     if (tagName === "line") {
-      newTag = {"type": "line", "props": {"x1": "", "y1": "", "x2": "", "y2": "", "color": ""}}
+      newTag = {"type": "line", "props": {"x1": "", "y1": "", "x2": "", "y2": "", "color": "", "column": ""}}
     }
     newTags.push(newTag);
     newTempTags.push(JSON.parse(JSON.stringify(newTag)));
@@ -162,32 +157,69 @@ class Falx extends Component {
         }
       );
   }
+  renderDataLoader() {
+
+    console.log(ChartTemplates);
+
+    const menuItems = Object.keys(ChartTemplates)
+      .map(function(key) {
+        return (<Dropdown.Item as="div" key={key} 
+                onClick={() => {this.setState({
+                  tags: JSON.parse(JSON.stringify(ChartTemplates[key]["tags"])),
+                  tempTags: JSON.parse(JSON.stringify(ChartTemplates[key]["tags"])),
+                })}}>{key}</Dropdown.Item>)
+      }.bind(this));
+
+    return (
+      <Nav className="justify-content-center cntl-btns">
+        <Nav.Item>
+          <Files className='files-dropzone' onChange={this.onFilesChange}
+            onError={this.onFilesError} accepts={['.csv', '.json']} maxFileSize={1000000}
+            minFileSize={0} clickable>
+            <a href="#" className="nav-link">Load Data</a>
+          </Files>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link>
+            <Dropdown>
+              <Dropdown.Toggle as="div" id="dropdown-custom-components">
+                Load Chart Template
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {menuItems}
+              </Dropdown.Menu>
+            </Dropdown>
+          </Nav.Link>
+        </Nav.Item>
+      </Nav>
+    );
+  }
   renderElementTags() {
     // Render element tags that displays current visual elements created by the user
-    function tagToString(tagObj) {
+    function tagToString(tagObj, tagId) {
       // maps each tag to a string
       const tagObjKeys = Object.keys(tagObj["props"])
         .filter(function(key) { return tagObj["props"][key] != ""; })
 
       const content = tagObjKeys
         .map(function(key, i) {
-          const sep = (i == tagObjKeys.length - 1) ? "" : ", ";
-          return (<span key={i}>
-                    <span className="tag-label">{key}:</span>
-                    {tagObj["props"][key]}{sep}
-                  </span>);
+          //const sep = (i == tagObjKeys.length - 1) ? "" : ", ";
+          return (<div key={i}>
+                    <span className="tag-label">{key} → </span>
+                    {tagObj["props"][key]}
+                  </div>);
         });
-      return <div>{tagObj["type"]}({content})</div>;
+      return <div className="tag-card"><div className="tag-type">{tagObj["type"] + " #" + tagId}</div><div className="tag-body">{content}</div></div>;
     }
 
     const elementTags = this.state.tags.map(function(tag, i) {
-      const tagStr = tagToString(tag);
+      const tagStr = tagToString(tag, i);
       // create a editor memu for each element
       const elementEditor = Object.keys(tag["props"])
         .map(function(key) {
           return (
             <MenuItem key={"element-editor" + i + key} preventClose={true} data={{ item: 'item 1' }}>
-              <label htmlFor={"element-editor-input-" + i + key}>{key}</label>
+              <label htmlFor={"element-editor-input-" + i + key}>{key == "column" ? "col" : key}</label>
               <input type="text" className="element-prop-editor" 
                      name={"input-box" + Math.random()} // use this to prevent Chrome to auto complete
                      id={"element-editor-input-" + i + key}
@@ -200,7 +232,7 @@ class Falx extends Component {
       }.bind(this));
 
       return (
-        <li key={i}>
+        <li key={i} className="tag-boxes">
           <ContextMenuTrigger className="tag-item" id={"tag" + i} holdToDisplay={0}>
             {tagStr}
           </ContextMenuTrigger>
@@ -243,14 +275,14 @@ class Falx extends Component {
         // use detail to distinguish line value from another
         var props_l = {"mark": markType, "x": tagObj["props"]["x1"], "y": tagObj["props"]["y1"], "color": tagObj["props"]["color"], "detail": i};
         var props_r = {"mark": markType, "x": tagObj["props"]["x2"], "y": tagObj["props"]["y2"], "color": tagObj["props"]["color"], "detail": i};
-        props_l["element-id"] = i;
-        props_r["element-id"] = i;
+        props_l["element-id"] = markType + " #" + i;
+        props_r["element-id"] = markType + " #" + i;
         previewElements.push(removeUnusedProps(props_l));
         previewElements.push(removeUnusedProps(props_r));
       } else {
         var props = removeUnusedProps(tagObj["props"]);
         props["mark"] = markType;
-        props["element-id"] = i;
+        props["element-id"] = markType + " #" + i;
         previewElements.push(props);
       } 
     }
@@ -262,7 +294,7 @@ class Falx extends Component {
     function processElementValues(elements) {
       // processing data type and values
       var fieldValues = {};
-      const channels = ["x", "y", "color", "size", "x2", "y2", "detail"];
+      const channels = ["x", "y", "color", "size", "x2", "y2", "detail", "column"];
       for (const i in channels) {
         const channel = channels[i];
         const values = [...new Set(elements.map((d) => {return d[channel];}))]
@@ -277,7 +309,7 @@ class Falx extends Component {
 
     function decideEncodingType(mark, channel, vType) {
       // given mark type, channel and value type, decide the encoding type
-      if (channel == "color") 
+      if (channel == "color" || "channel" == "column") 
         return "nominal";
       if (mark == "bar") {
         if (channel == "x"){
@@ -315,6 +347,14 @@ class Falx extends Component {
         // add tooltip to the example chart
         if (channel != "detail")
           tooltip.push({"field": channel, "type": decideEncodingType(mark, channel, fieldValues[channel].type)})
+
+        if (channel == "x") {
+          encoding[channel]["axis"] = {"labelLimit": 35}
+        }
+
+        if (channel == "column") {
+          encoding[channel]["header"] = {"title": null};
+        }
       }
       encoding["tooltip"] = tooltip;
       const markObj = {"type": mark, "opacity": 0.8 }
@@ -328,14 +368,21 @@ class Falx extends Component {
       }
     })
 
-    const spec = {
-      "width": 150,
-      "height": 150,
-      "layer": layerSpecs
-    };
     const data = {
       "values": previewElements
     };
+
+    var spec = {"height": 150};
+    if (layerSpecs.length == 1) {
+      for (const key in layerSpecs[0]) {
+        spec[key] = layerSpecs[0][key];
+      }
+      if ("column" in spec["encoding"]) {
+        spec["height"] = 100;
+      }
+    } else {
+      spec["layer"] = layerSpecs;
+    }
 
     return (<VegaLite spec={spec} data={data} tooltip={new Handler().call}/>);
   }
@@ -360,18 +407,7 @@ class Falx extends Component {
       <div className="editor">
         <SplitPane className="editor-plane" split="vertical" minSize={400} defaultSize={400}>
           <div className="input-panel">
-            <Nav className="justify-content-center cntl-btns">
-              <Nav.Item>
-                <Files className='files-dropzone' onChange={this.onFilesChange}
-                  onError={this.onFilesError} accepts={['.csv', '.json']} maxFileSize={1000000}
-                  minFileSize={0} clickable>
-                  <a href="#" className="nav-link">Load Data</a>
-                </Files>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link>Load Template</Nav.Link>
-              </Nav.Item>
-            </Nav>
+            {this.renderDataLoader()}
             <div className="input-display">
               <div className="table-display">
                 <ReactTable
@@ -388,8 +424,8 @@ class Falx extends Component {
                 <div className="input-tag">
                   <ul className="input-tag__tags">
                     {elementTags}
-                    <li id="add-btn-li" key="plus">
-                      <ContextMenuTrigger id="some_unique_identifier" holdToDisplay={0}>
+                    <li className="tag-boxes" id="add-btn-li" key="plus">
+                      <ContextMenuTrigger id="some_unique_identifier" className="okok" holdToDisplay={0}>
                         <Octicon name="plus" data-tip="Add new element" className="add-btn"/>
                       </ContextMenuTrigger>
                       <ContextMenu id="some_unique_identifier" preventHideOnContextMenu={true} 
