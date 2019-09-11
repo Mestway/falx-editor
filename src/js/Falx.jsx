@@ -18,6 +18,7 @@ import { Handler } from 'vega-tooltip';
 
 import Recommendations from "./Recommendations.jsx"
 import ChartTemplates from "./ChartTemplates.jsx"
+import TaskGallery from "./TaskGallery.jsx"
 
 // Import React Table
 import "react-table/react-table.css";
@@ -27,44 +28,10 @@ class Falx extends Component {
   constructor() {
     super();
     this.state = {
-      data: [
-        {
-          "Bucket": "Bucket E",
-          "Budgeted": 100,
-          "Actual": 115
-        },
-        {
-          "Bucket": "Bucket D",
-          "Budgeted": 100,
-          "Actual": 90
-        },
-        {
-          "Bucket": "Bucket C",
-          "Budgeted": 125,
-          "Actual": 115
-        },
-        {
-          "Bucket": "Bucket B",
-          "Budgeted": 125,
-          "Actual": 140
-        },
-        {
-          "Bucket": "Bucket A",
-          "Budgeted": 140,
-          "Actual": 150
-        }
-      ],
+      data: TaskGallery[0]["data"],
       spec: null,
-      tags: [
-        {"type": "bar", "props": { "x": "Actual", "y": 115,  "color": "Actual", "x2": "", "y2": "", "column": "Bucket E"}},
-        {"type": "bar", "props": { "x": "Actual", "y": 90,"color": "Actual", "x2": "", "y2": "", "column": "Bucket D"}},
-        {"type": "bar", "props": { "x": "Budgeted","y": 100,  "color": "Budgeted", "x2": "", "y2": "", "column": "Bucket D"}},
-      ],
-      tempTags: [
-        {"type": "bar", "props": { "x": "Actual", "y": 115,  "color": "Actual", "x2": "", "y2": "", "column": "Bucket E"}},
-        {"type": "bar", "props": { "x": "Actual", "y": 90,"color": "Actual", "x2": "", "y2": "", "column": "Bucket D"}},
-        {"type": "bar", "props": { "x": "Budgeted","y": 100,  "color": "Budgeted", "x2": "", "y2": "", "column": "Bucket D"}},
-      ],
+      tags: JSON.parse(JSON.stringify(TaskGallery[0]["tags"])),
+      tempTags: JSON.parse(JSON.stringify(TaskGallery[0]["tags"])),
       synthResult: [],
       status: "No result to show"
     };
@@ -159,8 +126,6 @@ class Falx extends Component {
   }
   renderDataLoader() {
 
-    console.log(ChartTemplates);
-
     const menuItems = Object.keys(ChartTemplates)
       .map(function(key) {
         return (<Dropdown.Item as="div" key={key} 
@@ -199,7 +164,7 @@ class Falx extends Component {
     function tagToString(tagObj, tagId) {
       // maps each tag to a string
       const tagObjKeys = Object.keys(tagObj["props"])
-        .filter(function(key) { return tagObj["props"][key] != ""; })
+        .filter(function(key) { return tagObj["props"][key] !== ""; })
 
       const content = tagObjKeys
         .map(function(key, i) {
@@ -267,7 +232,7 @@ class Falx extends Component {
       // the function to remove unused properties
       const removeUnusedProps = (props) => {
         return Object.keys(props)
-                .filter((key) => {return props[key] != "";})
+                .filter((key) => {return props[key] !== "";})
                 .reduce((map, key) => { map[key] = props[key]; return map; }, {});
       }
 
@@ -309,7 +274,7 @@ class Falx extends Component {
 
     function decideEncodingType(mark, channel, vType) {
       // given mark type, channel and value type, decide the encoding type
-      if (channel == "color" || "channel" == "column") 
+      if ("channel" == "column") 
         return "nominal";
       if (mark == "bar") {
         if (channel == "x"){
