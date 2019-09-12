@@ -126,6 +126,16 @@ class Falx extends Component {
   }
   renderDataLoader() {
 
+    const exampleTasks = TaskGallery
+      .map(function(exampleTask, i) {
+        return (<Dropdown.Item as="div" key={i} 
+                onClick={() => {this.setState({
+                  data: JSON.parse(JSON.stringify(exampleTask["data"])),
+                  tags: JSON.parse(JSON.stringify(exampleTask["tags"])),
+                  tempTags: JSON.parse(JSON.stringify(exampleTask["tags"])),
+                })}}>{exampleTask["name"]}</Dropdown.Item>)
+      }.bind(this));
+
     const menuItems = Object.keys(ChartTemplates)
       .map(function(key) {
         return (<Dropdown.Item as="div" key={key} 
@@ -138,17 +148,29 @@ class Falx extends Component {
     return (
       <Nav className="justify-content-center cntl-btns">
         <Nav.Item>
+          <Nav.Link>
+            <Dropdown>
+              <Dropdown.Toggle as="div">
+                Falx Gallery
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {exampleTasks}
+              </Dropdown.Menu>
+            </Dropdown>
+          </Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
           <Files className='files-dropzone' onChange={this.onFilesChange}
             onError={this.onFilesError} accepts={['.csv', '.json']} maxFileSize={1000000}
             minFileSize={0} clickable>
-            <a href="#" className="nav-link">Load Data</a>
+            <a className="nav-link" href="#">Upload Data</a>
           </Files>
         </Nav.Item>
         <Nav.Item>
           <Nav.Link>
             <Dropdown>
-              <Dropdown.Toggle as="div" id="dropdown-custom-components">
-                Load Chart Template
+              <Dropdown.Toggle as="div">
+                Chart Templates
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 {menuItems}
@@ -174,7 +196,12 @@ class Falx extends Component {
                     {tagObj["props"][key]}
                   </div>);
         });
-      return <div className="tag-card"><div className="tag-type">{tagObj["type"] + " #" + tagId}</div><div className="tag-body">{content}</div></div>;
+      return (
+        <div className="tag-card">
+          <div className="tag-type">{tagObj["type"] + " #" + tagId}</div>
+          <div className="tag-body">{content}</div>
+        </div>
+      );
     }
 
     const elementTags = this.state.tags.map(function(tag, i) {
@@ -238,8 +265,10 @@ class Falx extends Component {
 
       if (markType == "line") {
         // use detail to distinguish line value from another
-        var props_l = {"mark": markType, "x": tagObj["props"]["x1"], "y": tagObj["props"]["y1"], "color": tagObj["props"]["color"], "detail": i};
-        var props_r = {"mark": markType, "x": tagObj["props"]["x2"], "y": tagObj["props"]["y2"], "color": tagObj["props"]["color"], "detail": i};
+        var props_l = {"mark": markType, "x": tagObj["props"]["x1"], 
+                       "y": tagObj["props"]["y1"], "color": tagObj["props"]["color"], "detail": i};
+        var props_r = {"mark": markType, "x": tagObj["props"]["x2"], 
+                       "y": tagObj["props"]["y2"], "color": tagObj["props"]["color"], "detail": i};
         props_l["element-id"] = markType + " #" + i;
         props_r["element-id"] = markType + " #" + i;
         previewElements.push(removeUnusedProps(props_l));
@@ -347,6 +376,7 @@ class Falx extends Component {
       }
     } else {
       spec["layer"] = layerSpecs;
+      console.log(globalFieldValues);
     }
 
     return (<VegaLite spec={spec} data={data} tooltip={new Handler().call}/>);
@@ -370,7 +400,7 @@ class Falx extends Component {
                               (<div className="output-panel">{this.state.status}</div>));
     return (
       <div className="editor">
-        <SplitPane className="editor-plane" split="vertical" minSize={400} defaultSize={400}>
+        <SplitPane className="editor-plane" split="vertical" minSize={450} defaultSize={450}>
           <div className="input-panel">
             {this.renderDataLoader()}
             <div className="input-display">

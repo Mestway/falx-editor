@@ -30,11 +30,10 @@ const ChartTemplates = {
     },
     "Waterfall Chart": {
         "tags": [
-            {"type": "bar", "props": { "x": "A", "y": 0,  "color": "+", "x2": "", "y2": 100, "column": ""}},
-            {"type": "bar", "props": { "x": "B", "y": 100,"color": "-", "x2": "", "y2": 120, "column": ""}},
-            {"type": "bar", "props": { "x": "C", "y": 120,  "color": "+", "x2": "", "y2": 60, "column": ""}},
-            {"type": "bar", "props": { "x": "D", "y": 60,  "color": "-", "x2": "", "y2": 70, "column": ""}},
-            {"type": "bar", "props": { "x": "E", "y": 70,  "color": "-", "x2": "", "y2": 0, "column": ""}},
+            {"type": "bar", "props": { "x": "A", "y": 0,  "color": "inc", "x2": "", "y2": 100, "column": ""}},
+            {"type": "bar", "props": { "x": "B", "y": 100,"color": "dec", "x2": "", "y2": 80, "column": ""}},
+            {"type": "bar", "props": { "x": "C", "y": 80,  "color": "inc", "x2": "", "y2": 120, "column": ""}},
+            {"type": "bar", "props": { "x": "D", "y": 120,  "color": "dec", "x2": "", "y2": 60, "column": ""}},
         ]
     },
     "Scatter Plot": {
