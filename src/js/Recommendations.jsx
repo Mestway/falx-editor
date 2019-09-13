@@ -15,12 +15,17 @@ const COLLAPSED_INFO_PANE_SIZE = 24;
 const DEFAULT_INFO_PANE_SIZE = 302;
 
 class Recommendations extends Component {
+  static getDerivedStateFromProps(props, state) {
+    if (props.specs !== state.specs) {
+      return { specs: props.specs };
+    }
+    return null;
+  }
   constructor(props) {
     super(props);
     this.setFocusIndex = this.setFocusIndex.bind(this);
     this.previousInfoPaneSize = -1;
     this.state = {
-      data: props.data,
       specs: props.specs,
       updateFocus: true,
       focusIndex: 0,
@@ -34,9 +39,7 @@ class Recommendations extends Component {
     this.state.focusIndex = focusIndex;
   }
   render() {
-    const visData = {
-      "values": this.state.data
-    };
+
     const contextCharts = this.state.specs.map((spec, index) => {
       const classes = classNames({
         'context-chart': true,
@@ -45,12 +48,12 @@ class Recommendations extends Component {
 
       let specCopy = Object.assign({}, spec);
 
-      specCopy["width"] = 90;
+      //specCopy["width"] = 90;
       specCopy["height"] = 90;
 
       return (
         <div key={index} className={classes} onClick={() => {this.setFocusIndex(index);}}>
-          <VegaLite spec={specCopy} data={visData} renderer="canvas" actions={false} />
+          <VegaLite spec={specCopy} data={specCopy["data"]} renderer="canvas" actions={false} />
           <div className="backdrop"></div>
         </div>
       );
@@ -76,7 +79,7 @@ class Recommendations extends Component {
                   baseClassName="chart"
                   animationClassName="update"
                   animate={this.state.updateFocus}>
-              <VegaLite spec={this.state.specs[this.state.focusIndex]} data={visData} renderer="svg" />
+              <VegaLite spec={this.state.specs[this.state.focusIndex]} data={this.state.specs[this.state.focusIndex]["data"]} renderer="svg" />
             </AnimateOnChange>
           </div>
           <div className={classNames({'context': true})}>

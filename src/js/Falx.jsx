@@ -94,8 +94,6 @@ class Falx extends Component {
     this.setState({ tags: JSON.parse(JSON.stringify(tempTags)) });
   }
   runSynthesis() {
-    console.log(this.state.data);
-    console.log(this.state.tags);
     this.setState({ status: "Running..." })
 
     fetch("http://127.0.0.1:5000/falx", {
@@ -376,7 +374,6 @@ class Falx extends Component {
       }
     } else {
       spec["layer"] = layerSpecs;
-      console.log(globalFieldValues);
     }
 
     return (<VegaLite spec={spec} data={data} tooltip={new Handler().call}/>);
@@ -393,10 +390,15 @@ class Falx extends Component {
       }
     }
     const data = this.state.data;
-    const specs = this.state.synthResult;
+
+    const specs = this.state.synthResult.map((d) => {return JSON.parse(d["vl_spec"]);});
+
+    console.log("ok");
+    console.log(specs);
+
     const elementTags = this.renderElementTags();
     const recommendations = (specs.length > 0 ? 
-                              (<Recommendations specs={specs} data={data}/>) : 
+                              (<Recommendations specs={specs}/>) : 
                               (<div className="output-panel">{this.state.status}</div>));
     return (
       <div className="editor">
