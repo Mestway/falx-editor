@@ -46,10 +46,24 @@ class Recommendations extends Component {
         'selected': index === this.state.focusIndex
       })
 
-      let specCopy = Object.assign({}, spec);
+      const specCopy = JSON.parse(JSON.stringify(spec));
 
       //specCopy["width"] = 90;
       specCopy["height"] = 90;
+
+      if (!("layer" in specCopy)) {
+        for (const key in specCopy["encoding"]) {
+          specCopy["encoding"][key]["axis"] = {"labelLimit": 30, "title": null}
+        }
+      } else {
+        for (var i = 0; i < specCopy["layer"].length; i ++) {
+          for (const key in specCopy["layer"][i]["encoding"]) {
+            specCopy["layer"][i]["encoding"][key]["axis"] = {"labelLimit": 30, "title": null}
+          }
+        }
+      }
+
+      console.log(JSON.stringify(specCopy));
 
       return (
         <div key={index} className={classes} onClick={() => {this.setFocusIndex(index);}}>

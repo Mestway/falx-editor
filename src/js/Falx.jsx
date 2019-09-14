@@ -391,10 +391,7 @@ class Falx extends Component {
     }
     const data = this.state.data;
 
-    const specs = this.state.synthResult.map((d) => {return JSON.parse(d["vl_spec"]);});
-
-    console.log("ok");
-    console.log(specs);
+    var specs = this.state.synthResult.map((d) => {return JSON.parse(d["vl_spec"]);});
 
     const elementTags = this.renderElementTags();
     const recommendations = (specs.length > 0 ? 

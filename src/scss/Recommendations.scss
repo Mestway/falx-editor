@@ -195,7 +195,7 @@
           display: flex;
           align-items: center;
           height: calc(196px);  // subtract padding on top / bottom and border
-          width: calc(196px - 32px);  // subtract padding on left / right
+          //width: calc(196px - 32px);  // subtract padding on left / right
           justify-content: center;
           padding: 24px 16px 24px 16px;  // should add up to the margin + padding in `full`
           cursor: pointer;
