@@ -77,7 +77,9 @@ class Recommendations extends Component {
       );
     });
 
-    const expandButton =  this.state.showInfoPane ? (<Octicon className="expand-icon" name="triangle-right"/>) : (<Octicon className="expand-icon" name="triangle-left"/>);
+    const expandButton =  this.state.showInfoPane ? 
+                  (<Octicon className="expand-icon" name="triangle-right"/>) 
+                  : (<Octicon className="expand-icon" name="triangle-left"/>);
 
     return (
       <SplitPane className="Recommendations" split="vertical" 
@@ -89,7 +91,7 @@ class Recommendations extends Component {
                 COLLAPSED_INFO_PANE_SIZE
             }
             allowResize={this.state.showInfoPane}
-            onDragFinished={(size) => { this.previousInfoPaneSize = size}}
+            onDragFinished={(size) => { this.previousInfoPaneSize = size }}
             minSize={24} maxSize={-400}>
         <div className="visualizations">
           <div className={classNames({'focus': true})}>
