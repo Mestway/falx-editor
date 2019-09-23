@@ -31,16 +31,16 @@ class Recommendations extends Component {
     this.state = {
       specs: props.specs,
       tableProgs: props.tableProgs,
-      updateFocus: true,
+      updateFocus: false,
       focusIndex: 0,
       showInfoPane: false
     };
   }
   setFocusIndex(focusIndex) {
     this.setState({
-      focusIndex: focusIndex
+      focusIndex: focusIndex,
+      updateFocus: true
     });
-    this.state.focusIndex = focusIndex;
   }
   render() {
 
@@ -96,8 +96,10 @@ class Recommendations extends Component {
             <AnimateOnChange
                   baseClassName="chart"
                   animationClassName="update"
-                  animate={this.state.updateFocus}>
-              <VegaLite spec={this.state.specs[this.state.focusIndex]} data={this.state.specs[this.state.focusIndex]["data"]} renderer="svg" />
+                  animate={this.state.updateFocus}
+                  onAnimationEnd={function() {this.setState({"updateFocus": false});}.bind(this)} >
+              <VegaLite spec={this.state.specs[this.state.focusIndex]} 
+                        data={this.state.specs[this.state.focusIndex]["data"]} renderer="svg" />
             </AnimateOnChange>
           </div>
           <div className={classNames({'context': true})}>
