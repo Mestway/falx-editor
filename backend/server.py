@@ -55,7 +55,7 @@ def run_falx_synthesizer():
         result = FalxInterface.synthesize(inputs=[input_data], raw_trace=visual_elements, 
               extra_consts=[], backend="vegalite", grammar_base_file="/Users/clwang/Research/falx/falx/dsl/tidyverse-lite.tyrell.base")
 
-        response = flask.jsonify([{"rscript": str(p[0]), "vl_spec": p[1].to_vl_json()} for p in result])
+        response = flask.jsonify([{"rscript": [str(x) for x in p[0]], "vl_spec": p[1].to_vl_json()} for p in result])
     else:
         response = falx.jsonify([])
 

@@ -391,11 +391,12 @@ class Falx extends Component {
     }
     const data = this.state.data;
 
-    var specs = this.state.synthResult.map((d) => {return JSON.parse(d["vl_spec"]);});
+    var specs = this.state.synthResult.map((d) => {return JSON.parse(d["vl_spec"]); });
+    const tableProgs = this.state.synthResult.map((d) => { return d["rscript"]; })
 
     const elementTags = this.renderElementTags();
     const recommendations = (specs.length > 0 ? 
-                              (<Recommendations specs={specs}/>) : 
+                              (<Recommendations specs={specs} tableProgs={tableProgs}/>) : 
                               (<div className="output-panel">{this.state.status}</div>));
     return (
       <div className="editor">

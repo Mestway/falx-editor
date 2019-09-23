@@ -17,7 +17,10 @@ const DEFAULT_INFO_PANE_SIZE = 302;
 class Recommendations extends Component {
   static getDerivedStateFromProps(props, state) {
     if (props.specs !== state.specs) {
-      return { specs: props.specs };
+      return { 
+        specs: props.specs,
+        tableProgs: props.tableProgs
+      };
     }
     return null;
   }
@@ -27,6 +30,7 @@ class Recommendations extends Component {
     this.previousInfoPaneSize = -1;
     this.state = {
       specs: props.specs,
+      tableProgs: props.tableProgs,
       updateFocus: true,
       focusIndex: 0,
       showInfoPane: false
@@ -108,7 +112,16 @@ class Recommendations extends Component {
           </button>
           <div className="raw-container">
             <div className="raw">
-              <ReactJson src={this.state.specs[this.state.focusIndex]} />
+              <ReactJson src={{"r_script": this.state.tableProgs[this.state.focusIndex],
+                               "vl_spec": this.state.specs[this.state.focusIndex]}} iconStyle="triangle"
+                displayObjectSize={false} enableClipboard={false} //displayDataTypes={false}
+                shouldCollapse={({ src, namespace, type }) => {
+                  // collapse "data" field in the namespace
+                  if (namespace.indexOf("values") == namespace.length - 1 && namespace.indexOf("data") == namespace.length - 2) {
+                      return true
+                  }
+                  return false
+              }}/>
             </div>
           </div>
         </div>
