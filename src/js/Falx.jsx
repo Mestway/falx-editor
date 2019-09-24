@@ -109,9 +109,10 @@ class Falx extends Component {
     }).then(res => res.json())
       .then(
         (result) => {
+          const synthStatus = (result.length == 0) ? "No solution found ..." : "idle";
           this.setState({
             synthResult: result,
-            status: "idle"
+            status: synthStatus
           })
         },
         (error) => {
@@ -445,11 +446,11 @@ class Falx extends Component {
               <div className="chart-disp">
                 {this.renderExampleVisualization()}
               </div>
-              <div className="bottom-cntl">
-                <Button variant="outline-primary" onClick={() => {this.runSynthesis();}}>
-                  Synthesize
-                </Button>
-              </div>
+            </div>
+            <div className="bottom-cntl">
+              <Button variant="outline-primary" onClick={() => {this.runSynthesis();}}>
+                Synthesize
+              </Button>
             </div>
           </div>
           { recommendations }

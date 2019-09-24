@@ -1,7 +1,8 @@
 @import "App";
 @import "base";
 
-$body-height: (100vh - $nav-height);
+// 50px nav height
+$body-height: calc(100vh - 50px);
 
 .falx {
 	position: relative;
@@ -28,13 +29,12 @@ $body-height: (100vh - $nav-height);
   }
 }
 
-$btn-height: 30px;
-
 .input-panel {
   .cntl-btns {
-    height: $btn-height;
-    margin-bottom: 20px;
+    height: 40px;
+    margin-bottom: 10px;
   }
+
   .bottom-cntl {
     width: 100%;
     height: 60px;
@@ -49,65 +49,67 @@ $btn-height: 30px;
       border-collapse: collapse;
     }
   }
-}
 
-.input-panel .input-display{
-
-  align-items: center;
-  justify-content: center;
-  overflow: scroll;
-  height: calc(100% - 30px - 5vh);
-
-  .table-display {
-    font-size: 13px;
-    height: 35vh;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .element-disp {
-
-    $ele-disp-height: 21vh;
-
-    height: $ele-disp-height;
-    width: 100%;
-
-    display: flex;
-    text-align: center;
-    flex-wrap: wrap;
+  .input-display{
     align-items: center;
     justify-content: center;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    overflow: scroll;
+    height: calc(100% - 50px - 60px);
 
-    .input-tag {
-      width: 80%;
-      //height: 100%;
-      max-height: $ele-disp-height;
-      background: white;
-      border: 1px solid #d6d6d6;
-      border-radius: 2px;
+    .table-display {
+      font-size: 13px;
+      height: 34vh;
+      min-height: 200px;
+      margin-top: 10px;
+      margin-bottom: 10px;
       display: flex;
       flex-wrap: wrap;
-      font-size: 14px;
-      padding: 5px 5px 0;
-      overflow: scroll;
+      justify-content: center;
+    }
+
+    .element-disp {
+
+      $ele-disp-height: 21vh;
+
+      height: $ele-disp-height;
+      min-height: 150px;
+      width: 100%;
+
+      display: flex;
+      text-align: center;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      margin-top: 20px;
+      margin-bottom: 20px;
+
+      .input-tag {
+        width: 80%;
+        //height: 100%;
+        max-height: $ele-disp-height;
+        background: white;
+        border: 1px solid #d6d6d6;
+        border-radius: 2px;
+        display: flex;
+        flex-wrap: wrap;
+        font-size: 14px;
+        padding: 5px 5px 0;
+        overflow: scroll;
+      }
+    }
+
+    .chart-disp {
+      height: 220px;
+      width: 100%;
+      display: flex;
+      text-align: center;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
     }
   }
-
-  .chart-disp {
-    height: 220px;
-    width: 100%;
-    display: flex;
-    text-align: center;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-  }
 }
+
 
 
 .output-panel {
