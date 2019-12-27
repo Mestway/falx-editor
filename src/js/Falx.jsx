@@ -71,8 +71,21 @@ class Falx extends Component {
     if (tagName === "point") {
       newTag = {"type": "point", "props": {"x": "", "y": "", "color": "", "size": "", "column": ""}}
     }
+    if (tagName === "rect") {
+      newTag = {"type": "rect", "props": {"x": "", "y": "", "color": "", "size": "", "column": ""}}
+    }
     if (tagName === "line") {
       newTag = {"type": "line", "props": {"x1": "", "y1": "", "x2": "", "y2": "", "color": "", "column": ""}}
+    }
+    if (tagName === "area") {
+      newTag = {
+        "type": "area", 
+        "props": {
+          "x_left": "", "y_top_left": "", "y_bot_left": "",
+          "x_right": "", "y_top_right": "", "y_bot_right": "",
+          "color": "", "column": ""
+        }
+      }
     }
     newTags.push(newTag);
     newTempTags.push(JSON.parse(JSON.stringify(newTag)));
@@ -94,8 +107,9 @@ class Falx extends Component {
     this.setState({ tags: JSON.parse(JSON.stringify(tempTags)) });
   }
   runSynthesis() {
-    this.setState({ status: "Running..." })
+    this.setState({ status: "Running...", synthResult: []})
 
+    // prepare tags to match falx API
     fetch("http://127.0.0.1:5000/falx", {
       method: 'POST',
       headers: {
@@ -210,7 +224,7 @@ class Falx extends Component {
         .map(function(key) {
           return (
             <MenuItem key={"element-editor" + i + key} preventClose={true} data={{ item: 'item 1' }}>
-              <label htmlFor={"element-editor-input-" + i + key}>{key == "column" ? "col" : key}</label>
+              <label htmlFor={"element-editor-input-" + i + key}>{key == "column" ? "column" : key}</label>
               <input type="text" className="element-prop-editor" 
                      name={"input-box" + Math.random()} // use this to prevent Chrome to auto complete
                      id={"element-editor-input-" + i + key}
@@ -272,6 +286,18 @@ class Falx extends Component {
         props_r["element-id"] = markType + " #" + i;
         previewElements.push(removeUnusedProps(props_l));
         previewElements.push(removeUnusedProps(props_r));
+      } else if (markType == "area") {
+        // use detail to distinguish area values from each other
+        var props_l = {"mark": markType, "x": tagObj["props"]["x_left"], 
+                        "y": tagObj["props"]["y_top_left"], "y2": tagObj["props"]["y_bot_left"], 
+                        "color": tagObj["props"]["color"], "detail": i};
+        var props_r = {"mark": markType, "x": tagObj["props"]["x_right"], 
+                        "y": tagObj["props"]["y_top_right"], "y2": tagObj["props"]["y_bot_right"], 
+                        "color": tagObj["props"]["color"], "detail": i};
+        props_l["element-id"] = markType + " #" + i;
+        props_r["element-id"] = markType + " #" + i;
+        previewElements.push(removeUnusedProps(props_l));
+        previewElements.push(removeUnusedProps(props_r));
       } else {
         var props = removeUnusedProps(tagObj["props"]);
         props["mark"] = markType;
@@ -302,7 +328,7 @@ class Falx extends Component {
 
     function decideEncodingType(mark, channel, vType) {
       // given mark type, channel and value type, decide the encoding type
-      if ("channel" == "column") 
+      if (channel == "column") 
         return "nominal";
       if (mark == "bar") {
         if (channel == "x"){
@@ -310,9 +336,9 @@ class Falx extends Component {
         } else {
           return vType === "string" ? "nominal" : "quantitative"
         }
-      } else {
-        return vType === "string" ? "nominal" : "quantitative"
-      }
+      } 
+
+      return vType === "string" ? "nominal" : "quantitative"
     }
 
     const globalFieldValues = processElementValues(previewElements);
@@ -329,6 +355,9 @@ class Falx extends Component {
       var tooltip = [{"field": "element-id", "type": "nominal", "title": "ID"}]
       for (const channel in fieldValues) {
         encoding[channel] = {"field": channel}
+        if (channel == "color") {
+          encoding[channel]["type"] = decideEncodingType(mark, channel, fieldValues[channel].type);
+        }
         if (channel != "x2" && channel != "y2") {
           // x2, y2 requires no type information as they should be consistent with x,y enc type
           encoding[channel]["type"] = decideEncodingType(mark, channel, fieldValues[channel].type);
@@ -376,6 +405,11 @@ class Falx extends Component {
     } else {
       spec["layer"] = layerSpecs;
     }
+  
+    spec["data"] = data
+    
+    //debug helper: print vis spec with data
+    //console.log(JSON.stringify(spec)); 
 
     return (<VegaLite spec={spec} data={data} tooltip={new Handler().call}/>);
   }
@@ -433,8 +467,14 @@ class Falx extends Component {
                           <Button className="add-btn-menu-btn" variant="outline-primary" onClick={() => {this.addTagElement("point") ;}}>
                             point
                           </Button>
+                          <Button className="add-btn-menu-btn" variant="outline-primary" onClick={() => {this.addTagElement("rect") ;}}>
+                            rect
+                          </Button>
                           <Button className="add-btn-menu-btn" variant="outline-primary" onClick={() => {this.addTagElement("line") ;}}>
                             line
+                          </Button>
+                          <Button className="add-btn-menu-btn" variant="outline-primary" onClick={() => {this.addTagElement("area") ;}}>
+                            area
                           </Button>
                         </MenuItem>
                       </ContextMenu>

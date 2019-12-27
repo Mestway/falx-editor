@@ -6,7 +6,9 @@ import flask
 import json
 from flask_cors import CORS
 
-sys.path.append(os.path.abspath('/Users/clwang/Research/falx/falx'))
+sys.path.append(os.path.abspath('/Users/clwang/Research/falx-project/falx/falx'))
+
+GRAMMAR_BASE_FILE = "/Users/clwang/Research/falx-project/falx/falx/dsl/tidyverse-lite.tyrell.base"
 
 from falx.interface import FalxInterface
 
@@ -18,21 +20,22 @@ def hello():
     name = request.args.get("name", "World")
 
     input_data = [
-      { "Bucket": "Bucket E", "Budgeted": 100, "Actual": 115 },
-      { "Bucket": "Bucket D", "Budgeted": 100, "Actual": 90 },
-      { "Bucket": "Bucket C", "Budgeted": 125, "Actual": 115 },
-      { "Bucket": "Bucket B", "Budgeted": 125, "Actual": 140 },
-      { "Bucket": "Bucket A", "Budgeted": 140, "Actual": 150 }
+        { "Bucket": "Bucket E", "Budgeted": 100, "Actual": 115 },
+        { "Bucket": "Bucket D", "Budgeted": 100, "Actual": 90 },
+        { "Bucket": "Bucket C", "Budgeted": 125, "Actual": 115 },
+        { "Bucket": "Bucket B", "Budgeted": 125, "Actual": 140 },
+        { "Bucket": "Bucket A", "Budgeted": 140, "Actual": 150 }
     ]
 
     raw_trace = [
-      {"type": "bar", "props": { "x": "Actual", "y": 115,  "color": "Actual", "x2": "", "y2": "", "column": "Bucket E"}},
-      {"type": "bar", "props": { "x": "Actual", "y": 90,"color": "Actual", "x2": "", "y2": "", "column": "Bucket D"}},
-      {"type": "bar", "props": { "x": "Budgeted","y": 100,  "color": "Budgeted", "x2": "", "y2": "", "column": "Bucket D"}},
+        {"type": "bar", "props": { "x": "Actual", "y": 115,  "color": "Actual", "x2": "", "y2": "", "column": "Bucket E"}},
+        {"type": "bar", "props": { "x": "Actual", "y": 90,"color": "Actual", "x2": "", "y2": "", "column": "Bucket D"}},
+        {"type": "bar", "props": { "x": "Budgeted","y": 100,  "color": "Budgeted", "x2": "", "y2": "", "column": "Bucket D"}},
     ]
 
     result = FalxInterface.synthesize(inputs=[input_data], raw_trace=raw_trace, 
-              extra_consts=[], backend="vegalite", grammar_base_file="/Users/clwang/Research/falx/falx/dsl/tidyverse-lite.tyrell.base")
+                extra_consts=[], backend="vegalite", 
+                grammar_base_file=GRAMMAR_BASE_FILE)
 
     for c in result:
         print(c[0])
@@ -52,10 +55,20 @@ def run_falx_synthesizer():
         app.logger.info(input_data)
         app.logger.info(visual_elements)
 
-        result = FalxInterface.synthesize(inputs=[input_data], raw_trace=visual_elements, 
-              extra_consts=[], backend="vegalite", grammar_base_file="/Users/clwang/Research/falx/falx/dsl/tidyverse-lite.tyrell.base")
+        print(input_data)
+        print(visual_elements)
 
-        response = flask.jsonify([{"rscript": [str(x) for x in p[0]], "vl_spec": p[1].to_vl_json()} for p in result])
+        result = FalxInterface.synthesize(
+                    inputs=[input_data], 
+                    raw_trace=visual_elements, 
+                    extra_consts=[],
+                    group_results=True,
+                    config={"backend": "vegalite",
+                            "search_start_depth_level": 0,
+                            "search_stop_depth_level": 2,
+                            "grammar_base_file": GRAMMAR_BASE_FILE})
+
+        response = flask.jsonify([{"rscript": [str(x) for x in result[key][0][0]], "vl_spec": result[key][0][1].to_vl_json()} for key in result])
     else:
         response = falx.jsonify([])
 

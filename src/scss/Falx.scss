@@ -253,8 +253,12 @@ button:focus {
 
   label {
     display: inline-block;
-    width: 40px;
+    //width: 40px;
     text-align: left;
+    padding-right: 3px;
+    vertical-align: middle;
+    margin-bottom: 0;
+    margin-top: 5px;
   }
 
   .left-btn {
@@ -393,6 +397,7 @@ button:focus {
 .element-prop-editor {
   margin-left: 5px;
   width: 80px;
+  float: right;
 }
 
 ::placeholder {
