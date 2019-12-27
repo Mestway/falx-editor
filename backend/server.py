@@ -12,7 +12,7 @@ GRAMMAR_BASE_FILE = "/Users/clwang/Research/falx-project/falx/falx/dsl/tidyverse
 
 from falx.interface import FalxInterface
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/data',  static_folder='../data',)
 CORS(app)
 
 @app.route('/')
@@ -33,9 +33,14 @@ def hello():
         {"type": "bar", "props": { "x": "Budgeted","y": 100,  "color": "Budgeted", "x2": "", "y2": "", "column": "Bucket D"}},
     ]
 
-    result = FalxInterface.synthesize(inputs=[input_data], raw_trace=raw_trace, 
-                extra_consts=[], backend="vegalite", 
-                grammar_base_file=GRAMMAR_BASE_FILE)
+    result = FalxInterface.synthesize(
+                inputs=[input_data], 
+                raw_trace=raw_trace, 
+                extra_consts=[],
+                config={"backend": "vegalite",
+                        "search_start_depth_level": 0,
+                        "search_stop_depth_level": 2,
+                        "grammar_base_file": GRAMMAR_BASE_FILE})
 
     for c in result:
         print(c[0])

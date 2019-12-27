@@ -1,0 +1,15 @@
+{
+    "name": "Confidence Interval",
+    "data": [
+      {"Value":"means","Y1":0.52,"Y2":0.57,"Y3":0.6,"Y4":0.63,"Y5":0.63},
+      {"Value":"stddev","Y1":0.1328,"Y2":0.1321,"Y3":0.1303,"Y4":0.1266,"Y5":0.1225},
+      {"Value":"upper range","Y1":0.66,"Y2":0.7,"Y3":0.73,"Y4":0.75,"Y5":0.75},
+      {"Value":"lower range","Y1":0.39,"Y2":0.44,"Y3":0.47,"Y4":0.5,"Y5":0.51}
+    ],
+    "tags": [
+      {"type": "area", "props": {"x_left": "Y1", "y_top_left": 0.66, "y_bot_left": 0.39,  
+                                 "x_right": "Y2", "y_top_right": 0.7, "y_bot_right": 0.44, "color": "", "column": ""}},
+      {"type": "line", "props": {"x1": "Y1", "y1": 0.52, "x2": "Y2", "y2": 0.57, "color": "", "column": ""}},
+      {"type": "line", "props": {"x1": "Y2", "y1": 0.57, "x2": "Y3", "y2": 0.6, "color": "", "column": ""}}
+    ]
+  }
