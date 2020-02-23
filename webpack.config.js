@@ -46,6 +46,6 @@ module.exports = {
     })
   ],
   devServer: {
-    publicPath: '/data/'
+    publicPath: '/'
   }
 };

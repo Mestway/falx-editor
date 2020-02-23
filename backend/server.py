@@ -8,12 +8,21 @@ from flask_cors import CORS
 
 sys.path.append(os.path.abspath('/Users/clwang/Research/falx-project/falx/falx'))
 
-GRAMMAR_BASE_FILE = "/Users/clwang/Research/falx-project/falx/falx/dsl/tidyverse-lite.tyrell.base"
-
 from falx.interface import FalxInterface
 
 app = Flask(__name__, static_url_path='/data',  static_folder='../data',)
 CORS(app)
+
+GRAMMAR = {
+    "operators": ["select", "unite", "filter", "separate", "spread", 
+        "gather", "gather_neg", "group_sum", "cumsum", "mutate", "mutate_custom"],
+    "filer_op": [">", "<", "=="],
+    "constants": [],
+    "aggr_func": ["mean", "sum", "count"],
+    "mutate_op": ["+", "-"],
+    "gather_max_val_list_size": 3,
+    "gather_neg_max_key_list_size": 3
+}
 
 @app.route('/')
 def hello():
@@ -37,10 +46,13 @@ def hello():
                 inputs=[input_data], 
                 raw_trace=raw_trace, 
                 extra_consts=[],
-                config={"backend": "vegalite",
-                        "search_start_depth_level": 0,
-                        "search_stop_depth_level": 2,
-                        "grammar_base_file": GRAMMAR_BASE_FILE})
+                config={
+                    "solution_limit": 10,
+                    "time_limit_sec": 10,
+                    "backend": "vegalite",
+                    "max_prog_size": 2,
+                    "grammar": GRAMMAR
+                })
 
     for c in result:
         print(c[0])
@@ -68,12 +80,16 @@ def run_falx_synthesizer():
                     raw_trace=visual_elements, 
                     extra_consts=[],
                     group_results=True,
-                    config={"backend": "vegalite",
-                            "search_start_depth_level": 0,
-                            "search_stop_depth_level": 2,
-                            "grammar_base_file": GRAMMAR_BASE_FILE})
+                    config={
+                        "solution_limit": 10,
+                        "time_limit_sec": 10,
+                        "backend": "vegalite",
+                        "max_prog_size": 2,
+                        "grammar": GRAMMAR
+                    })
 
-        response = flask.jsonify([{"rscript": [str(x) for x in result[key][0][0]], "vl_spec": result[key][0][1].to_vl_json()} for key in result])
+        response = flask.jsonify([{"rscript": str(result[key][0][0]), 
+                                   "vl_spec": result[key][0][1].to_vl_json()} for key in result])
     else:
         response = falx.jsonify([])
 

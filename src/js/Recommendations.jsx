@@ -12,7 +12,7 @@ import Octicon from 'react-octicon'
 import '../scss/Recommendations.scss';
 
 const COLLAPSED_INFO_PANE_SIZE = 24;
-const DEFAULT_INFO_PANE_SIZE = 302;
+const DEFAULT_INFO_PANE_SIZE = 502;
 
 class Recommendations extends Component {
   static getDerivedStateFromProps(props, state) {
@@ -33,7 +33,7 @@ class Recommendations extends Component {
       tableProgs: props.tableProgs,
       updateFocus: false,
       focusIndex: 0,
-      showInfoPane: false
+      showInfoPane: true
     };
   }
   setFocusIndex(focusIndex) {
@@ -82,54 +82,57 @@ class Recommendations extends Component {
                   : (<Octicon className="expand-icon" name="triangle-left"/>);
 
     return (
-      <SplitPane className="Recommendations" split="vertical" 
-        primary="second"
-        size={
-              this.state.showInfoPane ?
-                this.previousInfoPaneSize === -1 ? DEFAULT_INFO_PANE_SIZE : this.previousInfoPaneSize
-              :
-                COLLAPSED_INFO_PANE_SIZE
-            }
-            allowResize={this.state.showInfoPane}
-            onDragFinished={(size) => { this.previousInfoPaneSize = size }}
-            minSize={24} maxSize={-400}>
+      <div className="Recommendations">
         <div className="visualizations">
-          <div className={classNames({'focus': true})}>
-            <AnimateOnChange
-                  baseClassName="chart"
-                  animationClassName="update"
-                  animate={this.state.updateFocus}
-                  onAnimationEnd={function() {this.setState({"updateFocus": false});}.bind(this)} >
-              <VegaLite spec={this.state.specs[this.state.focusIndex]} 
-                        data={this.state.specs[this.state.focusIndex]["data"]} renderer="svg" />
-            </AnimateOnChange>
-          </div>
-          <div className={classNames({'context': true})}>
-            <div className="carousel">
-              {contextCharts}
+          <SplitPane split="vertical" 
+          primary="second"
+          size={
+                this.state.showInfoPane ?
+                  this.previousInfoPaneSize === -1 ? DEFAULT_INFO_PANE_SIZE : this.previousInfoPaneSize
+                :
+                  COLLAPSED_INFO_PANE_SIZE
+              }
+              allowResize={this.state.showInfoPane}
+              onDragFinished={(size) => { this.previousInfoPaneSize = size }}
+              minSize={24} maxSize={-400}>
+            <div className={classNames({'focus': true})}>
+              <AnimateOnChange
+                    baseClassName="chart"
+                    animationClassName="update"
+                    animate={this.state.updateFocus}
+                    onAnimationEnd={function() {this.setState({"updateFocus": false});}.bind(this)} >
+                <VegaLite spec={this.state.specs[this.state.focusIndex]} 
+                          data={this.state.specs[this.state.focusIndex]["data"]} renderer="svg" />
+              </AnimateOnChange>
             </div>
+            <div className="info">
+                <button className="expand-button" onClick={() => { this.setState({ showInfoPane: !this.state.showInfoPane }); }}>
+                  {expandButton}
+                </button>
+                <div className="raw-container">
+                  <div className="raw">
+                    <ReactJson src={{"r_script": this.state.tableProgs[this.state.focusIndex],
+                                     "vl_spec": this.state.specs[this.state.focusIndex]}} iconStyle="triangle"
+                      displayObjectSize={false} enableClipboard={false} //displayDataTypes={false}
+                      shouldCollapse={({ src, namespace, type }) => {
+                        // collapse "data" field in the namespace
+                        if (namespace.indexOf("values") == namespace.length - 1 && namespace.indexOf("data") == namespace.length - 2) {
+                            return true
+                        }
+                        return false
+                    }}/>
+                  </div>
+                </div>
+              </div>
+          </SplitPane>
+        </div>
+        <div className={classNames({'context': true})}>
+          <div className="carousel">
+            {contextCharts}
           </div>
         </div>
-        <div className="info">
-          <button className="expand-button" onClick={() => { this.setState({ showInfoPane: !this.state.showInfoPane }); }}>
-            {expandButton}
-          </button>
-          <div className="raw-container">
-            <div className="raw">
-              <ReactJson src={{"r_script": this.state.tableProgs[this.state.focusIndex],
-                               "vl_spec": this.state.specs[this.state.focusIndex]}} iconStyle="triangle"
-                displayObjectSize={false} enableClipboard={false} //displayDataTypes={false}
-                shouldCollapse={({ src, namespace, type }) => {
-                  // collapse "data" field in the namespace
-                  if (namespace.indexOf("values") == namespace.length - 1 && namespace.indexOf("data") == namespace.length - 2) {
-                      return true
-                  }
-                  return false
-              }}/>
-            </div>
-          </div>
-        </div>
-      </SplitPane>)
+      </div>
+      )
   }
 }
 

@@ -1,0 +1,32 @@
+@import "base";
+
+.react-table-cell {
+	padding: 3px !important;
+}
+
+.react-table {
+	max-width: 80% !important;
+	margin: 0 auto;
+	min-height: 300px;
+	max-height: 30vh;
+}
+
+.pagination {
+	max-width: 80% !important;
+	padding: 0.5rem;
+	height: 30px;
+	//width: 120px;
+	display: flex;
+  	justify-content: center;
+  	margin: 0 auto;
+
+    .info-span {
+    	text-align: center;
+    	margin: auto;
+    	width: 100px;
+    }
+
+  	.pagination-btn {
+  		padding: 0px;
+  	}
+}

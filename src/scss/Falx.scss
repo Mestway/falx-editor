@@ -30,10 +30,45 @@ $body-height: calc(100vh - 50px);
 }
 
 .input-panel {
-  .cntl-btns {
-    height: 40px;
-    margin-bottom: 10px;
+
+  .seg-title {
+    padding: 20px 30px 20px 30px;
+
+    .title {
+      float: left;
+      font-weight: bold;
+      display: inline-block;
+      position: relative;
+    }
+
+    .title-action {
+      float: right;
+      display: inline-block;
+      position: relative;
+
+      .dropdown-toggle::after {
+        display: none;
+      }
+
+      ul {
+        list-style-type:none;
+        padding:0px;
+        margin:0px;
+      }
+
+      li {
+        list-style-type:none;
+        float:left;
+        padding-left:10px;
+      }
+    }
+
+    .clickable-style {
+      color: #007bff;
+      cursor: pointer;
+    }
   }
+
 
   .bottom-cntl {
     width: 100%;
@@ -54,17 +89,15 @@ $body-height: calc(100vh - 50px);
     align-items: center;
     justify-content: center;
     overflow: scroll;
-    height: calc(100% - 50px - 60px);
+    height: calc(100% - 60px); // minus synthesis botton
 
     .table-display {
       font-size: 13px;
       height: 34vh;
-      min-height: 200px;
+      min-height: 330px;
       margin-top: 10px;
       margin-bottom: 10px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      display: block;
     }
 
     .element-disp {
@@ -80,8 +113,8 @@ $body-height: calc(100vh - 50px);
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
-      margin-top: 20px;
-      margin-bottom: 20px;
+      margin-top: 10px;
+      margin-bottom: 10px;
 
       .input-tag {
         width: 80%;
@@ -99,7 +132,7 @@ $body-height: calc(100vh - 50px);
     }
 
     .chart-disp {
-      height: 220px;
+      height: 205px;
       width: 100%;
       display: flex;
       text-align: center;

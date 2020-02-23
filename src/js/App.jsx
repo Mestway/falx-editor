@@ -4,10 +4,14 @@ import Navbar from 'react-bootstrap/Navbar';
 import Files from 'react-files'
 
 import Falx from "./Falx.jsx"
+import VisEditor from "./VisEditor.jsx"
 import '../scss/App.scss';
 
 
+// render the component
+
 class App extends Component {
+
   render() {
     return (
       <div id="app">
@@ -17,6 +21,7 @@ class App extends Component {
           </Navbar.Brand>
         </Navbar>
         <Falx />
+        {/*<VisEditor />*/}
       </div>
     );
   }

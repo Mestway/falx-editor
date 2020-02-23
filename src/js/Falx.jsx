@@ -10,7 +10,9 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Files from 'react-files';
 import Octicon from 'react-octicon'
-import ReactTable from "react-table";
+//import ReactTable from "react-table";
+
+
 import ReactTooltip from 'react-tooltip'
 import SplitPane from 'react-split-pane';
 import VegaLite from 'react-vega-lite';
@@ -18,10 +20,11 @@ import { Handler } from 'vega-tooltip';
 
 import Recommendations from "./Recommendations.jsx"
 import ChartTemplates from "./ChartTemplates.jsx"
+import ReactTable from "./TableViewer.jsx"
 import TaskGallery from "./TaskGallery.jsx"
 
 // Import React Table
-import "react-table/react-table.css";
+//import "react-table/react-table.css";
 import '../scss/Falx.scss';
 
 class Falx extends Component {
@@ -30,6 +33,7 @@ class Falx extends Component {
     this.state = {
       data: TaskGallery[0]["data"],
       spec: null,
+      constants: [],
       tags: JSON.parse(JSON.stringify(TaskGallery[0]["tags"])),
       tempTags: JSON.parse(JSON.stringify(TaskGallery[0]["tags"])),
       synthResult: [],
@@ -119,6 +123,7 @@ class Falx extends Component {
       body: JSON.stringify({
         "data": this.state.data,
         "tags": this.state.tags,
+        "constants": this.state.constants
       })
     }).then(res => res.json())
       .then(
@@ -136,63 +141,6 @@ class Falx extends Component {
           });
         }
       );
-  }
-  renderDataLoader() {
-
-    const exampleTasks = TaskGallery
-      .map(function(exampleTask, i) {
-        return (<Dropdown.Item as="div" key={i} 
-                onClick={() => {this.setState({
-                  data: JSON.parse(JSON.stringify(exampleTask["data"])),
-                  tags: JSON.parse(JSON.stringify(exampleTask["tags"])),
-                  tempTags: JSON.parse(JSON.stringify(exampleTask["tags"])),
-                })}}>{exampleTask["name"]}</Dropdown.Item>)
-      }.bind(this));
-
-    const menuItems = Object.keys(ChartTemplates)
-      .map(function(key) {
-        return (<Dropdown.Item as="div" key={key} 
-                onClick={() => {this.setState({
-                  tags: JSON.parse(JSON.stringify(ChartTemplates[key]["tags"])),
-                  tempTags: JSON.parse(JSON.stringify(ChartTemplates[key]["tags"])),
-                })}}>{key}</Dropdown.Item>)
-      }.bind(this));
-
-    return (
-      <Nav className="justify-content-center cntl-btns">
-        <Nav.Item>
-          <Nav.Link>
-            <Dropdown>
-              <Dropdown.Toggle as="div">
-                Falx Gallery
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                {exampleTasks}
-              </Dropdown.Menu>
-            </Dropdown>
-          </Nav.Link>
-        </Nav.Item>
-        <Nav.Item>
-          <Files className='files-dropzone' onChange={this.onFilesChange}
-            onError={this.onFilesError} accepts={['.csv', '.json']} maxFileSize={1000000}
-            minFileSize={0} clickable>
-            <a className="nav-link" href="#">Upload Data</a>
-          </Files>
-        </Nav.Item>
-        <Nav.Item>
-          <Nav.Link>
-            <Dropdown>
-              <Dropdown.Toggle as="div">
-                Chart Templates
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                {menuItems}
-              </Dropdown.Menu>
-            </Dropdown>
-          </Nav.Link>
-        </Nav.Item>
-      </Nav>
-    );
   }
   renderElementTags() {
     // Render element tags that displays current visual elements created by the user
@@ -424,6 +372,26 @@ class Falx extends Component {
         })
       }
     }
+
+    const exampleTasks = TaskGallery
+      .map(function(exampleTask, i) {
+        return (<Dropdown.Item as="div" key={i} 
+                onClick={() => {this.setState({
+                  data: JSON.parse(JSON.stringify(exampleTask["data"])),
+                  tags: JSON.parse(JSON.stringify(exampleTask["tags"])),
+                  tempTags: JSON.parse(JSON.stringify(exampleTask["tags"])),
+                })}}>{exampleTask["name"]}</Dropdown.Item>)
+      }.bind(this));
+
+    const menuItems = Object.keys(ChartTemplates)
+      .map(function(key) {
+        return (<Dropdown.Item as="div" key={key} 
+                onClick={() => {this.setState({
+                  tags: JSON.parse(JSON.stringify(ChartTemplates[key]["tags"])),
+                  tempTags: JSON.parse(JSON.stringify(ChartTemplates[key]["tags"])),
+                })}}>{key}</Dropdown.Item>)
+      }.bind(this));
+
     const data = this.state.data;
 
     var specs = this.state.synthResult.map((d) => {return JSON.parse(d["vl_spec"]); });
@@ -437,8 +405,27 @@ class Falx extends Component {
       <div className="editor">
         <SplitPane className="editor-plane" split="vertical" minSize={450} defaultSize={450}>
           <div className="input-panel">
-            {this.renderDataLoader()}
             <div className="input-display">
+              <div className="seg-title">
+                <div className="title">Input Data</div>
+                <div className="title-action">
+                  <ul>
+                    <li> 
+                      <Dropdown className="clickable-style">
+                        <Dropdown.Toggle as="div"> [Falx Gallery] </Dropdown.Toggle>
+                        <Dropdown.Menu> {exampleTasks}</Dropdown.Menu>
+                      </Dropdown>
+                    </li>
+                    <li>
+                      <Files className='files-dropzone' onChange={this.onFilesChange}
+                        onError={this.onFilesError} accepts={['.csv', '.json']} maxFileSize={1000000}
+                        minFileSize={0} clickable>
+                        <a href="#">[Upload Data]</a>
+                      </Files>
+                    </li>
+                  </ul>
+                </div>
+              </div>
               <div className="table-display">
                 <ReactTable
                   data={this.state.data}
@@ -449,6 +436,17 @@ class Falx extends Component {
                   showPageSizeOptions={false}
                   className="-striped -highlight"
                 />
+              </div>
+              <div className="seg-title">
+                <div className="title">Demonstration</div>
+                <Dropdown className="clickable-style title-action">
+                  <Dropdown.Toggle as="div">
+                    Chart Templates
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    {menuItems}
+                  </Dropdown.Menu>
+                </Dropdown>
               </div>
               <div className="element-disp">
                 <div className="input-tag">
