@@ -32,7 +32,7 @@ $body-height: calc(100vh - 50px);
 .input-panel {
 
   .seg-title {
-    padding: 20px 30px 20px 30px;
+    padding: 10px 30px 20px 30px;
 
     .title {
       float: left;
@@ -66,6 +66,10 @@ $body-height: calc(100vh - 50px);
     .clickable-style {
       color: #007bff;
       cursor: pointer;
+
+      .MuiSvgIcon-root {
+        font-size: 1rem;
+      }
     }
   }
 
@@ -95,7 +99,7 @@ $body-height: calc(100vh - 50px);
       font-size: 13px;
       height: 34vh;
       min-height: 330px;
-      margin-top: 10px;
+      margin-top: 20px;
       margin-bottom: 10px;
       display: block;
     }

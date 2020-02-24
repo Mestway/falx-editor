@@ -6,6 +6,7 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Dropdown from 'react-bootstrap/Dropdown';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Files from 'react-files';
@@ -412,16 +413,24 @@ class Falx extends Component {
                   <ul>
                     <li> 
                       <Dropdown className="clickable-style">
-                        <Dropdown.Toggle as="div"> [Falx Gallery] </Dropdown.Toggle>
-                        <Dropdown.Menu> {exampleTasks}</Dropdown.Menu>
+                        <Dropdown.Toggle as="div"> Select Data <ArrowDropDownIcon /> </Dropdown.Toggle>
+                        <Dropdown.Menu> 
+                          <Dropdown.Header>Examples</Dropdown.Header>
+                          {exampleTasks}
+                          <Dropdown.Divider />
+                          <Dropdown.Header>Upload</Dropdown.Header>
+                          <Dropdown.Item as="div" key={"upload"}>
+                            <Files className='files-dropzone' onChange={this.onFilesChange}
+                              onError={this.onFilesError} accepts={['.csv', '.json']} maxFileSize={1000000}
+                              minFileSize={0} clickable>
+                              Upload Data (.csv)
+                            </Files>
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
                       </Dropdown>
                     </li>
                     <li>
-                      <Files className='files-dropzone' onChange={this.onFilesChange}
-                        onError={this.onFilesError} accepts={['.csv', '.json']} maxFileSize={1000000}
-                        minFileSize={0} clickable>
-                        <a href="#">[Upload Data]</a>
-                      </Files>
+                     
                     </li>
                   </ul>
                 </div>
@@ -441,7 +450,7 @@ class Falx extends Component {
                 <div className="title">Demonstration</div>
                 <Dropdown className="clickable-style title-action">
                   <Dropdown.Toggle as="div">
-                    Chart Templates
+                    Templates <ArrowDropDownIcon />
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
                     {menuItems}
