@@ -6,6 +6,26 @@ import flask
 import json
 from flask_cors import CORS
 
+import copy
+
+import pandas as pd
+
+def infer_dtype(values):
+    return pd.api.types.infer_dtype(values, skipna=True)
+
+def try_infer_string_type(values):
+    """try to infer datatype from values """
+    dtype = pd.api.types.infer_dtype(values, skipna=False)
+    ty_func = lambda l: pd.to_numeric(l)
+
+    try:
+        values = ty_func(values)
+        dtype = pd.api.types.infer_dtype(values, skipna=False)
+    except:
+        pass
+
+    return dtype, values
+
 sys.path.append(os.path.abspath('/Users/clwang/Research/falx-project/falx/falx'))
 
 from falx.interface import FalxInterface
@@ -72,8 +92,27 @@ def run_falx_synthesizer():
         app.logger.info(input_data)
         app.logger.info(visual_elements)
 
-        print(input_data)
-        print(visual_elements)
+
+        all_input_values = list(set([val for r in input_data for key, val in r.items()])) + list(set([key for key in input_data[0]]))
+
+        post_processed_visual_elements = []
+        partition_keys = set([r['type'] for r in visual_elements])
+        for key in partition_keys:
+            partition = [r for r in visual_elements if r['type'] == key]
+            copyed_partition = copy.deepcopy(partition)
+
+            columns = [c for c in partition[0]["props"]]
+            for c in columns:
+                values = [r["props"][c] for r in copyed_partition]
+                if all([v == "" for v in values]):
+                    continue
+
+                ty, values = try_infer_string_type(values)
+
+                if ty != "string":
+                    for i in range(len(values)):
+                        # update the value in partion by reference, force to modify into integer
+                        partition[i]["props"][c] = float(values[i])
 
         result = FalxInterface.synthesize(
                     inputs=[input_data], 

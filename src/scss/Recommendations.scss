@@ -22,6 +22,7 @@
   }
 
   .visualizations {
+
     .tabs {
       position: absolute;
       top: 0;
@@ -69,20 +70,42 @@
 
     .focus {
       position: absolute;
-      top: 44px;  // tabs;
+      //top: 44px;  // tabs;
       left: 0;
       height: 100%;  
-      display: flex;
+      display: block;
       width: 100%;
-      justify-content: center;
-      align-items: center;
       flex-shrink: 0;
       margin: 0;
       overflow: auto;
 
+
       visibility: visible;
       transition: transform $view-switch-speed $standard-ease,
                   visibility $view-switch-speed $standard-ease;
+
+      .save-btn-area {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        top: 0px;
+        margin: 20px;
+
+        .save-btn {
+          cursor: pointer;
+        }
+
+      }
+      .main-vis-panel {
+        width: 100%;
+        height: calc(100% - 100px);
+        justify-content: center;
+        align-items: center;
+        display: flex;
+        margin-top: 0;
+        margin: auto;
+        top: 0px;
+      }
 
       .chart {
         padding: 24px 16px 16px 16px;

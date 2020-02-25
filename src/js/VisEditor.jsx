@@ -101,8 +101,8 @@ class VisEditor extends Component {
         layerSpec = Object.assign({}, props.spec["layer"][layerID]);
       }
       
-      var filters = "transform" in layerSpec ? layerSpec["transform"] : [];
-      filters.push({"filters": ""});
+      var filters = []; //"transform" in layerSpec ? layerSpec["transform"].map(p => p["filter"]) : [];
+      filters.push("");
       tempFilters[layerID] = filters;
     }
 
@@ -133,14 +133,26 @@ class VisEditor extends Component {
 
   handleTempFilterChange(layerID, filterIndex, newFilter) {
     var tempFilters = this.state.tempFilters;
-
     if (newFilter != '') {
       tempFilters[layerID][filterIndex] = newFilter;
-      console.log(tempFilters);
       this.setState({
           tempFilters: tempFilters
       });
     }
+  }
+
+  extractLayerFilters(layerSpec) {
+    var filters = []
+    if ("transform" in layerSpec) {
+      for (var i = 0; i < layerSpec["transform"].length; i ++) {
+        console.log(layerSpec["transform"][i]["filter"]);
+        console.log(layerSpec["transform"][i]["filter"].includes("layer_id"));
+        if (layerSpec["transform"][i]["filter"].includes("layer_id")) {
+          filters.push({"filter": layerSpec["transform"][i]["filter"]})
+        }
+      }
+    }
+    return filters;
   }
 
   saveTempFilters(layerID) {
@@ -148,7 +160,8 @@ class VisEditor extends Component {
     var newSpec = this.state.spec;
     var layerSpec = layerID != -1 ? newSpec["layer"][layerID] : newSpec;
 
-    layerSpec["transform"] = [];
+    var filters = this.extractLayerFilters(layerSpec);
+
     for(var i=0; i < this.state.tempFilters[layerID].length; i ++) {
       var f = this.state.tempFilters[layerID][i]
       if (f !== "") {
@@ -159,12 +172,33 @@ class VisEditor extends Component {
               continue
             } 
         }
-        layerSpec["transform"].push({"filter": f});
+        //escape
+        filters.push({"filter": f.replace("\"", "\"")});
       }
-
     }
+
+    layerSpec["transform"] = filters;
+
+    console.log(layerSpec);
+
     this.setState({
       spec: newSpec,
+    })
+    this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
+  }
+
+  clearFilters(layerID) {
+    var newSpec = this.state.spec;
+    var layerSpec = layerID != -1 ? newSpec["layer"][layerID] : newSpec;
+    var newTempFilters = this.state.tempFilters;
+    newTempFilters[layerID] = [""];
+
+    var filters = this.extractLayerFilters(layerSpec);
+    layerSpec["transform"] = filters;
+
+    this.setState({
+      spec: newSpec,
+      tempFilters: newTempFilters
     })
     this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
   }
@@ -244,13 +278,11 @@ class VisEditor extends Component {
       layerSpec = this.state.spec["layer"][layerID];
     }
     
-    var filters = this.state.tempFilters[layerID];
-
     const markType = (layerSpec["mark"].constructor == Object) ? layerSpec["mark"]["type"] : layerSpec["mark"];
     return (
       <React.Fragment>
         <Typography variant="h6" gutterBottom>
-          Mark
+          Mark {layerID == -1 ? "" : "(layer " + (layerID + 1) + ")"}
         </Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} sm={3}>
@@ -275,13 +307,16 @@ class VisEditor extends Component {
             Filters
           </Typography>
           <Grid container alignItems="center" spacing={3}>
-            {filters.map((f,index) => 
+            {this.state.tempFilters[layerID].map((f,index) => 
               (<Grid key={index} item xs={12}>
-                 <TextField label="filter" value={f["filter"]} onChange={(event) => this.handleTempFilterChange.bind(this)(layerID, index, event.target.value)} fullWidth />
+                 <TextField label="filter" value={f} onChange={(event) => this.handleTempFilterChange.bind(this)(layerID, index, event.target.value)} fullWidth />
                </Grid>
               ))}
-            <Grid item xs={12}>
-              <Button variant="outlined" onClick={(event) => this.saveTempFilters.bind(this)(layerID)}> {"Save Filter"} </Button>
+            <Grid item xs={12} sm={6}>
+              <Button fullWidth variant="outlined" onClick={(event) => this.saveTempFilters.bind(this)(layerID)}> {"Save Filter"} </Button>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button fullWidth variant="outlined" onClick={(event) => this.clearFilters.bind(this)(layerID)}> {"Clear Filters"} </Button>
             </Grid>
           </Grid>
         </FormControl>
@@ -319,6 +354,7 @@ class VisEditor extends Component {
           </AppBar>
           <TabPanel value={this.state.panelID} index={0}>
             {"layer" in this.state.spec ? this.GUIEditor(0) : this.GUIEditor(-1)}
+            {"layer" in this.state.spec ? <Divider className="invis-divider" /> : ""}
             {"layer" in this.state.spec ? <Divider className="invis-divider" /> : ""}
             {"layer" in this.state.spec ? this.GUIEditor(1) : ""}
           </TabPanel>

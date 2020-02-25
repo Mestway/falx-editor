@@ -40,11 +40,13 @@
     "webpack-dev-server": "^3.8.0"
   },
   "dependencies": {
+    "@babel/polyfill": "^7.8.3",
     "@material-ui/core": "^4.9.3",
     "@material-ui/icons": "^4.9.1",
     "array-flat-polyfill": "^1.0.1",
     "bootstrap": "^4.4.1",
-    "react": "^16.9.0",
+    "core-js": "^3.6.4",
+    "react": "^16.12.0",
     "react-animate-on-change": "^2.2.0",
     "react-bootstrap": "^1.0.0-beta.11",
     "react-contextmenu": "^2.11.0",
@@ -57,12 +59,13 @@
     "react-table": "^7.0.0-rc.16",
     "react-tag-autocomplete": "^6.0.0-beta.1",
     "react-tooltip": "^3.10.0",
-    "react-vega": "^6.0.1",
-    "react-vega-lite": "^6.0.1",
+    "react-vega": "^7.2.1",
     "react-window": "^1.8.5",
+    "regenerator-runtime": "^0.13.3",
     "validatorjs": "^3.18.1",
-    "vega": "^5.3.3",
+    "vega": "^5.9.1",
     "vega-embed": "^3.30.0",
-    "vega-lite": "^3.1.0"
+    "vega-lib": "^4.4.0",
+    "vega-lite": "^3.4.0"
   }
 }

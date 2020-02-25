@@ -16,7 +16,7 @@ import Octicon from 'react-octicon'
 
 import ReactTooltip from 'react-tooltip'
 import SplitPane from 'react-split-pane';
-import VegaLite from 'react-vega-lite';
+import { VegaLite } from 'react-vega';
 import { Handler } from 'vega-tooltip';
 
 import Recommendations from "./Recommendations.jsx"
@@ -360,7 +360,7 @@ class Falx extends Component {
     //debug helper: print vis spec with data
     //console.log(JSON.stringify(spec)); 
 
-    return (<VegaLite spec={spec} data={data} tooltip={new Handler().call}/>);
+    return (<VegaLite spec={spec} data={data} tooltip={new Handler().call} actions={false}/>);
   }
   render() {
     const columns = []

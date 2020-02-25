@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import classNames from 'classnames';
 
 import SplitPane from 'react-split-pane';
-import VegaLite from 'react-vega-lite';
+import { VegaLite } from 'react-vega';
 import AnimateOnChange from 'react-animate-on-change';
 
 import AppBar from '@material-ui/core/AppBar';
@@ -14,6 +14,10 @@ import Box from '@material-ui/core/Box';
 //import expandButton from '../images/expand.svg';
 import Octicon from 'react-octicon'
 import ReactTooltip from 'react-tooltip'
+
+import SaveIcon from '@material-ui/icons/Save';
+import Tooltip from '@material-ui/core/Tooltip'
+import IconButton from '@material-ui/core/IconButton'
 
 import VisEditor from "./VisEditor.jsx"
 
@@ -57,6 +61,16 @@ class Recommendations extends Component {
       updateFocus: true
     });
   }
+
+  downloadVis(spec) {
+    const element = document.createElement("a");
+    const file = new Blob([spec], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = "vis-save.json";
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+  }
+
   render() {
 
     const contextCharts = this.state.specs.map((spec, index) => {
@@ -82,11 +96,11 @@ class Recommendations extends Component {
         }
       }
 
-      console.log(JSON.stringify(specCopy));
+      //console.log(JSON.stringify(specCopy));
 
       return (
         <div key={index} className={classes} onClick={() => {this.setFocusIndex(index);}}>
-          <VegaLite spec={specCopy} data={specCopy["data"]} renderer="canvas" actions={false} />
+          <VegaLite spec={specCopy} renderer="canvas" actions={false} />
           <div className="backdrop"></div>
         </div>
       );
@@ -95,6 +109,10 @@ class Recommendations extends Component {
     const expandButton =  this.state.showInfoPane ? 
                   (<Octicon className="expand-icon" name="triangle-right"/>) 
                   : (<Octicon className="expand-icon" name="triangle-left"/>);
+
+    // copy to force an update in vega lite
+    const focusedSpec = JSON.parse(JSON.stringify(this.state.specs[this.state.focusIndex]));
+    const vlScript = (<VegaLite spec={focusedSpec} renderer="canvas" actions={false}/>)
 
     return (
       <div className="Recommendations">
@@ -111,14 +129,22 @@ class Recommendations extends Component {
               onDragFinished={(size) => { this.previousInfoPaneSize = size }}
               minSize={24} maxSize={-400}>
             <div className={classNames({'focus': true})}>
-              <AnimateOnChange
-                    baseClassName="chart"
-                    animationClassName="update"
-                    animate={this.state.updateFocus}
-                    onAnimationEnd={function() {this.setState({"updateFocus": false});}.bind(this)} >
-                <VegaLite spec={this.state.specs[this.state.focusIndex]} 
-                          data={this.state.specs[this.state.focusIndex]["data"]} renderer="svg" />
-              </AnimateOnChange>
+              <div className="save-btn-area">
+              <Tooltip title="Save Visualization">
+                <IconButton aria-label="save" onClick={() => this.downloadVis(JSON.stringify(focusedSpec))}>
+                  <SaveIcon fontSize="large" color="primary"/>
+                </IconButton>
+              </Tooltip>
+              </div>
+              <div className="main-vis-panel">
+                <AnimateOnChange
+                      baseClassName="chart"
+                      animationClassName="update"
+                      animate={this.state.updateFocus}
+                      onAnimationEnd={function() {this.setState({"updateFocus": false});}.bind(this)} >
+                  {vlScript}
+                </AnimateOnChange>
+              </div>
             </div>
             <div className="info">
                 <button data-tip={this.state.showInfoPane ? "Collapse the editor" : "Open the editor"} 
