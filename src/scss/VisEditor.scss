@@ -1,0 +1,63 @@
+.vis-editor {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  margin: 0px 10px 0px 0px;
+
+  .raw {
+    padding: 0px 16px 0 0;
+    opacity: 0.9;
+    font-size: 0.8em;
+  }
+
+  .invis-divider {
+    margin: 16px 0px;
+    height: 0px;
+  }
+
+  h6 {
+    margin-bottom: 0px;
+  }
+
+  .rjsf {
+
+    fieldset {
+      border: none;
+    }
+
+    #root {
+      width: 100%;
+      height: 100%;
+      min-width: 400px;
+      max-width: 600px;
+    }
+
+  }
+
+  .label-grid {
+    text-align: center;
+  }
+
+  .paper {
+    margin: auto;
+  }
+
+  .MuiInputBase-input {
+    font-size: 15px;
+    
+  }
+
+  input {
+    margin-top: 9px;
+  }
+
+  .MuiInputBase-input.Mui-disabled {
+    color: black;
+    border: none;
+  }
+
+  .MuiInput-underline.Mui-disabled:before {
+    border: none;
+  }
+  
+}

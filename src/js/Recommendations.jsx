@@ -4,10 +4,18 @@ import classNames from 'classnames';
 import SplitPane from 'react-split-pane';
 import VegaLite from 'react-vega-lite';
 import AnimateOnChange from 'react-animate-on-change';
-import ReactJson from 'react-json-view'
+
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Typography from '@material-ui/core/Typography';
+import Box from '@material-ui/core/Box';
 
 //import expandButton from '../images/expand.svg';
 import Octicon from 'react-octicon'
+import ReactTooltip from 'react-tooltip'
+
+import VisEditor from "./VisEditor.jsx"
 
 import '../scss/Recommendations.scss';
 
@@ -35,6 +43,13 @@ class Recommendations extends Component {
       focusIndex: 0,
       showInfoPane: true
     };
+  }
+  updateSpec(index, newSpec) {
+    var newSpecs = this.state.specs;
+    newSpecs[index] = newSpec;
+    this.setState({
+      specs: newSpecs
+    })
   }
   setFocusIndex(focusIndex) {
     this.setState({
@@ -106,23 +121,16 @@ class Recommendations extends Component {
               </AnimateOnChange>
             </div>
             <div className="info">
-                <button className="expand-button" onClick={() => { this.setState({ showInfoPane: !this.state.showInfoPane }); }}>
+                <button data-tip={this.state.showInfoPane ? "Collapse the editor" : "Open the editor"} 
+                        className="expand-button" 
+                        onClick={() => { this.setState({ showInfoPane: !this.state.showInfoPane }); }}>
                   {expandButton}
                 </button>
-                <div className="raw-container">
-                  <div className="raw">
-                    <ReactJson src={{"r_script": this.state.tableProgs[this.state.focusIndex],
-                                     "vl_spec": this.state.specs[this.state.focusIndex]}} iconStyle="triangle"
-                      displayObjectSize={false} enableClipboard={false} //displayDataTypes={false}
-                      shouldCollapse={({ src, namespace, type }) => {
-                        // collapse "data" field in the namespace
-                        if (namespace.indexOf("values") == namespace.length - 1 && namespace.indexOf("data") == namespace.length - 2) {
-                            return true
-                        }
-                        return false
-                    }}/>
-                  </div>
-                </div>
+                <ReactTooltip />
+                <VisEditor tableProg={this.state.tableProgs[this.state.focusIndex]} 
+                           spec={this.state.specs[this.state.focusIndex]}
+                           specIndex={this.state.focusIndex}
+                           visSpecUpdateHandle={this.updateSpec.bind(this)} />
               </div>
           </SplitPane>
         </div>

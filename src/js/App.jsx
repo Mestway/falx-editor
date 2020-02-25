@@ -4,7 +4,6 @@ import Navbar from 'react-bootstrap/Navbar';
 import Files from 'react-files'
 
 import Falx from "./Falx.jsx"
-import VisEditor from "./VisEditor.jsx"
 import '../scss/App.scss';
 
 
