@@ -146,20 +146,25 @@ class VisEditor extends Component {
   saveTempFilters(layerID) {
 
     var newSpec = this.state.spec;
-
     var layerSpec = layerID != -1 ? newSpec["layer"][layerID] : newSpec;
-
-    console.log(this.state.tempFilters[layerID]);
 
     layerSpec["transform"] = [];
     for(var i=0; i < this.state.tempFilters[layerID].length; i ++) {
       var f = this.state.tempFilters[layerID][i]
       if (f !== "") {
+        try {
+            eval(f); 
+        } catch (e) {
+            if (e instanceof SyntaxError) {
+              continue
+            } 
+        }
         layerSpec["transform"].push({"filter": f});
       }
+
     }
     this.setState({
-      spec: newSpec
+      spec: newSpec,
     })
     this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
   }
