@@ -246,7 +246,7 @@ class VisEditor extends Component {
         </Grid>
         <Grid className="label-grid" item xs={12} sm={3}>
           <TextField id="title" name="title" onChange={(event) => this.handleEncPropChange.bind(this)(layerID, channel, "title", event.target.value)} 
-             label="Title" value={("title" in encoding) ? encoding["title"] : encoding["field"]} fullWidth />
+             label={"title"} value={("title" in encoding) ? encoding["title"] : encoding["field"]} fullWidth />
         </Grid>
         <Grid item xs={12} sm={4}>
           <InputLabel shrink htmlFor="enc-type-selector">

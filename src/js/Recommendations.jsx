@@ -16,6 +16,7 @@ import Octicon from 'react-octicon'
 import ReactTooltip from 'react-tooltip'
 
 import SaveIcon from '@material-ui/icons/Save';
+import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import Tooltip from '@material-ui/core/Tooltip'
 import IconButton from '@material-ui/core/IconButton'
 
@@ -69,6 +70,43 @@ class Recommendations extends Component {
     element.download = "vis-save.json";
     document.body.appendChild(element); // Required for this to work in FireFox
     element.click();
+  }
+  openInVegaEditor(specStr) {
+    const editorURL = "https://vega.github.io/editor/";
+    const editor = window.open(editorURL);
+
+    const data = {
+      config: {},
+      mode: "vega-lite",
+      renderer: "canvas",
+      spec: specStr
+    };
+
+    const wait = 10000;
+    const step = 250;
+    // eslint-disable-next-line no-bitwise
+    let count = ~~(wait / step);
+
+    function listen(evt) {
+      if (evt.source === editor) {
+        count = 0;
+        window.removeEventListener('message', listen, false);
+      }
+    }
+    window.addEventListener('message', listen, false);
+
+    // send message
+    // periodically resend until ack received or timeout
+    function send() {
+      if (count <= 0) {
+        return;
+      }
+      console.log(data);
+      editor.postMessage(data, '*');
+      setTimeout(send, step);
+      count -= 1;
+    }
+    setTimeout(send, step);    
   }
 
   render() {
@@ -133,6 +171,11 @@ class Recommendations extends Component {
               <Tooltip title="Save Visualization">
                 <IconButton aria-label="save" onClick={() => this.downloadVis(JSON.stringify(focusedSpec))}>
                   <SaveIcon fontSize="large" color="primary"/>
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Open in Vega Editor">
+                <IconButton aria-label="vega-editor" onClick={() => this.openInVegaEditor(JSON.stringify(focusedSpec))}>
+                  <OpenInNewIcon fontSize="large" color="primary"/>
                 </IconButton>
               </Tooltip>
               </div>
