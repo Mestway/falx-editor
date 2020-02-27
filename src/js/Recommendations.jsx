@@ -15,7 +15,7 @@ import Box from '@material-ui/core/Box';
 import Octicon from 'react-octicon'
 import ReactTooltip from 'react-tooltip'
 
-import SaveIcon from '@material-ui/icons/Save';
+import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import Tooltip from '@material-ui/core/Tooltip'
 import IconButton from '@material-ui/core/IconButton'
@@ -168,14 +168,14 @@ class Recommendations extends Component {
               minSize={24} maxSize={-400}>
             <div className={classNames({'focus': true})}>
               <div className="save-btn-area">
-              <Tooltip title="Save Visualization">
-                <IconButton aria-label="save" onClick={() => this.downloadVis(JSON.stringify(focusedSpec))}>
-                  <SaveIcon fontSize="large" color="primary"/>
+              <Tooltip title="Download Visualization Script">
+                <IconButton aria-label="save" onClick={() => this.downloadVis(JSON.stringify(focusedSpec, null, '\t'))}>
+                  <SaveAltIcon color="primary"/>
                 </IconButton>
               </Tooltip>
               <Tooltip title="Open in Vega Editor">
-                <IconButton aria-label="vega-editor" onClick={() => this.openInVegaEditor(JSON.stringify(focusedSpec))}>
-                  <OpenInNewIcon fontSize="large" color="primary"/>
+                <IconButton aria-label="vega-editor" onClick={() => this.openInVegaEditor(JSON.stringify(focusedSpec, null, '\t'))}>
+                  <OpenInNewIcon color="primary"/>
                 </IconButton>
               </Tooltip>
               </div>

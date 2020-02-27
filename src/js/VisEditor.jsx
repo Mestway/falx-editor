@@ -1,7 +1,7 @@
 import React, { Component, useState, useEffect } from "react";
 import classNames from 'classnames';
 
-import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
+import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import { orange, pink, green } from "@material-ui/core/colors";
 
 import ReactJson from 'react-json-view'
@@ -38,33 +38,33 @@ const theme = createMuiTheme({
       contrastText: "white" //button text white instead of black
     }
   },
-  overrides: {
-    MuiButton: {
-      "containedPrimary" : {
-        "backgroundColor": "#007bff"
-      }
-    },
-    MuiTabs: {
-      indicator: {
-        backgroundColor: "#007bff"
-      }
-    },
-    MuiAppBar: {
-      "colorPrimary": {
-        "color": "#007bff"
-      }
-    },
-    MuiTab: {
-      "textColorPrimary": {
-        "&$selected": {
-          "color": "#007bff",
-          "&:hover": {
-            //"color": "#388e3c"
-          }
-        }
-      }
-    }
-  }
+  // overrides: {
+  //   MuiButton: {
+  //     "containedPrimary" : {
+  //       "backgroundColor": "#007bff"
+  //     }
+  //   },
+  //   MuiTabs: {
+  //     indicator: {
+  //       backgroundColor: "#007bff"
+  //     }
+  //   },
+  //   MuiAppBar: {
+  //     "colorPrimary": {
+  //       "color": "#007bff"
+  //     }
+  //   },
+  //   MuiTab: {
+  //     "textColorPrimary": {
+  //       "&$selected": {
+  //         "color": "#007bff",
+  //         "&:hover": {
+  //           //"color": "#388e3c"
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 });
 
 function TabPanel(props) {
@@ -204,10 +204,11 @@ class VisEditor extends Component {
   }
 
   handleVisPropertyChange(layerID, key, value) {
+    // change the layer's (defined by layerID) property (specified by key) into value (value)'
     var newSpec = this.state.spec;
 
     if (layerID != -1) {
-        if (newSpec["mark"].constructor == Object) {
+        if (newSpec["layer"][layerID]["mark"].constructor == Object) {
           newSpec["layer"][layerID]["mark"]["type"] = value;
         } else {
           newSpec["layer"][layerID]["mark"] = value;
@@ -226,6 +227,7 @@ class VisEditor extends Component {
   }
 
   handleEncPropChange(layerID, channel, prop, value) {
+    // change the layer's (defined by layerID) channel's property (specified by key) into value (value)'
     var newSpec = this.state.spec;
     if (layerID != -1)
       newSpec["layer"][layerID]["encoding"][channel][prop] = value;
@@ -238,7 +240,7 @@ class VisEditor extends Component {
   }
 
   genEncodingEdit(layerID, channel, encoding) {
-    const sortValue = ("sort" in encoding && encoding["sort"] != null) ? encoding["sort"] : "none";
+    const sortValue = ("sort" in encoding && encoding["sort"] != null) ? encoding["sort"] : "default";
     return (
       <Grid key={layerID + channel} container alignItems="center" spacing={2}>
         <Grid item xs={12} sm={2}>
@@ -264,7 +266,7 @@ class VisEditor extends Component {
           </InputLabel>
           <Select fullWidth value={sortValue} onChange={(event) => this.handleEncPropChange.bind(this)(layerID, channel, "sort", event.target.value)} 
               inputProps={{name: 'sort', id: 'sort-selector'}}>
-            {[["none", "none", ""], ["ascending", <ArrowUpwardIcon />, "(asc)"], ["descending", <ArrowDownwardIcon />, "(desc)"]].map(
+            {[["default", "default", ""], ["ascending", <ArrowUpwardIcon />, "(asc)"], ["descending", <ArrowDownwardIcon />, "(desc)"]].map(
                 x => <MenuItem key={x[0]} value={x[0]} selected={x[0] == sortValue}>{x[1]}{x[2]}</MenuItem>)}
           </Select>
         </Grid>
@@ -320,24 +322,13 @@ class VisEditor extends Component {
             </Grid>
           </Grid>
         </FormControl>
-        {/*<Grid container alignItems="center" spacing={3}>
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={null}
-            >
-              {"Save Edits"}
-            </Button>
-          </Grid>
-        </Grid>*/}
       </React.Fragment>
     );
   }
 
   render() {
     return (
-      <MuiThemeProvider theme={theme}>
+      <ThemeProvider theme={theme}>
         <div className={classNames("vis-editor")}>
           <AppBar position="static">
             <Tabs value={this.state.panelID} 
@@ -374,7 +365,7 @@ class VisEditor extends Component {
             </div>
           </TabPanel>
         </div>
-      </MuiThemeProvider>)
+      </ThemeProvider>)
   }
 }
 

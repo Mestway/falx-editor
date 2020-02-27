@@ -2,16 +2,21 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
 import Button from 'react-bootstrap/Button';
-import ButtonGroup from 'react-bootstrap/ButtonGroup';
-import Navbar from 'react-bootstrap/Navbar';
-import Nav from 'react-bootstrap/Nav';
+//import Button from '@material-ui/core/Button';
+import Select from '@material-ui/core/Select';
+
 import Dropdown from 'react-bootstrap/Dropdown';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import AddIcon from '@material-ui/icons/Add';
 
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import { ContextMenu, MenuItem as ContextMenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Files from 'react-files';
 import Octicon from 'react-octicon'
 //import ReactTable from "react-table";
+
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+
 
 
 import ReactTooltip from 'react-tooltip'
@@ -90,6 +95,12 @@ class Falx extends Component {
           "x_right": "", "y_top_right": "", "y_bot_right": "",
           "color": "", "column": ""
         }
+      }
+    }
+    if (tagName === "copy") {
+      // copy the last element
+      if (newTags.length > 0) {
+        newTag = JSON.parse(JSON.stringify(newTags[newTags.length - 1]));
       }
     }
     newTags.push(newTag);
@@ -172,7 +183,7 @@ class Falx extends Component {
       const elementEditor = Object.keys(tag["props"])
         .map(function(key) {
           return (
-            <MenuItem key={"element-editor" + i + key} preventClose={true} data={{ item: 'item 1' }}>
+            <ContextMenuItem key={"element-editor" + i + key} preventClose={true} data={{ item: 'item 1' }}>
               <label htmlFor={"element-editor-input-" + i + key}>{key == "column" ? "column" : key}</label>
               <input type="text" className="element-prop-editor" 
                      name={"input-box" + Math.random()} // use this to prevent Chrome to auto complete
@@ -181,7 +192,7 @@ class Falx extends Component {
                      value={this.state.tempTags[i]["props"][key]}
                      onChange={(e) => this.updateTempTagProperty(i, key, e.target.value)}
                      onKeyUp={(e) => { if (e.key === "Enter") { this.updateTagProperty();}}}/>
-            </MenuItem>
+            </ContextMenuItem>
         );
       }.bind(this));
 
@@ -194,14 +205,14 @@ class Falx extends Component {
                        preventHideOnResize={true} preventHideOnScroll={true}
                        onShow={()=>{this.revertTempTagProperty();}}>
             {elementEditor}
-            <MenuItem>
+            <ContextMenuItem>
               <Button className="left-btn" variant="link" onClick={() => {this.updateTagProperty(); }}>
                 Save Edits
               </Button>
               <Button className="right-btn" variant="link" onClick={() => { this.removeTag(i); }}>
                 <Octicon name="trashcan"/>
               </Button>
-            </MenuItem>
+            </ContextMenuItem>
           </ContextMenu>
         </li>
       )
@@ -462,28 +473,25 @@ class Falx extends Component {
                   <ul className="input-tag__tags">
                     {elementTags}
                     <li className="tag-boxes" id="add-btn-li" key="plus">
-                      <ContextMenuTrigger id="some_unique_identifier" className="okok" holdToDisplay={0}>
+                      <ContextMenuTrigger id="add-visual-element" className="okok" holdToDisplay={0}>
                         <Octicon name="plus" data-tip="Add new element" className="add-btn"/>
                       </ContextMenuTrigger>
-                      <ContextMenu id="some_unique_identifier" preventHideOnContextMenu={true} 
+                      <ContextMenu id="add-visual-element" preventHideOnContextMenu={true} 
                                    preventHideOnResize={true} preventHideOnScroll={true}>
-                        <MenuItem>
-                          <Button className="add-btn-menu-btn" variant="outline-primary" onClick={() => {this.addTagElement("bar") ;}}>
-                            bar
+                        <ContextMenuItem>
+                          <Button className="add-btn-menu-btn" 
+                                variant="outline-info" 
+                                onClick={() => {this.addTagElement("copy")}}>
+                            copy last
                           </Button>
-                          <Button className="add-btn-menu-btn" variant="outline-primary" onClick={() => {this.addTagElement("point") ;}}>
-                            point
-                          </Button>
-                          <Button className="add-btn-menu-btn" variant="outline-primary" onClick={() => {this.addTagElement("rect") ;}}>
-                            rect
-                          </Button>
-                          <Button className="add-btn-menu-btn" variant="outline-primary" onClick={() => {this.addTagElement("line") ;}}>
-                            line
-                          </Button>
-                          <Button className="add-btn-menu-btn" variant="outline-primary" onClick={() => {this.addTagElement("area") ;}}>
-                            area
-                          </Button>
-                        </MenuItem>
+                          {["bar", "point", "rect", "line", "area"].map(
+                            (item) => (
+                              <Button key={item} className="add-btn-menu-btn" 
+                                variant="outline-primary" 
+                                onClick={() => {this.addTagElement(item);}}>
+                            {item}
+                          </Button>))}
+                        </ContextMenuItem>
                       </ContextMenu>
                       <ReactTooltip />
                     </li>
