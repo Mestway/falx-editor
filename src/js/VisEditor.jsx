@@ -37,19 +37,16 @@ import '../scss/VisEditor.scss';
 
 //extend this class to add your custom operator
 class CustomAutoComplete extends GridDataAutoCompleteHandler {
-
     // override this method to add new your operator
     needOperators(parsedCategory) {
         var result = super.needOperators(parsedCategory);
-        //console.log(result);
-        return [">", "<", ">=", "<=", "==", "!="];
+        return [ "==", "!=", ">", "<", ">=", "<="];
     }
 }
 
 class CustomReactFilterBox extends ReactFilterBox {
   constructor(props) {
     super(props);
-
     this.state = {
         isFocus: false,
         isError: false,
@@ -69,6 +66,11 @@ class CustomReactFilterBox extends ReactFilterBox {
       this.parser.setAutoCompleteHandler(autoCompleteHandler);
     }
   }
+  needAutoCompleteValues(codeMirror, text) {
+    // don't suggest brackets
+    const suggestions = this.parser.getSuggestions(text);
+    return suggestions.filter(entry => (entry["value"] != "(" && entry["value"] != ")"));
+  }
 }
 
 const theme = createMuiTheme({
@@ -77,34 +79,7 @@ const theme = createMuiTheme({
       main: "#007bff",
       contrastText: "white" //button text white instead of black
     }
-  },
-  // overrides: {
-  //   MuiButton: {
-  //     "containedPrimary" : {
-  //       "backgroundColor": "#007bff"
-  //     }
-  //   },
-  //   MuiTabs: {
-  //     indicator: {
-  //       backgroundColor: "#007bff"
-  //     }
-  //   },
-  //   MuiAppBar: {
-  //     "colorPrimary": {
-  //       "color": "#007bff"
-  //     }
-  //   },
-  //   MuiTab: {
-  //     "textColorPrimary": {
-  //       "&$selected": {
-  //         "color": "#007bff",
-  //         "&:hover": {
-  //           //"color": "#388e3c"
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
+  }
 });
 
 function TabPanel(props) {
@@ -124,28 +99,28 @@ function TabPanel(props) {
   );
 }
 
+function calcTempFilter(spec) {
+  const layerIDList = ("layer" in spec) ? [...spec["layer"].keys()] : [-1]
+  var tempFilters = {}
+  for (var i = 0; i < layerIDList.length; i ++) {
+    const layerID = layerIDList[i];
+    var layerSpec = Object.assign({}, spec);
+    if (layerID != -1) {
+      layerSpec = Object.assign({}, spec["layer"][layerID]);
+    }
+    tempFilters[layerID] = "";
+  }
+  return tempFilters;
+}
+
 class VisEditor extends Component {
 
   constructor(props) {
     super(props);
-
-    const layerIDList = ("layer" in props.spec) ? [...props.spec["layer"].keys()] : [-1]
-
-    var tempFilters = {}
-
-    for (var i = 0; i < layerIDList.length; i ++) {
-      const layerID = layerIDList[i];
-      var layerSpec = Object.assign({}, props.spec);
-      if (layerID != -1) {
-        layerSpec = Object.assign({}, props.spec["layer"][layerID]);
-      }
-      tempFilters[layerID] = "";
-    }
-
     this.state = {
       tableProg: props.tableProg,
       spec: props.spec,
-      tempFilters: tempFilters,
+      tempFilters: calcTempFilter(props.spec),
       panelID: 0
     };
   }
@@ -155,7 +130,8 @@ class VisEditor extends Component {
     if (props.spec !== state.spec || props.tableProg !== state.tableProg) {
       return { 
         spec: props.spec,
-        tableProg: props.tableProg
+        tableProg: props.tableProg,
+        tempFilters: calcTempFilter(props.spec)
       };
     }
     return null;
@@ -229,6 +205,7 @@ class VisEditor extends Component {
       spec: newSpec,
       tempFilters: newTempFilters
     })
+    this.nameInput.focus();
     this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
   }
 
@@ -276,14 +253,16 @@ class VisEditor extends Component {
           <TextField label="axis" value={channel} fullWidth disabled />
         </Grid>
         <Grid className="label-grid" item xs={12} sm={3}>
-          <TextField id="title" name="title" onChange={(event) => this.handleEncPropChange.bind(this)(layerID, channel, "title", event.target.value)} 
+          <TextField id="title" name="title" 
+              onChange={(event) => this.handleEncPropChange.bind(this)(layerID, channel, "title", event.target.value)} 
              label={"title"} value={("title" in encoding) ? encoding["title"] : encoding["field"]} fullWidth />
         </Grid>
         <Grid item xs={12} sm={4}>
           <InputLabel shrink htmlFor="enc-type-selector">
             data type
           </InputLabel>
-          <Select fullWidth value={encoding["type"]} onChange={(event) => this.handleEncPropChange.bind(this)(layerID, channel, "type", event.target.value)}
+          <Select fullWidth value={encoding["type"]} 
+              onChange={(event) => this.handleEncPropChange.bind(this)(layerID, channel, "type", event.target.value)}
               inputProps={{name: 'encType', id: 'enc-type-selector'}}>
             {["quantitative", "nominal", "ordinal", "temporal"].map(
                 x => <MenuItem key={x} value={x} selected={x == encoding["type"]}>{x}</MenuItem>)}
@@ -293,9 +272,11 @@ class VisEditor extends Component {
           <InputLabel shrink htmlFor="sort-selector">
             sort
           </InputLabel>
-          <Select fullWidth value={sortValue} onChange={(event) => this.handleEncPropChange.bind(this)(layerID, channel, "sort", event.target.value)} 
+          <Select fullWidth value={sortValue} 
+              onChange={(event) => this.handleEncPropChange.bind(this)(layerID, channel, "sort", event.target.value)} 
               inputProps={{name: 'sort', id: 'sort-selector'}}>
-            {[["default", "default", ""], ["ascending", <ArrowUpwardIcon />, "(asc)"], ["descending", <ArrowDownwardIcon />, "(desc)"]].map(
+            {[["default", "default", ""], ["ascending", <ArrowUpwardIcon />, "(asc)"], 
+              ["descending", <ArrowDownwardIcon />, "(desc)"]].map(
                 x => <MenuItem key={x[0]} value={x[0]} selected={x[0] == sortValue}>{x[1]}{x[2]}</MenuItem>)}
           </Select>
         </Grid>
@@ -326,10 +307,11 @@ class VisEditor extends Component {
 
       const prefix = "conditionType" in expr ? (expr["conditionType"] == "AND" ? "&&" : "||") : "";
       var body = "";
+      const encoding = layerSpec["encoding"][expr["category"]];
       if ("category" in expr) {
-        const lhs = "datum['" + layerSpec["encoding"][expr["category"]]["field"] + "']";
+        const lhs = "datum['" + encoding["field"] + "']";
         const op = expr["operator"];
-        const rhs = (layerSpec["encoding"][expr["category"]]["type"] == "quantitative") ? parseFloat(expr["value"]) : wrapStr(expr["value"]);
+        const rhs = (encoding["type"] == "quantitative") ? parseFloat(expr["value"]) : wrapStr(expr["value"]);
         body = lhs + " " + op + " " + rhs;
         return prefix + " " + body;
       }
@@ -407,9 +389,6 @@ class VisEditor extends Component {
           Filter
         </Typography>
         <Grid container alignItems="center" spacing={3}>
-          {/*<Grid item xs={12}>
-            <TextField label="filter" value={this.state.tempFilters[layerID]} onChange={(event) => this.handleTempFilterChange.bind(this)(layerID, event.target.value)} fullWidth />
-          </Grid>*/}
           <Grid item xs={12}>
             <CustomReactFilterBox 
               query={this.displayFilter(this.state.tempFilters[layerID], fieldNameToChannel)}
@@ -418,10 +397,12 @@ class VisEditor extends Component {
               autoCompleteHandler = {customAutoCompleteHandler}/>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Button fullWidth variant="outlined" onClick={(event) => this.saveTempFilters.bind(this)(layerID)}> {"Save Filter"} </Button>
+            <Button fullWidth variant="outlined" 
+                    onClick={(event) => this.saveTempFilters.bind(this)(layerID)}> {"Save Filter"} </Button>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Button fullWidth variant="outlined" onClick={(event) => this.clearFilters.bind(this)(layerID)}> {"Clear Filters"} </Button>
+            <Button fullWidth variant="outlined" 
+                    onClick={(event) => this.clearFilters.bind(this)(layerID)}> {"Clear Filter"} </Button>
           </Grid>
         </Grid>
       </React.Fragment>
