@@ -166,7 +166,7 @@ class Recommendations extends Component {
               allowResize={this.state.showInfoPane}
               onDragFinished={(size) => { this.previousInfoPaneSize = size }}
               minSize={24} maxSize={-400}>
-            <div className={classNames({'focus': true})}>
+            <div className={classNames({'vis-focus': true})}>
               <div className="save-btn-area">
               <Tooltip title="Download Visualization Script">
                 <IconButton aria-label="save" onClick={() => this.downloadVis(JSON.stringify(focusedSpec, null, '\t'))}>

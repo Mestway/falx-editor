@@ -29,7 +29,47 @@ import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+import ReactFilterBox, {AutoCompleteOption, SimpleResultProcessing, GridDataAutoCompleteHandler} from "react-filter-box";
+import "react-filter-box/lib/react-filter-box.css"
+
 import '../scss/VisEditor.scss';
+
+//extend this class to add your custom operator
+class CustomAutoComplete extends GridDataAutoCompleteHandler {
+
+    // override this method to add new your operator
+    needOperators(parsedCategory) {
+        var result = super.needOperators(parsedCategory);
+        //console.log(result);
+        return [">", "<", ">=", "<=", "==", "!="];
+    }
+}
+
+class CustomReactFilterBox extends ReactFilterBox {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+        isFocus: false,
+        isError: false,
+        options: this.props.options
+    }
+    var autoCompleteHandler = this.props.autoCompleteHandler ||
+        new GridDataAutoCompleteHandler(this.props.data, this.state.options)
+
+    this.parser.setAutoCompleteHandler(autoCompleteHandler);    
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if(prevProps.options!==this.props.options){
+      //Perform some operation here
+      this.setState({options: this.props.options});
+      var autoCompleteHandler = this.props.autoCompleteHandler ||
+            new GridDataAutoCompleteHandler(this.props.data, this.props.options)
+      this.parser.setAutoCompleteHandler(autoCompleteHandler);
+    }
+  }
+}
 
 const theme = createMuiTheme({
   palette: {
@@ -91,7 +131,6 @@ class VisEditor extends Component {
 
     const layerIDList = ("layer" in props.spec) ? [...props.spec["layer"].keys()] : [-1]
 
-
     var tempFilters = {}
 
     for (var i = 0; i < layerIDList.length; i ++) {
@@ -100,10 +139,7 @@ class VisEditor extends Component {
       if (layerID != -1) {
         layerSpec = Object.assign({}, props.spec["layer"][layerID]);
       }
-      
-      var filters = []; //"transform" in layerSpec ? layerSpec["transform"].map(p => p["filter"]) : [];
-      filters.push("");
-      tempFilters[layerID] = filters;
+      tempFilters[layerID] = "";
     }
 
     this.state = {
@@ -131,10 +167,10 @@ class VisEditor extends Component {
     });
   };
 
-  handleTempFilterChange(layerID, filterIndex, newFilter) {
+  handleTempFilterChange(layerID, newFilter) {
     var tempFilters = this.state.tempFilters;
     if (newFilter != '') {
-      tempFilters[layerID][filterIndex] = newFilter;
+      tempFilters[layerID] = newFilter;
       this.setState({
           tempFilters: tempFilters
       });
@@ -156,25 +192,21 @@ class VisEditor extends Component {
   }
 
   saveTempFilters(layerID) {
-
     var newSpec = this.state.spec;
     var layerSpec = layerID != -1 ? newSpec["layer"][layerID] : newSpec;
 
     var filters = this.extractLayerFilters(layerSpec);
 
-    for(var i=0; i < this.state.tempFilters[layerID].length; i ++) {
-      var f = this.state.tempFilters[layerID][i]
-      if (f !== "") {
-        try {
-            eval(f); 
-        } catch (e) {
-            if (e instanceof SyntaxError) {
-              continue
-            } 
-        }
-        //escape
+    var f = this.state.tempFilters[layerID]
+    if (f !== "") {
+      try {
+        eval(f); 
         filters.push({"filter": f.replace("\"", "\"")});
-      }
+      } catch (e) {
+        if (! (e instanceof SyntaxError)) {
+          filters.push({"filter": f.replace("\"", "\"")});
+        } 
+      }      
     }
 
     layerSpec["transform"] = filters;
@@ -191,7 +223,7 @@ class VisEditor extends Component {
     var newSpec = this.state.spec;
     var layerSpec = layerID != -1 ? newSpec["layer"][layerID] : newSpec;
     var newTempFilters = this.state.tempFilters;
-    newTempFilters[layerID] = [""];
+    newTempFilters[layerID] = "";
 
     var filters = this.extractLayerFilters(layerSpec);
     layerSpec["transform"] = filters;
@@ -273,12 +305,78 @@ class VisEditor extends Component {
       </Grid>)
   }
 
+  onParseOk(expressions, layerID, layerSpec) {
+    var data = [];
+    //var newData = new SimpleResultProcessing(this.options).process(data,expressions);
+    //your new data here, which is filtered out of the box by SimpleResultProcessing
+    var exprStr = "";
+    for (var i = 0; i < expressions.length; i ++) {
+      const space = (i == 0) ? "" : " ";
+      exprStr += space + recursiveTranslate(expressions[i]);
+    }
+    this.handleTempFilterChange.bind(this)(layerID, exprStr);
+
+    function recursiveTranslate(expr) {
+      const prefix = "conditionType" in expr ? (expr["conditionType"] == "AND" ? "&&" : "||") : "";
+      var body = "";
+      if ("category" in expr) {
+        const lhs = "datum['" + layerSpec["encoding"][expr["category"]]["field"] + "']";
+        const op = expr["operator"];
+        const rhs = (layerSpec["encoding"][expr["category"]]["type"] == "quantitative") ? parseFloat(expr["value"]) : ("'" + expr["value"] + "'");
+        body = lhs + " " + op + " " + rhs;
+        return prefix + " " + body;
+      }
+    }
+  }
+
+  displayFilter(filterStr, fieldNameToChannel) {
+    let re = /datum\['([^\]]+)']/g
+    function replacer(match, p1, offset, string) {
+      // p1 is nondigits, p2 digits, and p3 non-alphanumerics
+      return fieldNameToChannel[p1];
+    }
+    console.log("????")
+    console.log(filterStr);
+    var outStr = filterStr.replace(re, replacer);
+    console.log(outStr);
+    var outStr = outStr.replace("&&", "AND").replace("||", "OR");
+    
+    console.log(outStr);
+    return outStr
+  }
+
   GUIEditor(layerID) {
 
     var layerSpec = this.state.spec;
     if (layerID != -1) {
       layerSpec = this.state.spec["layer"][layerID];
     }
+
+    function encTypeToFilterType(ty) {
+      if (ty == "nominal")
+        return "text";
+      else
+        return "text";
+    }
+
+    var fieldNameToChannel = {};
+    const channels = Object.keys(layerSpec["encoding"]);
+    for (var i = 0; i < channels.length; i++) {
+      const ch = channels[i];
+      const f = layerSpec["encoding"][ch]["field"];
+      if (! (f in fieldNameToChannel)) {
+        fieldNameToChannel[f] = ch;
+      }
+    }
+
+    var filterBoxOptions = Object.keys(layerSpec["encoding"]).map(ch => {
+      const encoding = layerSpec["encoding"][ch];
+      return {
+        "columnField": encoding["field"], 
+        "columnText": ch, //(("title" in encoding) ? encoding["title"] : encoding["field"]),
+        "type": encTypeToFilterType(encoding["type"])}})
+
+    var customAutoCompleteHandler = new CustomAutoComplete([], filterBoxOptions);
     
     const markType = (layerSpec["mark"].constructor == Object) ? layerSpec["mark"]["type"] : layerSpec["mark"];
     return (
@@ -304,24 +402,27 @@ class VisEditor extends Component {
         {Object.keys(layerSpec["encoding"]).map(
            (key, index) => this.genEncodingEdit(layerID, key, layerSpec["encoding"][key]))}
         <Divider className="invis-divider" />
-        <FormControl>
-          <Typography variant="h6" gutterBottom>
-            Filters
-          </Typography>
-          <Grid container alignItems="center" spacing={3}>
-            {this.state.tempFilters[layerID].map((f,index) => 
-              (<Grid key={index} item xs={12}>
-                 <TextField label="filter" value={f} onChange={(event) => this.handleTempFilterChange.bind(this)(layerID, index, event.target.value)} fullWidth />
-               </Grid>
-              ))}
-            <Grid item xs={12} sm={6}>
-              <Button fullWidth variant="outlined" onClick={(event) => this.saveTempFilters.bind(this)(layerID)}> {"Save Filter"} </Button>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button fullWidth variant="outlined" onClick={(event) => this.clearFilters.bind(this)(layerID)}> {"Clear Filters"} </Button>
-            </Grid>
+        <Typography variant="h6" gutterBottom>
+          Filter
+        </Typography>
+        <Grid container alignItems="center" spacing={3}>
+          {/*<Grid item xs={12}>
+            <TextField label="filter" value={this.state.tempFilters[layerID]} onChange={(event) => this.handleTempFilterChange.bind(this)(layerID, event.target.value)} fullWidth />
+          </Grid>*/}
+          <Grid item xs={12}>
+            <CustomReactFilterBox 
+              query={this.displayFilter(this.state.tempFilters[layerID], fieldNameToChannel)}
+              options={filterBoxOptions}
+              onParseOk={(expr) => this.onParseOk.bind(this)(expr, layerID, layerSpec)}
+              autoCompleteHandler = {customAutoCompleteHandler}/>
           </Grid>
-        </FormControl>
+          <Grid item xs={12} sm={6}>
+            <Button fullWidth variant="outlined" onClick={(event) => this.saveTempFilters.bind(this)(layerID)}> {"Save Filter"} </Button>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Button fullWidth variant="outlined" onClick={(event) => this.clearFilters.bind(this)(layerID)}> {"Clear Filters"} </Button>
+          </Grid>
+        </Grid>
       </React.Fragment>
     );
   }

@@ -52,6 +52,7 @@
     "react-contextmenu": "^2.13.0",
     "react-dom": "^16.12.0",
     "react-files": "^2.4.8",
+    "react-filter-box": "^3.3.0",
     "react-json-view": "^1.19.1",
     "react-jsonschema-form": "^1.8.1",
     "react-octicon": "^3.0.1",
