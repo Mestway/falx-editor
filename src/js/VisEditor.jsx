@@ -210,9 +210,6 @@ class VisEditor extends Component {
     }
 
     layerSpec["transform"] = filters;
-
-    console.log(layerSpec);
-
     this.setState({
       spec: newSpec,
     })
@@ -317,12 +314,22 @@ class VisEditor extends Component {
     this.handleTempFilterChange.bind(this)(layerID, exprStr);
 
     function recursiveTranslate(expr) {
+      function wrapStr(str) {
+        if (str.startsWith("'") && str.endsWith("'")){
+          return str
+        }
+        if (str.startsWith("\"") && str.endsWith("\"")) {
+          return ("'" + str.substring(1, str.length - 1) + "'")
+        }
+        return ("'" + str + "'")
+      }
+
       const prefix = "conditionType" in expr ? (expr["conditionType"] == "AND" ? "&&" : "||") : "";
       var body = "";
       if ("category" in expr) {
         const lhs = "datum['" + layerSpec["encoding"][expr["category"]]["field"] + "']";
         const op = expr["operator"];
-        const rhs = (layerSpec["encoding"][expr["category"]]["type"] == "quantitative") ? parseFloat(expr["value"]) : ("'" + expr["value"] + "'");
+        const rhs = (layerSpec["encoding"][expr["category"]]["type"] == "quantitative") ? parseFloat(expr["value"]) : wrapStr(expr["value"]);
         body = lhs + " " + op + " " + rhs;
         return prefix + " " + body;
       }
@@ -335,13 +342,7 @@ class VisEditor extends Component {
       // p1 is nondigits, p2 digits, and p3 non-alphanumerics
       return fieldNameToChannel[p1];
     }
-    console.log("????")
-    console.log(filterStr);
-    var outStr = filterStr.replace(re, replacer);
-    console.log(outStr);
-    var outStr = outStr.replace("&&", "AND").replace("||", "OR");
-    
-    console.log(outStr);
+    var outStr = filterStr.replace(re, replacer).replace("&&", "AND").replace("||", "OR");    
     return outStr
   }
 
