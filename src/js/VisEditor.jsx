@@ -38,10 +38,45 @@ import '../scss/VisEditor.scss';
 //extend this class to add your custom operator
 class CustomAutoComplete extends GridDataAutoCompleteHandler {
     // override this method to add new your operator
+
+    constructor(data, options, encoding) {
+        super(data, options);
+        this.encoding = encoding;
+    }
+
     needOperators(parsedCategory) {
         var result = super.needOperators(parsedCategory);
         return [ "==", "!=", ">", "<", ">=", "<="];
     }
+
+    needValues(_parsedCategory, parsedOperator) {
+
+
+
+      const parsedCategory = "field" in this.encoding[_parsedCategory] ? this.encoding[_parsedCategory]["field"] : _parsedCategory;
+
+      console.log("---->")
+      console.log(parsedCategory)
+      console.log(parsedOperator)
+      console.log(this.data)
+      console.log(this.encoding);
+
+      // parsedCategory = this.tryToGetFieldCategory(parsedCategory);
+      var found = _.find(this.options, f => f.columnField == parsedCategory || f.columnText == parsedCategory);
+
+      if (found != null && found.type == "selection" && this.data != null) {
+          if (!this.cache[parsedCategory]) {
+              this.cache[parsedCategory] = _.chain(this.data).map(f => f[parsedCategory]).uniq().value();
+          }
+          return this.cache[parsedCategory];
+      }
+
+      if (found != null && found.customValuesFunc) {
+          return found.customValuesFunc(parsedCategory, parsedOperator);
+      }
+
+      return [];
+  }
 }
 
 class CustomReactFilterBox extends ReactFilterBox {
@@ -297,12 +332,12 @@ class VisEditor extends Component {
     function recursiveTranslate(expr) {
       function wrapStr(str) {
         if (str.startsWith("'") && str.endsWith("'")){
-          return str
+          return ("\"" + str.substring(1, str.length - 1) + "\"")
         }
         if (str.startsWith("\"") && str.endsWith("\"")) {
-          return ("'" + str.substring(1, str.length - 1) + "'")
+          return ("\"" + str.substring(1, str.length - 1) + "\"")
         }
-        return ("'" + str + "'")
+        return ("\"" + str + "\"")
       }
 
       const prefix = "conditionType" in expr ? (expr["conditionType"] == "AND" ? "&&" : "||") : "";
@@ -331,13 +366,15 @@ class VisEditor extends Component {
   GUIEditor(layerID) {
 
     var layerSpec = this.state.spec;
+    var layerData = this.state.spec["data"]["values"];
     if (layerID != -1) {
       layerSpec = this.state.spec["layer"][layerID];
+      layerData = this.state.spec["data"]["values"].filter(r => (r["layer_id"] == layerID));
     }
 
     function encTypeToFilterType(ty) {
       if (ty == "nominal")
-        return "text";
+        return "selection";
       else
         return "text";
     }
@@ -359,7 +396,7 @@ class VisEditor extends Component {
         "columnText": ch, //(("title" in encoding) ? encoding["title"] : encoding["field"]),
         "type": encTypeToFilterType(encoding["type"])}})
 
-    var customAutoCompleteHandler = new CustomAutoComplete([], filterBoxOptions);
+    var customAutoCompleteHandler = new CustomAutoComplete(layerData, filterBoxOptions, layerSpec["encoding"]);
     
     const markType = (layerSpec["mark"].constructor == Object) ? layerSpec["mark"]["type"] : layerSpec["mark"];
     return (
@@ -391,6 +428,7 @@ class VisEditor extends Component {
         <Grid container alignItems="center" spacing={3}>
           <Grid item xs={12}>
             <CustomReactFilterBox 
+              data = {layerData}
               query={this.displayFilter(this.state.tempFilters[layerID], fieldNameToChannel)}
               options={filterBoxOptions}
               onParseOk={(expr) => this.onParseOk.bind(this)(expr, layerID, layerSpec)}
