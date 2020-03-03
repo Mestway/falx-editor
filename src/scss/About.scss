@@ -1,0 +1,25 @@
+@import 'base.scss';
+
+.about-page, .tutorial-page {
+  padding: 20px 40px 20px 40px;
+  margin: 0 auto;
+  //text-align: center;
+  
+  .tool-name {
+  	color: #007bff;
+  }
+
+  .centered-img {
+  	display: block;
+	margin-left: auto;
+	text-align: center;
+	margin-right: auto;
+	margin-bottom: 5px;
+  }
+
+  .step-img {
+  	margin: auto;
+  }
+
+  max-width: 1000px;
+}

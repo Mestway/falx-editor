@@ -35,6 +35,15 @@
   overflow: auto;
   margin: 0px 10px 0px 0px;
 
+  label + .MuiInput-formControl {
+    margin-top: 8px;
+  }
+
+  label {
+    margin-bottom: 0px;
+    color: rgba(0, 0, 0, 0.38);
+  }
+
   .raw {
     padding: 0px 16px 0 0;
     opacity: 0.9;
@@ -42,8 +51,9 @@
   }
 
   .invis-divider {
-    margin: 16px 0px;
-    height: 0px;
+    margin: 7px 0px;
+    height: 5px;
+    background: none;
   }
 
   h6 {
@@ -90,4 +100,7 @@
     border: none;
   }
   
+  .attribute-editor-grid-line {
+    margin-bottom: 50px;
+  }
 }

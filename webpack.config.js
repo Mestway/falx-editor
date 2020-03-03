@@ -37,7 +37,13 @@ module.exports = {
       {
         test: /\.(eot|otf|svg|ttf|woff|woff2)$/,
         use: 'file-loader'
-      }
+      },
+      {
+        test: /\.(jpg|png)$/,
+        use: {
+          loader: 'url-loader',
+        },
+      },
     ]
   },
   plugins: [
@@ -47,6 +53,7 @@ module.exports = {
     })
   ],
   devServer: {
-    publicPath: '/'
+    publicPath: '/',
+    historyApiFallback: true,
   }
 };

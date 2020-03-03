@@ -8,6 +8,7 @@ import ReactJson from 'react-json-view'
 import Form from "react-jsonschema-form";
 
 import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
@@ -50,16 +51,8 @@ class CustomAutoComplete extends GridDataAutoCompleteHandler {
     }
 
     needValues(_parsedCategory, parsedOperator) {
-
-
-
-      const parsedCategory = "field" in this.encoding[_parsedCategory] ? this.encoding[_parsedCategory]["field"] : _parsedCategory;
-
-      console.log("---->")
-      console.log(parsedCategory)
-      console.log(parsedOperator)
-      console.log(this.data)
-      console.log(this.encoding);
+      // use table data to help autocompletion in the filter
+      const parsedCategory = ("field" in this.encoding[_parsedCategory]) ? this.encoding[_parsedCategory]["field"] : _parsedCategory;
 
       // parsedCategory = this.tryToGetFieldCategory(parsedCategory);
       var found = _.find(this.options, f => f.columnField == parsedCategory || f.columnText == parsedCategory);
@@ -70,11 +63,9 @@ class CustomAutoComplete extends GridDataAutoCompleteHandler {
           }
           return this.cache[parsedCategory];
       }
-
       if (found != null && found.customValuesFunc) {
           return found.customValuesFunc(parsedCategory, parsedOperator);
       }
-
       return [];
   }
 }
@@ -156,7 +147,8 @@ class VisEditor extends Component {
       tableProg: props.tableProg,
       spec: props.spec,
       tempFilters: calcTempFilter(props.spec),
-      panelID: 0
+      panelID: 0,
+      GUIEditorLayerPanelID: 0,
     };
   }
 
@@ -177,6 +169,12 @@ class VisEditor extends Component {
         panelID: panelID
     });
   };
+
+  handleLayerPanelChange(event, layerID) {
+    this.setState({
+      GUIEditorLayerPanelID: layerID
+    })
+  }
 
   handleTempFilterChange(layerID, newFilter) {
     var tempFilters = this.state.tempFilters;
@@ -240,7 +238,6 @@ class VisEditor extends Component {
       spec: newSpec,
       tempFilters: newTempFilters
     })
-    this.nameInput.focus();
     this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
   }
 
@@ -283,7 +280,7 @@ class VisEditor extends Component {
   genEncodingEdit(layerID, channel, encoding) {
     const sortValue = ("sort" in encoding && encoding["sort"] != null) ? encoding["sort"] : "default";
     return (
-      <Grid key={layerID + channel} container alignItems="center" spacing={2}>
+      <Grid key={layerID + channel} container alignItems="center" spacing={3}>
         <Grid item xs={12} sm={2}>
           <TextField label="axis" value={channel} fullWidth disabled />
         </Grid>
@@ -399,10 +396,11 @@ class VisEditor extends Component {
     var customAutoCompleteHandler = new CustomAutoComplete(layerData, filterBoxOptions, layerSpec["encoding"]);
     
     const markType = (layerSpec["mark"].constructor == Object) ? layerSpec["mark"]["type"] : layerSpec["mark"];
+    
     return (
       <React.Fragment>
         <Typography variant="h6" gutterBottom>
-          Mark {layerID == -1 ? "" : "(layer " + (layerID + 1) + ")"}
+          Mark
         </Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} sm={3}>
@@ -447,6 +445,35 @@ class VisEditor extends Component {
     );
   }
 
+  fullGUIEditor() {
+    if ("layer" in this.state.spec) {
+      return (
+        <div className="multi-layer-editor-panel">
+          <AppBar position="static">
+           <Tabs value={this.state.GUIEditorLayerPanelID} 
+                onChange={this.handleLayerPanelChange.bind(this)} 
+                aria-label="gui-editor-layer-selection"
+                indicatorColor="secondary"
+                textColor="secondary"
+                className ="editor-switch layer-editor-switch"
+                centered>
+              <Tab label="Edit Layer 1" id="layer-tab-1" aria-controls="layer-tab-panel-1" />
+              <Tab label="Edit Layer 2" id="layer-tab-2" aria-controls="layer-tab-panel-2"/>
+            </Tabs>
+          </AppBar>
+          <TabPanel value={this.state.GUIEditorLayerPanelID} index={0}>
+            {this.GUIEditor(0)}
+          </TabPanel>
+          <TabPanel value={this.state.GUIEditorLayerPanelID} index={1}>
+            {this.GUIEditor(1)}
+          </TabPanel>
+        </div>)
+    } else {
+      return (<div>{this.GUIEditor(-1)}</div>);
+    }
+      
+  }
+
   render() {
     return (
       <ThemeProvider theme={theme}>
@@ -465,10 +492,11 @@ class VisEditor extends Component {
             </Tabs>
           </AppBar>
           <TabPanel value={this.state.panelID} index={0}>
-            {"layer" in this.state.spec ? this.GUIEditor(0) : this.GUIEditor(-1)}
+            {this.fullGUIEditor()}
+            {/*{"layer" in this.state.spec ? this.GUIEditor(0) : this.GUIEditor(-1)}
             {"layer" in this.state.spec ? <Divider className="invis-divider" /> : ""}
             {"layer" in this.state.spec ? <Divider className="invis-divider" /> : ""}
-            {"layer" in this.state.spec ? this.GUIEditor(1) : ""}
+            {"layer" in this.state.spec ? this.GUIEditor(1) : ""}*/}
           </TabPanel>
           <TabPanel value={this.state.panelID} index={1}>
             <div className="raw">

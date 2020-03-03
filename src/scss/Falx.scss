@@ -1,8 +1,7 @@
 @import "App";
 @import "base";
 
-// 50px nav height
-$body-height: calc(100vh - 50px);
+$body-height: 100%;
 
 .falx {
 	position: relative;
@@ -166,11 +165,14 @@ $body-height: calc(100vh - 50px);
   max-width: 100vw;
   height: $body-height !important;
   float: left;
+
+  .editor-plane {
+    height: $body-height !important;
+    position: relative !important;
+  }
 }
 
-.editor-plane {
-  height: $body-height !important;
-}
+
 
 button:focus {
   outline: 0; 

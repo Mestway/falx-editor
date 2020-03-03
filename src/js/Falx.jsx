@@ -34,14 +34,14 @@ import TaskGallery from "./TaskGallery.jsx"
 import '../scss/Falx.scss';
 
 class Falx extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
-      data: TaskGallery[0]["data"],
+      data: this.props.data,
       spec: null,
       constants: [],
-      tags: JSON.parse(JSON.stringify(TaskGallery[0]["tags"])),
-      tempTags: JSON.parse(JSON.stringify(TaskGallery[0]["tags"])),
+      tags: JSON.parse(JSON.stringify(this.props.tags)),
+      tempTags: JSON.parse(JSON.stringify(this.props.tags)),
       synthResult: [],
       status: "No result to show"
     };
@@ -52,7 +52,7 @@ class Falx extends Component {
     var reader = new FileReader();
     reader.onload = function(event) {
       // The file's text will be printed here
-      console.log(event.target.result);
+      // console.log(event.target.result);
       this.setState({
         data: JSON.parse(event.target.result)
       });
@@ -369,7 +369,7 @@ class Falx extends Component {
     spec["data"] = data
     
     //debug helper: print vis spec with data
-    //console.log(JSON.stringify(spec)); 
+    console.log(JSON.stringify(spec)); 
 
     return (<VegaLite spec={spec} data={data} tooltip={new Handler().call} actions={false}/>);
   }
