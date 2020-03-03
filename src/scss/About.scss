@@ -5,6 +5,19 @@
   margin: 0 auto;
   //text-align: center;
   
+
+  .emph {
+  	font-style: italic;
+  }
+
+  .tips {
+  	font-style: italic;
+  	border: 0.5px dashed grey;
+  	padding: 5px;
+  	border-radius: 4px;
+  	color: dimgrey;
+  }
+
   .tool-name {
   	color: #007bff;
   }

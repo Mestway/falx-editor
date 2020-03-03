@@ -28,14 +28,14 @@ class Tutorial extends Component {
         <h2>Tutorial: Data Visualization with <span className="tool-name">Falx</span></h2>
         <br />
         <p>This tutorial illustrates how to use <span className="tool-name">Falx</span> to create data visualizations.
-          <span className="tool-name">Falx</span> is a visualization synthesizer designed to automatically synthesize 
-          visualizations from partial visualization demonstrations. In this tutorial, 
-            we'll show you how you can create the partial visualization with Falx Editor.</p>
-        <p>Concretely, we'll show you how to create a heat-map for a product sales dataset. 
-            The dataset contains the sales information for each product at different years and quarters. 
-            Our goal is to use a heat-map to visualize it: 
+          <span className="tool-name">Falx</span> is a visualization synthesizer that automatically synthesizes 
+          visualizations from demonstrations. In this tutorial, 
+            we'll show you how to create visualizations with Falx.</p>
+        <p>We'll build a heat-map for a product sales dataset in this tutorial. 
+            The dataset contains the sales data for multiple products during 2011-2013. 
+            Our goal is to build a heat-map to visualize it: 
             we'll have a subplot for each year, with x-axis showing the quarter number and y-axis shows products, 
-            and colors will reflect the sales value of the product in the corresponding year/quarter.</p>
+            and use colors to reflect the sales value of the product in the corresponding year/quarter.</p>
         <img className="centered-img" src={TutorialImg} width="80%"/> 
         <hr />
 
@@ -50,8 +50,8 @@ class Tutorial extends Component {
         <hr />
         
         <h4 id="step1">Step 1: Upload Data</h4>
-        <p>To start with, upload the dataset you'd like to visualize to Falx via "Upload Data" options under the "Select Data" menu. 
-            The uploaded data will be displayed in the "Input Data" panel.</p>
+        <p>To start with, we'll first upload the dataset via "Upload Data" options under the "Select Data" menu. 
+            The dataset will be displayed in the "Input Data" panel.</p>
         <div className="centered-img">
           <img className="step-img" src={Step1Fig1} width="30%" />
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<ArrowForwardIcon />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -62,26 +62,25 @@ class Tutorial extends Component {
         <hr />
 
         <h4 id="step2">Step 2: Create the Partial Visualization</h4>
-        <p>To use <span className="tool-name">Falx</span>, 
-            we'll need to demonstrate our visualization purpose in the form of a partial visualization. 
+        <p>Then, we'll demonstrate our visualization purpose using <span className='emph'>a partial visualization</span>. 
            The idea is that we'll create a small visualization with only a few data points in the canvas, 
-           and let <span className="tool-name">Falx</span> to find a visualization that generalizes the full dataset.</p>
+           and let <span className="tool-name">Falx</span> to find a visualization that generalizes to the full dataset.</p>
         
         <p>In this example, since our goal is to create a heat-map for the sales data, 
-          we'll create a partial visualization that contains 3 heat map tiles to illustrate our idea to the synthesizer.</p>
+          we'll create a partial visualization that contains a few heat map tiles to illustrate our purpose to the tool.</p>
         
         <p>Starting from an empty canvas, we can first create a rectangular on the canvas that 
             represents the visualization of the first entry in the dataset 
-            --- the sales value (which is 3) for Product1 at Quarter1 of year 2011. 
+            --- the sales value for Product1 at Quarter1 of year 2011 (which is 3). 
             To do so, we can click the "plus" button in the demonstration panel and add a rectangular, 
-            and then click the object to edit its attributes: 
+            and then edit its attributes as follows: 
             <ul>
-              <li>Its x-value should be Q4, since we'll put the rectangular at Q4 position in the chart.</li>
-              <li>Its y-value should be Product1 for the similar reason.</li>
-              <li>Its color-value should be 3, since we'll use color intensity to reflect the sales value.</li>
-              <li>Its column-value should be 2011, since this rectangular will be placed under the subplot of year 2011.</li>
+              <li>Set its x-value to <code>Q4</code>, since we'll put this rectangular at Q4 position on the x-axis.</li>
+              <li>Set its y-value to <code>Product1</code>, for the similar reason.</li>
+              <li>Set its color-value to <code>3</code>, since we'll use color intensity to reflect the sales value.</li>
+              <li>Set its column-value to <code>2011</code>, since this rectangular belongs to the subplot of year 2011.</li>
             </ul>
-            After we edited it's property, we can save the edits and the partial visualization will be displayed in the preview section.
+            After we edited its property, we can save the edits and the partial visualization will be displayed in the preview section.
         </p>
         <div className="centered-img">
           <figure>
@@ -92,20 +91,22 @@ class Tutorial extends Component {
             <img className="step-img" src={Step2Fig3} width="28%"  />
           </figure>
         </div>
-        <p> After creating the first rectangular, we can continue creating two more elements to make the partial 
-            visualization more comprehensive to the synthesizer (the examples and partial visualization preview are shown as follows). 
+        <p> After creating the first rectangular, we can add two more elements to make our visualization purpose more clear to the synthesizer. 
+          We can see the following partial visualization after saved all three rectangulars. 
         </p>
         <div className="centered-img">
           <figure>
             <img className="step-img" src={Step2Fig4} width="70%" />
           </figure>
         </div>
+        <p className="tips">Tips: In general, the more elements we provided to the synthesizer, the synthesizer will find it easier to solve the task, but it will take us more time to craft the example.
+          We can always start with a small number of elements (1 or 2) and let the synthesizer solve the problem, and add more if Falx get stuck.</p>
 
         <hr />
 
         <h4 id="step3">Step 3: Run the Synthesizer</h4>
-        <p>Now we have provided the input data and created a partial visualization, 
-          we'll simply press the "Synthesize" button to let the synthesizer to do the job. :) 
+        <p>We have just provided the input data to the tool and created a partial visualization to demonstrate our purpose, 
+          now we simply need to press the "Synthesize" button to let the synthesizer to do the job. :) 
           To learn how the synthesizer work internally, you can check 
           out our <a href="https://arxiv.org/abs/1911.09668">technical paper</a>.
         </p>
@@ -115,15 +116,17 @@ class Tutorial extends Component {
           </figure>
         </div>
         <p>Synthesis results will then appear at the bottom of editor panel, and we can navigate
-           candidate solutions to find our desired solution. 
-           Since our demonstration can be ambiguous to the synthesizer, 
-           there can often be more than one visualizations of the full dataset that generalize our input partial visualization.
-           In cases when we cannot find the desired solution in the solution panel, we can include more elements 
-           (i.e., rectangulars representing more entries in the dataset) 
-           to the partial visualization to help the synthesizer to disambiguate.
-        </p>
-        <p>After obtained the desired solution, we can perform some post-processing to fix some 
+           candidate solutions to find our desired solution. After obtained the desired solution, we can post-process the visualization to fix some 
             minor problems of the visualization (if necessary) and then export it.
+        </p>
+        <p className="tips">
+           Tips: Since our demonstration can be ambiguous to the synthesizer, 
+           there can often be more than one visualizations of the full dataset that generalize the partial visualization 
+           (the synthesizer's goal is to find visualizations that contain all elements we provided in the partial visualiztion).
+           
+           In cases when we cannot find the desired solution in the solution panel, we can add more elements 
+           (i.e., rectangulars representing more entries in the dataset) 
+           to the partial visualization to help the synthesizer to help disambiguate.
         </p>
 
         <hr />
