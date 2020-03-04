@@ -3,14 +3,14 @@ const HtmlWebPackPlugin = require("html-webpack-plugin");
 module.exports = {
   module: {
     rules: [
-      {
-        test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/, /\.svg$/],
-        loader: require.resolve('url-loader'),
-        options: {
-          limit: 10000,
-          name: 'static/media/[name].[hash:8].[ext]',
-        },
-      },
+      // {
+      //   test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/, /\.svg$/],
+      //   loader: require.resolve('url-loader'),
+      //   options: {
+      //     limit: 10000,
+      //     name: 'static/media/[name].[hash:8].[ext]',
+      //   },
+      // },
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
@@ -42,6 +42,9 @@ module.exports = {
         test: /\.(jpg|png)$/,
         use: {
           loader: 'url-loader',
+          options: {
+            limit: 55000,
+          },
         },
       },
     ]

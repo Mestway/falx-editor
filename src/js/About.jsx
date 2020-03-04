@@ -5,7 +5,6 @@ import '../scss/About.scss';
 import AboutExample from '../images/about-example.png';
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 
-
 // render the component
 
 class About extends Component {
