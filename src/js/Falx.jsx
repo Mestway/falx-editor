@@ -23,6 +23,7 @@ import ReactTooltip from 'react-tooltip'
 import SplitPane from 'react-split-pane';
 import { VegaLite } from 'react-vega';
 import { Handler } from 'vega-tooltip';
+import { readString } from 'react-papaparse'
 
 import Recommendations from "./Recommendations.jsx"
 import ChartTemplates from "./ChartTemplates.jsx"
@@ -52,9 +53,26 @@ class Falx extends Component {
     var reader = new FileReader();
     reader.onload = function(event) {
       // The file's text will be printed here
-      // console.log(event.target.result);
+      console.log("--> loaded file");
+      var data = null;
+      if (file.extension == "csv") {
+        const csvData = readString(event.target.result.trim()).data
+        
+        const header = csvData[0];
+        const content = csvData.slice(1).map((r) => {
+          var row = {};
+          for (var i = 0; i < header.length; i ++) {
+            row[header[i]] = r[i];
+          }
+          return row;
+        });
+        console.log(JSON.stringify(content));
+        data = content;
+      } else {
+        data =  JSON.parse(event.target.result);
+      }
       this.setState({
-        data: JSON.parse(event.target.result)
+        data: data
       });
     }.bind(this);
     reader.readAsText(file);
@@ -430,11 +448,18 @@ class Falx extends Component {
                           {exampleTasks}
                           <Dropdown.Divider />
                           <Dropdown.Header>Upload</Dropdown.Header>
-                          <Dropdown.Item as="div" key={"upload"}>
+                          <Dropdown.Item as="div" key={"uploadcsv"}>
                             <Files className='files-dropzone' onChange={this.onFilesChange}
-                              onError={this.onFilesError} accepts={['.csv', '.json']} maxFileSize={1000000}
+                              onError={this.onFilesError} accepts={['.csv']} maxFileSize={1000000}
                               minFileSize={0} clickable>
                               Upload Data (.csv)
+                            </Files>
+                          </Dropdown.Item>
+                          <Dropdown.Item as="div" key={"uploadjson"}>
+                            <Files className='files-dropzone' onChange={this.onFilesChange}
+                              onError={this.onFilesError} accepts={['.json']} maxFileSize={1000000}
+                              minFileSize={0} clickable>
+                              Upload Data (.json)
                             </Files>
                           </Dropdown.Item>
                         </Dropdown.Menu>

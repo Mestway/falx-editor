@@ -23,7 +23,7 @@ class App extends Component {
       <Router>
         <div id="app">
           <Navbar className="Navbar bordered" expand="lg">
-            <Navbar.Brand href="/about">Falx</Navbar.Brand>
+            <Navbar.Brand><Link to="/about">Falx</Link> </Navbar.Brand>
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="mr-auto">
                 <Link to="/falx" className="nav-link">Tool</Link>
@@ -48,6 +48,15 @@ class App extends Component {
               </Route>
               <Route path="/tutorial">
                 <Tutorial />
+                <hr />
+                <footer>
+                  <div className="row">
+                    Maintained by <a href="http://uwplse.org/">UW PLSE</a>, 2020
+                  </div>
+                </footer>
+              </Route>
+              <Route>
+                <About />
                 <hr />
                 <footer>
                   <div className="row">

@@ -56,6 +56,7 @@
     "react-json-view": "^1.19.1",
     "react-jsonschema-form": "^1.8.1",
     "react-octicon": "^3.0.1",
+    "react-papaparse": "^2.1.1",
     "react-router-dom": "^5.1.2",
     "react-split-pane": "^0.1.89",
     "react-table": "^7.0.0-rc.16",
