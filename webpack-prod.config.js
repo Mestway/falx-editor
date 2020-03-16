@@ -1,16 +1,9 @@
 const HtmlWebPackPlugin = require("html-webpack-plugin");
+const webpack = require('webpack');
 
 module.exports = {
   module: {
     rules: [
-      // {
-      //   test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/, /\.svg$/],
-      //   loader: require.resolve('url-loader'),
-      //   options: {
-      //     limit: 10000,
-      //     name: 'static/media/[name].[hash:8].[ext]',
-      //   },
-      // },
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
@@ -53,6 +46,9 @@ module.exports = {
     new HtmlWebPackPlugin({
       template: "./src/index.html",
       filename: "./index.html"
+    }),
+    new webpack.DefinePlugin({
+      FALX_SERVER: JSON.stringify("http://clwang-desktop.cs.washington.edu:5000"),
     })
   ],
   devServer: {

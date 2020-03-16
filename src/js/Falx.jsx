@@ -56,8 +56,8 @@ class Falx extends Component {
       console.log("--> loaded file");
       var data = null;
       if (file.extension == "csv") {
+        // load csv data
         const csvData = readString(event.target.result.trim()).data
-        
         const header = csvData[0];
         const content = csvData.slice(1).map((r) => {
           var row = {};
@@ -69,6 +69,7 @@ class Falx extends Component {
         console.log(JSON.stringify(content));
         data = content;
       } else {
+        // load json data
         data =  JSON.parse(event.target.result);
       }
       this.setState({
@@ -143,8 +144,9 @@ class Falx extends Component {
   runSynthesis() {
     this.setState({ status: "Running...", synthResult: []})
 
+    //FALX_SERVER is a environmental vairable defined in wepack.config.js
     // prepare tags to match falx API
-    fetch("http://127.0.0.1:5000/falx", {
+    fetch(FALX_SERVER + "/falx", {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
