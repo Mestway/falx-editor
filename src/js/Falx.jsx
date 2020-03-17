@@ -16,6 +16,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Divider from '@material-ui/core/Divider';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import { ContextMenu, MenuItem as ContextMenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Files from 'react-files';
@@ -208,6 +209,17 @@ class Falx extends Component {
     this.setState({ tags: JSON.parse(JSON.stringify(tempTags)) });
   }
   runSynthesis() {
+
+    if (this.state.data.length == 0) {
+      this.setState({ status: "Error: empty input data", synthResult: []})
+      return;
+    }
+
+    if (this.state.tags.length == 0) {
+      this.setState({ status: "Error: empty demonstration", synthResult: []})
+      return;
+    }
+
     this.setState({ status: "Running...", synthResult: []})
 
     //FALX_SERVER is a environmental vairable defined in wepack.config.js
@@ -498,7 +510,8 @@ class Falx extends Component {
     const elementTags = this.renderElementTags();
     const recommendations = (specs.length > 0 ? 
                               (<Recommendations specs={specs} tableProgs={tableProgs}/>) : 
-                              (<div className="output-panel">{this.state.status}</div>));
+                              (<div className="output-panel">
+                                {this.state.status == "Running..." ? <div><p>Running...</p> <CircularProgress /></div> : this.state.status}</div>));
     return (
       <ThemeProvider theme={theme}>
         <div className="editor">

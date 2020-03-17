@@ -1,6 +1,6 @@
 const TaskGallery = [
   {
-    "name": "Budget Visualization",
+    "name": "Budgeted vs Actual",
     "data": [
       { "Bucket": "Bucket E", "Budgeted": 100, "Actual": 115 },
       { "Bucket": "Bucket D", "Budgeted": 100, "Actual": 90 },
@@ -53,7 +53,7 @@ const TaskGallery = [
       {"type": "line", "props": {"x1": "Y2", "y1": 0.57, "x2": "Y3", "y2": 0.6, "color": "", "column": ""}}
     ]
   }, {
-    "name": "heatmap",
+    "name": "Heatmap",
     "data": [{"product":"Product1_2011","Q4":3,"Q3":5,"Q2":5,"Q1":10},
              {"product":"Product2_2011","Q4":5,"Q3":7,"Q2":5,"Q1":2},
              {"product":"Product3_2011","Q4":3,"Q3":9,"Q2":10,"Q1":7},

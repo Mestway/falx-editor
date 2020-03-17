@@ -19,6 +19,10 @@ import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 class App extends Component {
 
   render() {
+
+    // randomly select a task from the gallery
+    const randomTaskID = Math.floor(Math.random() * TaskGallery.length);
+
     return (
       <Router>
         <div id="app">
@@ -44,7 +48,7 @@ class App extends Component {
                 </footer>
               </Route>
               <Route path="/falx">
-                <Falx data={TaskGallery[1]["data"]} tags={TaskGallery[1]["tags"]}/>
+                <Falx data={TaskGallery[randomTaskID]["data"]} tags={TaskGallery[randomTaskID]["tags"]}/>
               </Route>
               <Route path="/tutorial">
                 <Tutorial />
