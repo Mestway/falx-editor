@@ -23,7 +23,10 @@ html, body {
 
 footer {
   text-align: center;
-  .row { display: block; }
+  .row { 
+    display: block; 
+    width: 100%;
+  }
   margin-bottom: 15px;
 }
 
@@ -115,8 +118,4 @@ footer {
     }
   }
 
-  .draco-logo {
-    width: 24px;
-    height: 24px;
-  }
 }

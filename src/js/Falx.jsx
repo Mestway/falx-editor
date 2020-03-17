@@ -1,13 +1,21 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
+import { Button as MaterialButton } from '@material-ui/core';
 import Button from 'react-bootstrap/Button';
-//import Button from '@material-ui/core/Button';
 import Select from '@material-ui/core/Select';
 
 import Dropdown from 'react-bootstrap/Dropdown';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import AddIcon from '@material-ui/icons/Add';
+
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Divider from '@material-ui/core/Divider';
 
 import { ContextMenu, MenuItem as ContextMenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Files from 'react-files';
@@ -16,8 +24,6 @@ import Octicon from 'react-octicon'
 
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-
-
 
 import ReactTooltip from 'react-tooltip'
 import SplitPane from 'react-split-pane';
@@ -30,9 +36,25 @@ import ChartTemplates from "./ChartTemplates.jsx"
 import ReactTable from "./TableViewer.jsx"
 import TaskGallery from "./TaskGallery.jsx"
 
+import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
+
 // Import React Table
 //import "react-table/react-table.css";
 import '../scss/Falx.scss';
+
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: "#007bff",
+      contrastText: "white" //button text white instead of black
+    }
+  },
+  typography: {
+    button: {
+      textTransform: 'none',
+    },
+  }
+});
 
 class Falx extends Component {
   constructor(props) {
@@ -44,10 +66,13 @@ class Falx extends Component {
       tags: JSON.parse(JSON.stringify(this.props.tags)),
       tempTags: JSON.parse(JSON.stringify(this.props.tags)),
       synthResult: [],
-      status: "No result to show"
+      status: "No result to show",
+      dataUploadDialog: false,
+      dataUploadText: ""
     };
     this.onFilesChange = this.onFilesChange.bind(this);
   }
+  // the following two function deals with upload data from file
   onFilesChange(files) {
     const file = files[0]
     var reader = new FileReader();
@@ -77,10 +102,51 @@ class Falx extends Component {
       });
     }.bind(this);
     reader.readAsText(file);
+    this.setState({ dataUploadDialog: false });
   }
   onFilesError(error, file) {
-    console.log('error code ' + error.code + ': ' + error.message)
+    console.log('error code ' + error.code + ': ' + error.message);
+    this.setState({ dataUploadDialog: false });
   }
+  // the following two function deals with data upload dialog
+  handleDataUploadDialogOpen() {
+    this.setState({ dataUploadDialog: true });
+  }
+  handleDataUploadDialogClose(saveData) {
+    if (saveData) {
+      var isJSON = true;
+      var data = null;
+      const rawData = this.state.dataUploadText;
+      try {
+        data =  JSON.parse(rawData);
+      } catch (e) {
+        isJSON = false;
+      }
+      if (isJSON == false) {
+        try {
+          // load csv data
+          const csvData = readString(rawData.trim()).data
+          const header = csvData[0];
+          const content = csvData.slice(1).map((r) => {
+            var row = {};
+            for (var i = 0; i < header.length; i ++) {
+              row[header[i]] = r[i];
+            }
+            return row;
+          });
+          data = content;
+        } catch(e) {
+          this.setState({dataUploadTextError: true});
+        }
+      }
+      this.setState({ data: data });
+    }
+    this.setState({ dataUploadDialog: false });
+  }
+  handleUploadedDataChange(e) {
+    this.setState({ dataUploadText: e.target.value});
+  }
+  // handles tag updates
   removeTag(i) {
     // add a tag
     const newTags = [ ...this.state.tags ];
@@ -434,110 +500,156 @@ class Falx extends Component {
                               (<Recommendations specs={specs} tableProgs={tableProgs}/>) : 
                               (<div className="output-panel">{this.state.status}</div>));
     return (
-      <div className="editor">
-        <SplitPane className="editor-plane" split="vertical" minSize={450} defaultSize={450}>
-          <div className="input-panel">
-            <div className="input-display">
-              <div className="seg-title">
-                <div className="title">Input Data</div>
-                <div className="title-action">
-                  <ul>
-                    <li> 
-                      <Dropdown className="clickable-style">
-                        <Dropdown.Toggle as="div"> Select Data <ArrowDropDownIcon /> </Dropdown.Toggle>
-                        <Dropdown.Menu> 
-                          <Dropdown.Header>Examples</Dropdown.Header>
-                          {exampleTasks}
-                          <Dropdown.Divider />
-                          <Dropdown.Header>Upload</Dropdown.Header>
-                          <Dropdown.Item as="div" key={"uploadcsv"}>
-                            <Files className='files-dropzone' onChange={this.onFilesChange}
-                              onError={this.onFilesError} accepts={['.csv']} maxFileSize={1000000}
-                              minFileSize={0} clickable>
-                              Upload Data (.csv)
-                            </Files>
-                          </Dropdown.Item>
-                          <Dropdown.Item as="div" key={"uploadjson"}>
-                            <Files className='files-dropzone' onChange={this.onFilesChange}
-                              onError={this.onFilesError} accepts={['.json']} maxFileSize={1000000}
-                              minFileSize={0} clickable>
-                              Upload Data (.json)
-                            </Files>
-                          </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    </li>
-                    <li>
-                     
-                    </li>
-                  </ul>
+      <ThemeProvider theme={theme}>
+        <div className="editor">
+          <SplitPane className="editor-plane" split="vertical" minSize={450} defaultSize={450}>
+            <div className="input-panel">
+              <div className="input-display">
+                <div className="seg-title">
+                  <div className="title">Input Data</div>
+                  <div className="title-action">
+                    <ul>
+                      <li> 
+                        <Dropdown className="clickable-style">
+                          <Dropdown.Toggle as="div"> 
+                            <MaterialButton size="small" color="primary" variant="outlined">
+                              Gallery  <ArrowDropDownIcon />
+                            </MaterialButton> 
+                          </Dropdown.Toggle>
+                          <Dropdown.Menu> 
+                            <Dropdown.Header>Examples</Dropdown.Header>
+                            {exampleTasks}
+                          </Dropdown.Menu>
+                        </Dropdown>
+                      </li>
+                      <li>
+                        <MaterialButton size="small" color="primary" variant="outlined" onClick={this.handleDataUploadDialogOpen.bind(this)}>
+                          Upload Data
+                        </MaterialButton>
+                        <Dialog open={this.state.dataUploadDialog} 
+                            onClose={(e) => {return this.handleDataUploadDialogClose.bind(this)(false)}}
+                            aria-labelledby="form-dialog-title">
+                          <DialogTitle id="form-dialog-title">Upload Data</DialogTitle>
+                          <DialogContent>
+                            <DialogContentText>
+                              Upload a .csv or .json file from your local storage:
+                            </DialogContentText>
+
+                            <DialogContentText>
+                              <MaterialButton color="primary" variant="outlined">
+                                <Files className='files-dropzone' onChange={this.onFilesChange}
+                                  onError={this.onFilesError} accepts={['.csv']} maxFileSize={1000000}
+                                  minFileSize={0} clickable>
+                                  Upload Data (.csv)
+                                </Files>
+                              </MaterialButton>
+                              {" "}
+                              <MaterialButton color="primary" variant="outlined">
+                                <Files className='files-dropzone' onChange={this.onFilesChange}
+                                  onError={this.onFilesError} accepts={['.json']} maxFileSize={1000000}
+                                  minFileSize={0} clickable>
+                                  Upload Data (.json)
+                                </Files>
+                              </MaterialButton>
+                            </DialogContentText>
+                            
+                            <DialogContentText>
+                              Or, paste your input data (csv or json format) into the following box:
+                            </DialogContentText>
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="dataUploadBox"
+                              label="Upload data"
+                              type="text"
+                              fullWidth
+                              multiline
+                              rows={10}
+                              rowsMax={20}
+                              onChange={this.handleUploadedDataChange.bind(this)}
+                            />
+                          </DialogContent>
+                          <DialogActions>
+                            <MaterialButton onClick={(e) => {return this.handleDataUploadDialogClose.bind(this)(true)}} color="primary">
+                              Save
+                            </MaterialButton>
+                            <MaterialButton onClick={(e) => {return this.handleDataUploadDialogClose.bind(this)(false)}} color="primary">
+                              Cancel
+                            </MaterialButton>
+                          </DialogActions>
+                        </Dialog>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="table-display">
+                  <ReactTable
+                    data={this.state.data}
+                    //resolveData={data => this.state.data.map(row => row)}
+                    columns={columns}
+                    pageSize={Math.min(this.state.data.length, 10)}
+                    showPaginationBottom={true}
+                    showPageSizeOptions={false}
+                    className="-striped -highlight"
+                  />
+                </div>
+                <div className="seg-title">
+                  <div className="title">Demonstration</div>
+                  <Dropdown className="clickable-style title-action">
+                    <Dropdown.Toggle as="div">
+                      <MaterialButton size="small" color="primary" variant="outlined">
+                        Templates <ArrowDropDownIcon />
+                      </MaterialButton>
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      {menuItems}
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </div>
+                <div className="element-disp">
+                  <div className="input-tag">
+                    <ul className="input-tag__tags">
+                      {elementTags}
+                      <li className="tag-boxes" id="add-btn-li" key="plus">
+                        <ContextMenuTrigger id="add-visual-element" className="okok" holdToDisplay={0}>
+                          <Octicon name="plus" data-tip="Add new element" className="add-btn"/>
+                        </ContextMenuTrigger>
+                        <ContextMenu id="add-visual-element" preventHideOnContextMenu={true} 
+                                     preventHideOnResize={true} preventHideOnScroll={true}>
+                          <ContextMenuItem>
+                            <Button className="add-btn-menu-btn" 
+                                  variant="outline-info" 
+                                  onClick={() => {this.addTagElement("copy")}}>
+                              copy last
+                            </Button>
+                            {["bar", "point", "rect", "line", "area"].map(
+                              (item) => (
+                                <Button key={item} className="add-btn-menu-btn" 
+                                  variant="outline-primary" 
+                                  onClick={() => {this.addTagElement(item);}}>
+                              {item}
+                            </Button>))}
+                          </ContextMenuItem>
+                        </ContextMenu>
+                        <ReactTooltip />
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="chart-disp">
+                  {this.renderExampleVisualization()}
                 </div>
               </div>
-              <div className="table-display">
-                <ReactTable
-                  data={this.state.data}
-                  //resolveData={data => this.state.data.map(row => row)}
-                  columns={columns}
-                  pageSize={Math.min(this.state.data.length, 10)}
-                  showPaginationBottom={true}
-                  showPageSizeOptions={false}
-                  className="-striped -highlight"
-                />
-              </div>
-              <div className="seg-title">
-                <div className="title">Demonstration</div>
-                <Dropdown className="clickable-style title-action">
-                  <Dropdown.Toggle as="div">
-                    Templates <ArrowDropDownIcon />
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    {menuItems}
-                  </Dropdown.Menu>
-                </Dropdown>
-              </div>
-              <div className="element-disp">
-                <div className="input-tag">
-                  <ul className="input-tag__tags">
-                    {elementTags}
-                    <li className="tag-boxes" id="add-btn-li" key="plus">
-                      <ContextMenuTrigger id="add-visual-element" className="okok" holdToDisplay={0}>
-                        <Octicon name="plus" data-tip="Add new element" className="add-btn"/>
-                      </ContextMenuTrigger>
-                      <ContextMenu id="add-visual-element" preventHideOnContextMenu={true} 
-                                   preventHideOnResize={true} preventHideOnScroll={true}>
-                        <ContextMenuItem>
-                          <Button className="add-btn-menu-btn" 
-                                variant="outline-info" 
-                                onClick={() => {this.addTagElement("copy")}}>
-                            copy last
-                          </Button>
-                          {["bar", "point", "rect", "line", "area"].map(
-                            (item) => (
-                              <Button key={item} className="add-btn-menu-btn" 
-                                variant="outline-primary" 
-                                onClick={() => {this.addTagElement(item);}}>
-                            {item}
-                          </Button>))}
-                        </ContextMenuItem>
-                      </ContextMenu>
-                      <ReactTooltip />
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <div className="chart-disp">
-                {this.renderExampleVisualization()}
+              <div className="bottom-cntl">
+                <Button variant="outline-primary" onClick={() => {this.runSynthesis();}}>
+                  Synthesize
+                </Button>
               </div>
             </div>
-            <div className="bottom-cntl">
-              <Button variant="outline-primary" onClick={() => {this.runSynthesis();}}>
-                Synthesize
-              </Button>
-            </div>
-          </div>
-          { recommendations }
-        </SplitPane>
-       </div>
+            { recommendations }
+          </SplitPane>
+         </div>
+      </ThemeProvider>
     );
   }
 }
