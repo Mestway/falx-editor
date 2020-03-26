@@ -325,8 +325,7 @@ class Falx extends Component {
                        preventHideOnResize={true} preventHideOnScroll={true}
                        onShow={()=>{this.revertTempTagProperty();}}>
             <ContextMenuItem preventClose={true}>
-              <Grid container xs={12} spacing={1}>
-
+              <Grid container spacing={1}>
                 <Grid item xs xs={12}>
                   <Typography variant="body1" component="h2">
                     Editing <Typography color="primary" variant="inherit">{tag["type"] + " #" + i}</Typography>
