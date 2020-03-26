@@ -351,15 +351,14 @@ button:focus {
     margin-left: 8px;
     width: 15px;
   } 
-
-  .add-btn {
-    cursor: pointer;
-    font-size: 20px;
-  }
 }
 
 .input-tag__tags #add-btn-li {
   border: none;
+
+  .MuiIconButton-root {
+    padding: 3px;
+  }
 }
 
 .input-tag__tags li.input-tag__tags__input {
@@ -390,10 +389,14 @@ button:focus {
     }
 }
 
+#add-btn-li .react-contextmenu {
+  max-width: 800px;
+}
+
 .react-contextmenu.react-contextmenu--visible {
     opacity: 1;
     pointer-events: auto;
-    z-index: 9999;
+    z-index: 99;
 }
 
 .react-contextmenu-item {
@@ -401,7 +404,7 @@ button:focus {
     background: 0 0;
     border: 0;
     color: #373a3c;
-    cursor: pointer;
+    //cursor: pointer;
     font-weight: 400;
     line-height: 1;
     padding: 4px 15px;

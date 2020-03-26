@@ -25,7 +25,7 @@ import VisEditor from "./VisEditor.jsx"
 import '../scss/Recommendations.scss';
 
 const COLLAPSED_INFO_PANE_SIZE = 24;
-const DEFAULT_INFO_PANE_SIZE = 502;
+const DEFAULT_INFO_PANE_SIZE = 402;
 
 class Recommendations extends Component {
   static getDerivedStateFromProps(props, state) {

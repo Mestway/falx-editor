@@ -281,15 +281,15 @@ class VisEditor extends Component {
     const sortValue = ("sort" in encoding && encoding["sort"] != null) ? encoding["sort"] : "default";
     return (
       <Grid key={layerID + channel} container alignItems="center" spacing={3}>
-        <Grid item xs={12} sm={2}>
+        <Grid item xs={12} sm={3}>
           <TextField label="axis" value={channel} fullWidth disabled />
         </Grid>
-        <Grid className="label-grid" item xs={12} sm={3}>
+        <Grid className="label-grid" item xs={12} sm={4}>
           <TextField id="title" name="title" 
               onChange={(event) => this.handleEncPropChange.bind(this)(layerID, channel, "title", event.target.value)} 
              label={"title"} value={("title" in encoding) ? encoding["title"] : encoding["field"]} fullWidth />
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={12} sm={5}>
           <InputLabel shrink htmlFor="enc-type-selector">
             data type
           </InputLabel>
@@ -300,7 +300,7 @@ class VisEditor extends Component {
                 x => <MenuItem key={x} value={x} selected={x == encoding["type"]}>{x}</MenuItem>)}
           </Select>
         </Grid>
-        <Grid item xs={12} sm={3}>
+        {/*<Grid item xs={12} sm={3}>
           <InputLabel shrink htmlFor="sort-selector">
             sort
           </InputLabel>
@@ -311,7 +311,7 @@ class VisEditor extends Component {
               ["descending", <ArrowDownwardIcon />, "(desc)"]].map(
                 x => <MenuItem key={x[0]} value={x[0]} selected={x[0] == sortValue}>{x[1]}{x[2]}</MenuItem>)}
           </Select>
-        </Grid>
+        </Grid>*/}
       </Grid>)
   }
 

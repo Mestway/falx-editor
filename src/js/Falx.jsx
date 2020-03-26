@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
+import ButtonGroup from '@material-ui/core/ButtonGroup';
 import { Button as MaterialButton } from '@material-ui/core';
 import Button from 'react-bootstrap/Button';
 import Select from '@material-ui/core/Select';
@@ -8,6 +9,7 @@ import Select from '@material-ui/core/Select';
 import Dropdown from 'react-bootstrap/Dropdown';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import AddIcon from '@material-ui/icons/Add';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -22,16 +24,16 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Divider from '@material-ui/core/Divider';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip'
+import IconButton from '@material-ui/core/IconButton';
 
 import { ContextMenu, MenuItem as ContextMenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Files from 'react-files';
-import Octicon from 'react-octicon'
 //import ReactTable from "react-table";
 
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
-import ReactTooltip from 'react-tooltip'
 import SplitPane from 'react-split-pane';
 import { VegaLite } from 'react-vega';
 import { Handler } from 'vega-tooltip';
@@ -306,6 +308,7 @@ class Falx extends Component {
                 label={(key == "column" ? "column" : key) + ""} 
                 margin="dense"
                 size="small"
+                autoComplete='off'
                 value={val}
                 placeholder="empty"
                 variant="outlined"
@@ -335,13 +338,24 @@ class Falx extends Component {
                 {elementEditor}
               </Grid>
             </ContextMenuItem>
-            <ContextMenuItem>
+            {/*<ContextMenuItem>
               <Button className="left-btn" variant="link" onClick={() => {this.updateTagProperty(); }}>
                 Save Edits
               </Button>
               <Button className="right-btn" variant="link" onClick={() => { this.removeTag(i); }}>
-                Remove <Octicon name="trashcan"/>
+                <DeleteIcon />
               </Button>
+            </ContextMenuItem>*/}
+            <ContextMenuItem>
+              <Tooltip title="Delete element">
+                <IconButton aria-label="delete" size="small" className="left-btn" color="secondary" onClick={() => { this.removeTag(i); }}>
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+              <ButtonGroup className="right-btn" color="primary" size="small" aria-label="outlined primary button group">
+                <MaterialButton onClick={() => {this.updateTagProperty(); }}>Save</MaterialButton>
+                <MaterialButton>Cancel</MaterialButton>
+              </ButtonGroup>
             </ContextMenuItem>
           </ContextMenu>
         </li>
@@ -679,7 +693,11 @@ class Falx extends Component {
                       {elementTags}
                       <li className="tag-boxes" id="add-btn-li" key="plus">
                         <ContextMenuTrigger id="add-visual-element" className="okok" holdToDisplay={0}>
-                          <Octicon name="plus" data-tip="Add new element" className="add-btn"/>
+                          <Tooltip title="Add new element">
+                            <IconButton aria-label="add" color="primary">
+                              <AddIcon />
+                            </IconButton>
+                          </Tooltip>
                         </ContextMenuTrigger>
                         <ContextMenu id="add-visual-element" preventHideOnContextMenu={true} 
                                      preventHideOnResize={true} preventHideOnScroll={true}>
@@ -695,11 +713,10 @@ class Falx extends Component {
                                 <Button key={item} className="add-btn-menu-btn" 
                                   variant="outline-primary" 
                                   onClick={() => {this.addTagElement(item);}}>
-                              {item}
-                            </Button>))}
+                                  {item}
+                                </Button>))}
                           </ContextMenuItem>
                         </ContextMenu>
-                        <ReactTooltip />
                       </li>
                     </ul>
                   </div>
