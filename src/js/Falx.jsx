@@ -338,20 +338,12 @@ class Falx extends Component {
                 {elementEditor}
               </Grid>
             </ContextMenuItem>
-            {/*<ContextMenuItem>
-              <Button className="left-btn" variant="link" onClick={() => {this.updateTagProperty(); }}>
-                Save Edits
-              </Button>
-              <Button className="right-btn" variant="link" onClick={() => { this.removeTag(i); }}>
-                <DeleteIcon />
-              </Button>
-            </ContextMenuItem>*/}
             <ContextMenuItem>
-              <Tooltip title="Delete element">
-                <IconButton aria-label="delete" size="small" className="left-btn" color="secondary" onClick={() => { this.removeTag(i); }}>
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
+              <ButtonGroup className="left-btn" color="secondary" size="small" aria-label="outlined primary button group">
+                 <MaterialButton aria-label="delete" color="secondary" onClick={() => { this.removeTag(i); }}>
+                  Delete
+                </MaterialButton>
+              </ButtonGroup>
               <ButtonGroup className="right-btn" color="primary" size="small" aria-label="outlined primary button group">
                 <MaterialButton onClick={() => {this.updateTagProperty(); }}>Save</MaterialButton>
                 <MaterialButton>Cancel</MaterialButton>
