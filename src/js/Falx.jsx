@@ -9,6 +9,10 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import AddIcon from '@material-ui/icons/Add';
 
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import Grid from '@material-ui/core/Grid';
+
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -17,6 +21,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Divider from '@material-ui/core/Divider';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Typography from '@material-ui/core/Typography';
 
 import { ContextMenu, MenuItem as ContextMenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Files from 'react-files';
@@ -162,16 +167,19 @@ class Falx extends Component {
     const newTempTags = [ ...this.state.tempTags ];
     var newTag = null
     if (tagName === "bar") {
-      newTag = {"type": "bar", "props": {"x": "", "y": "", "color": "", "x2": "", "y2": "", "column": ""}}
+      newTag = {"type": "bar", "props": {"x": null, "y": null, "color": "", "column": ""}}
+    }
+    if (tagName === "float bar") {
+      newTag = {"type": "bar", "props": {"x": null, "y": null, "y2": null, "color": "", "column": ""}}
     }
     if (tagName === "point") {
-      newTag = {"type": "point", "props": {"x": "", "y": "", "color": "", "size": "", "column": ""}}
+      newTag = {"type": "point", "props": {"x": null, "y": null, "color": "", "size": "", "column": ""}}
     }
     if (tagName === "rect") {
-      newTag = {"type": "rect", "props": {"x": "", "y": "", "color": "", "size": "", "column": ""}}
+      newTag = {"type": "rect", "props": {"x": null, "y": null, "color": null, "column": ""}}
     }
     if (tagName === "line") {
-      newTag = {"type": "line", "props": {"x1": "", "y1": "", "x2": "", "y2": "", "color": "", "column": ""}}
+      newTag = {"type": "line", "props": {"x1": null, "y1": null, "x2": null, "y2": null, "color": "", "column": ""}}
     }
     if (tagName === "area") {
       newTag = {
@@ -257,14 +265,14 @@ class Falx extends Component {
     function tagToString(tagObj, tagId) {
       // maps each tag to a string
       const tagObjKeys = Object.keys(tagObj["props"])
-        .filter(function(key) { return tagObj["props"][key] !== ""; })
+          .filter(function(key) { return tagObj["props"][key] !== ""; });
 
       const content = tagObjKeys
         .map(function(key, i) {
           //const sep = (i == tagObjKeys.length - 1) ? "" : ", ";
           return (<div key={i}>
                     <span className="tag-label">{key} → </span>
-                    {tagObj["props"][key]}
+                    {tagObj["props"][key] == null ? "?" : tagObj["props"][key]}
                   </div>);
         });
       return (
@@ -275,22 +283,36 @@ class Falx extends Component {
       );
     }
 
+    /*<label htmlFor={"element-editor-input-" + i + key}>{key == "column" ? "column" : key}</label>
+              <input type="text" className="element-prop-editor" 
+                     name={"input-box" + Math.random()} // use this to prevent Chrome to auto complete
+                     id={"element-editor-input-" + i + key}
+                     placeholder="empty"
+                     value={val}
+                     onChange={(e) => this.updateTempTagProperty(i, key, e.target.value)}
+                     onKeyUp={(e) => { if (e.key === "Enter") { this.updateTagProperty();}}}/>*/
+
     const elementTags = this.state.tags.map(function(tag, i) {
       const tagStr = tagToString(tag, i);
       // create a editor memu for each element
       const elementEditor = Object.keys(tag["props"])
         .map(function(key) {
+          const val = this.state.tempTags[i]["props"][key] == null ? "" : this.state.tempTags[i]["props"][key];
           return (
-            <ContextMenuItem key={"element-editor" + i + key} preventClose={true} data={{ item: 'item 1' }}>
-              <label htmlFor={"element-editor-input-" + i + key}>{key == "column" ? "column" : key}</label>
-              <input type="text" className="element-prop-editor" 
-                     name={"input-box" + Math.random()} // use this to prevent Chrome to auto complete
-                     id={"element-editor-input-" + i + key}
-                     placeholder="empty"
-                     value={this.state.tempTags[i]["props"][key]}
-                     onChange={(e) => this.updateTempTagProperty(i, key, e.target.value)}
-                     onKeyUp={(e) => { if (e.key === "Enter") { this.updateTagProperty();}}}/>
-            </ContextMenuItem>
+            <Grid item xs key={"element-editor-" + i + key} xs={6}>
+              <TextField 
+                key={"element-editor-field" + i + key}
+                id={"mui-element-editor-input-" + i + key}
+                label={(key == "column" ? "column" : key) + ""} 
+                margin="dense"
+                size="small"
+                value={val}
+                placeholder="empty"
+                variant="outlined"
+                InputLabelProps={{shrink: true,}}
+                onChange={(e) => this.updateTempTagProperty(i, key, e.target.value)}
+                onKeyUp={(e) => { if (e.key === "Enter") { this.updateTagProperty();}}}/>
+            </Grid>
         );
       }.bind(this));
 
@@ -302,13 +324,24 @@ class Falx extends Component {
           <ContextMenu id={"tag" + i} preventHideOnContextMenu={true} 
                        preventHideOnResize={true} preventHideOnScroll={true}
                        onShow={()=>{this.revertTempTagProperty();}}>
-            {elementEditor}
+            <ContextMenuItem preventClose={true}>
+              <Grid container xs={12} spacing={1}>
+
+                <Grid item xs xs={12}>
+                  <Typography variant="body1" component="h2">
+                    Editing <Typography color="primary" variant="inherit">{tag["type"] + " #" + i}</Typography>
+                  </Typography>
+                </Grid>
+                <Divider />
+                {elementEditor}
+              </Grid>
+            </ContextMenuItem>
             <ContextMenuItem>
               <Button className="left-btn" variant="link" onClick={() => {this.updateTagProperty(); }}>
                 Save Edits
               </Button>
               <Button className="right-btn" variant="link" onClick={() => { this.removeTag(i); }}>
-                <Octicon name="trashcan"/>
+                Remove <Octicon name="trashcan"/>
               </Button>
             </ContextMenuItem>
           </ContextMenu>
@@ -364,8 +397,23 @@ class Falx extends Component {
       } 
     }
 
+    // if the demonstration contains only null elements, we'll ask the user to edit before showing preview
+    var allNull = true;
+    for(const i in previewElements) {
+      const element = previewElements[i];
+      const attributes = Object.keys(element).filter((x) => (x != "mark" && x != "element-id" && x != "detail"));
+      const values = attributes.map(x => element[x]);
+      if (! values.every(x => x == null)) {
+        allNull = false;
+        break
+      }
+    }
+
     if (markTypes.length == 0) {
-      return (<div className="grey-message">No element to preview</div>);
+      return (<div className="grey-message">Add elements above to enable preview.</div>);
+    }
+    if (allNull) {
+      return (<div className="grey-message">Edit elements above to enable preview.</div>);
     }
 
     function processElementValues(elements) {
@@ -511,7 +559,9 @@ class Falx extends Component {
     const recommendations = (specs.length > 0 ? 
                               (<Recommendations specs={specs} tableProgs={tableProgs}/>) : 
                               (<div className="output-panel">
-                                {this.state.status == "Running..." ? <div><p>Running...</p> <CircularProgress /></div> : this.state.status}</div>));
+                                {this.state.status == "Running..." ? 
+                                    <div><p>Running...</p> <CircularProgress /></div> 
+                                  : this.state.status}</div>));
     return (
       <ThemeProvider theme={theme}>
         <div className="editor">
@@ -536,7 +586,8 @@ class Falx extends Component {
                         </Dropdown>
                       </li>
                       <li>
-                        <MaterialButton size="small" color="primary" variant="outlined" onClick={this.handleDataUploadDialogOpen.bind(this)}>
+                        <MaterialButton size="small" color="primary" variant="outlined" 
+                        onClick={this.handleDataUploadDialogOpen.bind(this)}>
                           Upload Data
                         </MaterialButton>
                         <Dialog open={this.state.dataUploadDialog} 
@@ -583,10 +634,14 @@ class Falx extends Component {
                             />
                           </DialogContent>
                           <DialogActions>
-                            <MaterialButton onClick={(e) => {return this.handleDataUploadDialogClose.bind(this)(true)}} color="primary">
+                            <MaterialButton 
+                              onClick={(e) => {return this.handleDataUploadDialogClose.bind(this)(true)}} 
+                              color="primary">
                               Save
                             </MaterialButton>
-                            <MaterialButton onClick={(e) => {return this.handleDataUploadDialogClose.bind(this)(false)}} color="primary">
+                            <MaterialButton 
+                              onClick={(e) => {return this.handleDataUploadDialogClose.bind(this)(false)}} 
+                              color="primary">
                               Cancel
                             </MaterialButton>
                           </DialogActions>
@@ -630,12 +685,13 @@ class Falx extends Component {
                         <ContextMenu id="add-visual-element" preventHideOnContextMenu={true} 
                                      preventHideOnResize={true} preventHideOnScroll={true}>
                           <ContextMenuItem>
-                            <Button className="add-btn-menu-btn" 
-                                  variant="outline-info" 
-                                  onClick={() => {this.addTagElement("copy")}}>
-                              copy last
-                            </Button>
-                            {["bar", "point", "rect", "line", "area"].map(
+                            {/*disable copy last when there is no element*/
+                              this.state.tags.length > 0 ? <Button className="add-btn-menu-btn" 
+                                                              variant="outline-info" 
+                                                              onClick={() => {this.addTagElement("copy")}}>
+                                                          copy last
+                                                        </Button> : ""}
+                            {["bar", "float bar", "point", "rect", "line", "area"].map(
                               (item) => (
                                 <Button key={item} className="add-btn-menu-btn" 
                                   variant="outline-primary" 

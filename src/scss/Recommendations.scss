@@ -103,7 +103,7 @@
       .main-vis-panel {
         width: 100%;
         height: calc(100% - 100px);
-        justify-content: center;
+        //justify-content: center;
         align-items: center;
         display: flex;
         margin-top: 0;
@@ -114,6 +114,7 @@
       .chart {
         padding: 24px 16px 16px 16px;
         border-radius: 8px;
+        margin: auto;
 
         &.update {
           animation: bump 500ms $standard-ease;
@@ -255,6 +256,7 @@
         align-items: center;
         height: calc(196px);  // subtract padding on top / bottom and border
         //width: calc(196px - 32px);  // subtract padding on left / right
+        min-width: calc(196px - 32px);  // subtract padding on left / right
         justify-content: center;
         padding: 24px 16px 24px 16px;  // should add up to the margin + padding in `full`
         cursor: pointer;

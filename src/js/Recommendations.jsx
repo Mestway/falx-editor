@@ -120,16 +120,44 @@ class Recommendations extends Component {
       const specCopy = JSON.parse(JSON.stringify(spec));
 
       //specCopy["width"] = 90;
+
+      // no minWidth by default
+      var minWidth = 0;
+      var maxWidth = 90 * 6;
+      if (specCopy["width"] != 200) {
+        minWidth = (specCopy["width"] / 20) * 8;
+      }
+      // in case we don't have enough room to show ticks and labels
+      var disableXLabels = false;
+      if (specCopy["width"] / 20 > (maxWidth / 8)) {
+        disableXLabels = true;
+        if (!("layer" in specCopy)) {
+          
+        } else {
+          // ignore multi-layered charts for now
+        }
+      }
+      specCopy["width"] = Math.min(Math.max(specCopy["width"] * (90.0 / specCopy["height"]), minWidth), maxWidth);
+      
+      // set spec size height to 90 (to fix the carousel)
       specCopy["height"] = 90;
 
       if (!("layer" in specCopy)) {
         for (const key in specCopy["encoding"]) {
           specCopy["encoding"][key]["axis"] = {"labelLimit": 30, "title": null}
         }
+        if (disableXLabels) {
+          specCopy["encoding"]["x"]["axis"]["labels"] = false;
+          specCopy["encoding"]["x"]["axis"]["ticks"] = false;
+        }
       } else {
         for (var i = 0; i < specCopy["layer"].length; i ++) {
           for (const key in specCopy["layer"][i]["encoding"]) {
             specCopy["layer"][i]["encoding"][key]["axis"] = {"labelLimit": 30, "title": null}
+          }
+          if (disableXLabels) {
+            specCopy["encoding"]["x"]["axis"]["labels"] = false;
+            specCopy["encoding"]["x"]["axis"]["ticks"] = false;
           }
         }
       }
@@ -150,6 +178,18 @@ class Recommendations extends Component {
 
     // copy to force an update in vega lite
     const focusedSpec = JSON.parse(JSON.stringify(this.state.specs[this.state.focusIndex]));
+    const maxWidth = 1600;
+    if (focusedSpec["width"] > maxWidth) {
+      // in case we don't have enough room to show ticks and labels
+      if (focusedSpec["width"] / 20 > (maxWidth / 8)) {
+        if (!("layer" in focusedSpec)) {
+          focusedSpec["encoding"]["x"]["axis"] = {"labels": false, "ticks": false};
+        } else {
+          // ignore multi-layered charts for now
+        }
+      }
+      focusedSpec["width"] = maxWidth;
+    }
     const vlScript = (<VegaLite spec={focusedSpec} renderer="canvas" actions={false}/>)
 
     return (
