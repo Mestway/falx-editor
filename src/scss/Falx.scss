@@ -141,8 +141,14 @@ $body-height: 100%;
       display: flex;
       text-align: center;
       flex-wrap: wrap;
+      overflow: scroll;
       align-items: center;
-      justify-content: center;
+      //justify-content: center;
+
+      .vega-embed {
+        margin: auto;
+      }
+
     }
   }
 }
@@ -310,16 +316,6 @@ button:focus {
     border-top-right-radius: 4px;
   }
 
-  // label {
-  //   display: inline-block;
-  //   //width: 40px;
-  //   text-align: left;
-  //   padding-right: 3px;
-  //   vertical-align: middle;
-  //   margin-bottom: 0;
-  //   margin-top: 5px;
-  // }
-
   .left-btn {
     float: left;
     padding: 0px 0px 0px;
@@ -412,46 +408,6 @@ button:focus {
     white-space: nowrap;
 }
 
-.react-contextmenu-item.react-contextmenu-item--active,
-.react-contextmenu-item.react-contextmenu-item--selected {
-    //color: #fff;
-    //background-color: #91d0ff;
-    //border-color: #91d0ff;
-    text-decoration: none;
-}
-
-.react-contextmenu-item.react-contextmenu-item--disabled,
-.react-contextmenu-item.react-contextmenu-item--disabled:hover {
-    background-color: transparent;
-    border-color: rgba(0,0,0,.15);
-    color: #878a8c;
-}
-
-.react-contextmenu-item--divider {
-    border-bottom: 1px solid rgba(0,0,0,.15);
-    cursor: inherit;
-    margin-bottom: 3px;
-    padding: 2px 0;
-}
-.react-contextmenu-item--divider:hover {
-    background-color: transparent;
-    border-color: rgba(0,0,0,.15);
-}
-
-.react-contextmenu-item.react-contextmenu-submenu {
-  padding: 0;
-}
-
-.react-contextmenu-item.react-contextmenu-submenu > .react-contextmenu-item {
-}
-
-.react-contextmenu-item.react-contextmenu-submenu > .react-contextmenu-item:after {
-    content: "▶";
-    display: inline-block;
-    position: absolute;
-    right: 7px;
-}
-
 .example-multiple-targets::after {
     content: attr(data-count);
     display: block;
@@ -473,9 +429,36 @@ button:focus {
   height: 150px;
   font-style: italic;
   color: #afafaf;
+  margin: auto;
 
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+}
+
+
+.gallery-dialog {
+  max-height: 960px;
+
+  .gallery-close-btn {
+    float: right;
+    padding: 0px 0px 0px;
+  }
+
+  .upload-data-card {
+    border: 1.5px dashed rgba(0, 0, 0, 0.22)
+  }
+
+  .gallery-card {
+
+    padding: 10px;
+
+    .card-media {
+      padding-top: 5px;
+      margin: auto;
+      height: 140px;
+      object-fit: contain;
+    } 
+  }
 }

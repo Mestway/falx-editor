@@ -457,8 +457,8 @@ class VisEditor extends Component {
                 textColor="secondary"
                 className ="editor-switch layer-editor-switch"
                 centered>
-              <Tab label="Edit Layer 1" id="layer-tab-1" aria-controls="layer-tab-panel-1" />
-              <Tab label="Edit Layer 2" id="layer-tab-2" aria-controls="layer-tab-panel-2"/>
+              <Tab label="Layer 1" id="layer-tab-1" aria-controls="layer-tab-panel-1" />
+              <Tab label="Layer 2" id="layer-tab-2" aria-controls="layer-tab-panel-2"/>
             </Tabs>
           </AppBar>
           <TabPanel value={this.state.GUIEditorLayerPanelID} index={0}>

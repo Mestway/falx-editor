@@ -8,7 +8,6 @@ import Falx from "./Falx.jsx"
 import About from "./About.jsx"
 import Tutorial from "./Tutorial.jsx"
 
-import TaskGallery from "./TaskGallery.jsx"
 import '../scss/App.scss';
 
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
@@ -19,9 +18,6 @@ import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 class App extends Component {
 
   render() {
-
-    // randomly select a task from the gallery
-    const randomTaskID = Math.floor(Math.random() * TaskGallery.length);
 
     return (
       <Router>
@@ -48,7 +44,7 @@ class App extends Component {
                 </footer>
               </Route>
               <Route path="/falx">
-                <Falx data={TaskGallery[randomTaskID]["data"]} tags={TaskGallery[randomTaskID]["tags"]}/>
+                <Falx/>
               </Route>
               <Route path="/tutorial">
                 <Tutorial />

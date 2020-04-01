@@ -10,10 +10,16 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
+import CloseIcon from '@material-ui/icons/Close';
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Grid from '@material-ui/core/Grid';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardMedia from '@material-ui/core/CardMedia';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import CardContent from '@material-ui/core/CardContent';
 
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
@@ -42,9 +48,18 @@ import { readString } from 'react-papaparse'
 import Recommendations from "./Recommendations.jsx"
 import ChartTemplates from "./ChartTemplates.jsx"
 import ReactTable from "./TableViewer.jsx"
-import TaskGallery from "./TaskGallery.jsx"
 
 import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
+
+
+import TaskGallery from "./TaskGallery.jsx"
+
+function importAll(r) {
+  let images = {};
+  r.keys().map((item, index) => { images[item.replace('./', '')] = r(item); });
+  return images;
+}
+const galleryImages = importAll(require.context('../gallery-images', false, /\.(png|jpe?g|svg)$/));
 
 // Import React Table
 //import "react-table/react-table.css";
@@ -66,17 +81,23 @@ const theme = createMuiTheme({
 
 class Falx extends Component {
   constructor(props) {
+
+    // randomly select a task from the gallery
+    const randomTaskID = Math.floor(Math.random() * TaskGallery.length);
+    const data = TaskGallery[randomTaskID]["data"];
+
     super(props);
     this.state = {
-      data: this.props.data,
+      data: data,
       spec: null,
       constants: [],
-      tags: JSON.parse(JSON.stringify(this.props.tags)),
-      tempTags: JSON.parse(JSON.stringify(this.props.tags)),
+      tags: [],
+      tempTags: [],
       synthResult: [],
       status: "No result to show",
       dataUploadDialog: false,
-      dataUploadText: ""
+      dataUploadText: "",
+      galleryDialog: true
     };
     this.onFilesChange = this.onFilesChange.bind(this);
   }
@@ -115,6 +136,13 @@ class Falx extends Component {
   onFilesError(error, file) {
     console.log('error code ' + error.code + ': ' + error.message);
     this.setState({ dataUploadDialog: false });
+  }
+  // the following function handle gallery related dialog
+  handleGalleryDialogOpen() {
+    this.setState({ galleryDialog: true });
+  }
+  handleGalleryDialogClose() {
+    this.setState({ galleryDialog: false });
   }
   // the following two function deals with data upload dialog
   handleDataUploadDialogOpen() {
@@ -331,7 +359,7 @@ class Falx extends Component {
               <Grid container spacing={1}>
                 <Grid item xs xs={12}>
                   <Typography variant="body1" component="h2">
-                    Editing <Typography color="primary" variant="inherit">{tag["type"] + " #" + i}</Typography>
+                    Editing <Typography variant="inherit">{tag["type"] + " #" + i}</Typography>
                   </Typography>
                 </Grid>
                 <Divider />
@@ -443,12 +471,11 @@ class Falx extends Component {
         return "nominal";
       if (mark == "bar") {
         if (channel == "x"){
-          return vType === "string" ? "nominal" : "quantitative";
+          return "nominal"; // vType === "string" ? "nominal" : "quantitative";
         } else {
           return vType === "string" ? "nominal" : "quantitative"
         }
       } 
-
       return vType === "string" ? "nominal" : "quantitative"
     }
 
@@ -465,7 +492,7 @@ class Falx extends Component {
       var encoding = {}
       var tooltip = [{"field": "element-id", "type": "nominal", "title": "ID"}]
       for (const channel in fieldValues) {
-        encoding[channel] = {"field": channel}
+        encoding[channel] = { "field": channel }
         if (channel == "color") {
           encoding[channel]["type"] = decideEncodingType(mark, channel, fieldValues[channel].type);
         }
@@ -473,9 +500,15 @@ class Falx extends Component {
           // x2, y2 requires no type information as they should be consistent with x,y enc type
           encoding[channel]["type"] = decideEncodingType(mark, channel, fieldValues[channel].type);
         }
-        if (channel == "x" && globalFieldValues["x"].vtype == "string") {
+
+        if (channel == "x" && globalFieldValues["x"].type == "string") {
           // extend the deomain a little bit to make display more beautiful
-          encoding[channel]["scale"] = {"domain": xDomain};
+          // encoding[channel]["scale"] = {"domain": xDomain};
+
+          // bar chart will not sort entries
+          if (mark == "bar") {
+            encoding[channel]["sort"] = null;
+          }
         }
         // add tooltip to the example chart
         if (channel != "detail")
@@ -494,6 +527,7 @@ class Falx extends Component {
       if (mark == "line") {
         markObj["point"] = true;
       }
+      
       return {
         "mark": markObj,
         "transform": [{"filter": "datum.mark == \"" + mark + "\""}],
@@ -507,16 +541,40 @@ class Falx extends Component {
 
     var spec = {"height": 150};
     if (layerSpecs.length == 1) {
+      var width = 150;
+      var height = 150;
+
       for (const key in layerSpecs[0]) {
         spec[key] = layerSpecs[0][key];
       }
+
+      // adjust height and width based on values in the encoding
+      if ("x" in spec["encoding"]) {
+        if (spec["encoding"]["x"]["type"] == "nominal") {
+          width = 30 * globalFieldValues["x"].values.length;
+        } else {
+          width = 150;
+        }
+      }
+      if ("y" in spec["encoding"]) {
+        if (spec["encoding"]["y"]["type"] == "nominal") {
+          height = 30 * globalFieldValues["y"].values.length;
+        } else {
+          height = 150;
+        }
+      }
+
+      spec["width"] = width;
+      spec["height"] = height;
+
       if ("column" in spec["encoding"]) {
-        spec["height"] = 100;
+        spec["height"] = spec["height"] / 1.5;
+        spec["width"] = spec["width"] / 1.5;
       }
     } else {
       spec["layer"] = layerSpecs;
     }
-  
+
     spec["data"] = data
     
     //debug helper: print vis spec with data
@@ -536,14 +594,31 @@ class Falx extends Component {
       }
     }
 
-    const exampleTasks = TaskGallery
+    const galleryItems = TaskGallery
       .map(function(exampleTask, i) {
-        return (<Dropdown.Item as="div" key={i} 
-                onClick={() => {this.setState({
-                  data: JSON.parse(JSON.stringify(exampleTask["data"])),
-                  tags: JSON.parse(JSON.stringify(exampleTask["tags"])),
-                  tempTags: JSON.parse(JSON.stringify(exampleTask["tags"])),
-                })}}>{exampleTask["name"]}</Dropdown.Item>)
+        return (<Grid className="gallery-card" item xs={3} key={i}>
+                  <Card
+                    onClick={() => {
+                      this.setState({
+                        data: JSON.parse(JSON.stringify(exampleTask["data"])),
+                        tags: JSON.parse(JSON.stringify(exampleTask["tags"])),
+                        tempTags: JSON.parse(JSON.stringify(exampleTask["tags"]))});
+                      this.handleGalleryDialogClose();
+                    }}>
+                    <CardActionArea>
+                      <CardContent className="card-content">
+                        <Typography variant="subtitle1" component="h6">
+                          {exampleTask["name"]}
+                        </Typography> 
+                        <CardMedia
+                          component="img"
+                          className="card-media"
+                          image={galleryImages[exampleTask["preview"]]}
+                        />
+                      </CardContent>
+                    </CardActionArea>
+                  </Card>
+                </Grid>)
       }.bind(this));
 
     const menuItems = Object.keys(ChartTemplates)
@@ -578,17 +653,52 @@ class Falx extends Component {
                   <div className="title-action">
                     <ul>
                       <li> 
-                        <Dropdown className="clickable-style">
-                          <Dropdown.Toggle as="div"> 
-                            <MaterialButton size="small" color="primary" variant="outlined">
-                              Gallery  <ArrowDropDownIcon />
-                            </MaterialButton> 
-                          </Dropdown.Toggle>
-                          <Dropdown.Menu> 
-                            <Dropdown.Header>Examples</Dropdown.Header>
-                            {exampleTasks}
-                          </Dropdown.Menu>
-                        </Dropdown>
+                        <MaterialButton size="small" color="primary" variant="outlined"
+                         onClick={this.handleGalleryDialogOpen.bind(this)}>
+                          View Gallery +
+                        </MaterialButton>
+                        <Dialog 
+                            className="gallery-dialog"
+                            open={this.state.galleryDialog} maxWidth={"md"}
+                            scroll="paper" fullWidth
+                            onClose={this.handleGalleryDialogClose.bind(this)}
+                            aria-labelledby="form-dialog-title">
+                          <DialogTitle id="form-dialog-title">
+                            Gallery
+                            <IconButton className="gallery-close-btn" aria-label="close" onClick={this.handleGalleryDialogClose.bind(this)}>
+                              <CloseIcon />
+                            </IconButton>
+                          </DialogTitle>
+                          <DialogContent>
+                            <Grid container>
+                              {galleryItems}
+                              <Grid className="gallery-card" item xs={3}>
+                                <Card
+                                  className="upload-data-card"
+                                  variant="outlined"
+                                  onClick={() => {
+                                    this.setState({
+                                      dataUploadDialog: true,
+                                      galleryDialog: false
+                                    })
+                                  }}>
+                                  <CardActionArea>
+                                    <CardContent className="card-content" >
+                                      <CardMedia
+                                        component="img"
+                                        className="card-media"
+                                        image={galleryImages["upload-icon.png"]}
+                                      />
+                                      <Typography variant="subtitle1" color="primary" align="center" style={{ fontStyle: "italic" }} component="h6">
+                                        Start with your data
+                                      </Typography> 
+                                    </CardContent>
+                                  </CardActionArea>
+                                </Card>
+                              </Grid>
+                            </Grid>
+                          </DialogContent>           
+                        </Dialog>
                       </li>
                       <li>
                         <MaterialButton size="small" color="primary" variant="outlined" 
@@ -625,28 +735,19 @@ class Falx extends Component {
                             <DialogContentText>
                               Or, paste your input data (csv or json format) into the following box:
                             </DialogContentText>
-                            <TextField
-                              autoFocus
-                              margin="dense"
-                              id="dataUploadBox"
-                              label="Upload data"
-                              type="text"
-                              fullWidth
-                              multiline
-                              rows={10}
-                              rowsMax={20}
+                            <TextField autoFocus margin="dense"
+                              id="dataUploadBox" label="Upload data" type="text"
+                              fullWidth multiline rows={10} rowsMax={20}
                               onChange={this.handleUploadedDataChange.bind(this)}
                             />
                           </DialogContent>
                           <DialogActions>
-                            <MaterialButton 
-                              onClick={(e) => {return this.handleDataUploadDialogClose.bind(this)(true)}} 
-                              color="primary">
+                            <MaterialButton color="primary"
+                              onClick={(e) => {return this.handleDataUploadDialogClose.bind(this)(true)}}>
                               Save
                             </MaterialButton>
-                            <MaterialButton 
-                              onClick={(e) => {return this.handleDataUploadDialogClose.bind(this)(false)}} 
-                              color="primary">
+                            <MaterialButton color="primary"
+                              onClick={(e) => {return this.handleDataUploadDialogClose.bind(this)(false)}}>
                               Cancel
                             </MaterialButton>
                           </DialogActions>
