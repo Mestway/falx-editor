@@ -17,12 +17,20 @@ import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 
 class App extends Component {
 
+  
+
   render() {
+
+    const footer = (<footer>
+                  <div className="row">
+                    Maintained by <a href="http://uwplse.org/">UW PLSE</a>, 2020
+                  </div>
+                </footer>);
 
     return (
       <Router>
         <div id="app">
-          <Navbar className="Navbar bordered" expand="lg">
+          <Navbar className="Navbar bordered" expand="sm">
             <Navbar.Brand><Link to="/about">Falx</Link> </Navbar.Brand>
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="mr-auto">
@@ -37,11 +45,7 @@ class App extends Component {
               <Route path="/about">
                 <About />
                 <hr />
-                <footer>
-                  <div className="row">
-                    Maintained by <a href="http://uwplse.org/">UW PLSE</a>, 2020
-                  </div>
-                </footer>
+                {footer}
               </Route>
               <Route path="/tool">
                 <Falx/>
@@ -49,20 +53,12 @@ class App extends Component {
               <Route path="/tutorial">
                 <Tutorial />
                 <hr />
-                <footer>
-                  <div className="row">
-                    Maintained by <a href="http://uwplse.org/">UW PLSE</a>, 2020
-                  </div>
-                </footer>
+                {footer}
               </Route>
               <Route>
                 <About />
                 <hr />
-                <footer>
-                  <div className="row">
-                    Maintained by <a href="http://uwplse.org/">UW PLSE</a>, 2020
-                  </div>
-                </footer>
+                {footer}
               </Route>
             </Switch>
             {/*<VisEditor />*/}
