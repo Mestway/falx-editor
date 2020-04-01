@@ -44,6 +44,13 @@
     color: rgba(0, 0, 0, 0.38);
   }
 
+  .switch-label {
+    color: rgba(0, 0, 0, 0.58);
+    margin-top: auto;
+    margin-bottom: auto;
+    font-size: 14px;
+  }
+
   .raw {
     padding: 0px 16px 0 0;
     opacity: 0.9;
@@ -103,4 +110,19 @@
   .attribute-editor-grid-line {
     margin-bottom: 50px;
   }
+}
+
+.multi-layer-editor-panel {
+  margin: -10px -20px -10px -20px;
+}
+
+.config-sec-title {
+    margin-left: -10px !important;
+    color: rgba(0,0,0,0.76);
+    font-style: italic;
+}
+
+.config-sec-title {
+    color: rgba(0,0,0,0.76);
+    font-style: italic;
 }

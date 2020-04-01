@@ -26,7 +26,7 @@ class App extends Component {
             <Navbar.Brand><Link to="/about">Falx</Link> </Navbar.Brand>
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="mr-auto">
-                <Link to="/falx" className="nav-link">Tool</Link>
+                <Link to="/tool" className="nav-link">Tool</Link>
                 <Link to="/about" className="nav-link">About</Link>
                 <Link to="/tutorial" className="nav-link">Tutorial</Link>
               </Nav>
@@ -43,7 +43,7 @@ class App extends Component {
                   </div>
                 </footer>
               </Route>
-              <Route path="/falx">
+              <Route path="/tool">
                 <Falx/>
               </Route>
               <Route path="/tutorial">

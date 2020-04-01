@@ -25,7 +25,10 @@ import NativeSelect from '@material-ui/core/NativeSelect';
 import InputLabel from '@material-ui/core/InputLabel';
 import Paper from '@material-ui/core/Paper';
 import FormControl from '@material-ui/core/FormControl';
+import Switch from '@material-ui/core/Switch';
 
+import BuildIcon from '@material-ui/icons/Build';
+import SettingsIcon from '@material-ui/icons/Settings';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 
@@ -241,7 +244,7 @@ class VisEditor extends Component {
     this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
   }
 
-  handleVisPropertyChange(layerID, key, value) {
+  handleMarkChange(layerID, value) {
     // change the layer's (defined by layerID) property (specified by key) into value (value)'
     var newSpec = this.state.spec;
 
@@ -263,7 +266,6 @@ class VisEditor extends Component {
     })
     this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
   }
-
   handleEncPropChange(layerID, channel, prop, value) {
     // change the layer's (defined by layerID) channel's property (specified by key) into value (value)'
     var newSpec = this.state.spec;
@@ -276,7 +278,6 @@ class VisEditor extends Component {
     })
     this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
   }
-
   genEncodingEdit(layerID, channel, encoding) {
     const sortValue = ("sort" in encoding && encoding["sort"] != null) ? encoding["sort"] : "default";
     return (
@@ -399,28 +400,47 @@ class VisEditor extends Component {
     
     return (
       <React.Fragment>
-        <Typography variant="h6" gutterBottom>
+        <Typography className="config-sec-title" variant="subtitle1" gutterBottom>
           Mark
         </Typography>
         <Grid container spacing={3}>
-          <Grid item xs={12} sm={3}>
+          <Grid item xs xs={3}>
             <Select fullWidth labelId="label" id="select" 
                 value={markType} 
-                onChange={(event) => this.handleVisPropertyChange.bind(this)(layerID, "mark", event.target.value)}>
+                onChange={(event) => this.handleMarkChange.bind(this)(layerID, event.target.value)}>
               {["bar", "line", "rect", "point", "area"].map(item => 
                   <MenuItem key={item} value={item} selected={markType == item}>{item}</MenuItem>)}
             </Select>
           </Grid>
+          {
+            (markType == "bar" && "color" in layerSpec["encoding"]) ? (
+              <Grid item xs xs={9} style={{ margin: "auto" }}>
+                <Typography component="div">
+                  <Grid component="div" alignContent="center" container spacing={0}>
+                    <Grid item className="switch-label">Layered Bar</Grid>
+                    <Grid item>
+                      <Switch color="primary" size="small"
+                      checked={!("stack" in layerSpec["encoding"]["y"]) || layerSpec["encoding"]["y"]["stack"] != null} 
+                      onChange={(event) => {
+                          this.handleEncPropChange.bind(this)(layerID, "y", "stack", event.target.checked ? true : null);
+                       }} name="checkedC" />
+                    </Grid>
+                    <Grid item className="switch-label">Stacked Bar</Grid>
+                  </Grid>
+                </Typography>  
+              </Grid>
+            ) : ("")
+          }
         </Grid>
 
         <Divider className="invis-divider" />
-        <Typography variant="h6" gutterBottom>
+        <Typography className="config-sec-title" variant="subtitle1" gutterBottom>
           Properties
         </Typography>
         {Object.keys(layerSpec["encoding"]).map(
            (key, index) => this.genEncodingEdit(layerID, key, layerSpec["encoding"][key]))}
         <Divider className="invis-divider" />
-        <Typography variant="h6" gutterBottom>
+        <Typography className="config-sec-title" variant="subtitle1" gutterBottom>
           Filter
         </Typography>
         <Grid container alignItems="center" spacing={3}>
@@ -467,6 +487,38 @@ class VisEditor extends Component {
           <TabPanel value={this.state.GUIEditorLayerPanelID} index={1}>
             {this.GUIEditor(1)}
           </TabPanel>
+          <Typography className="config-sec-title-2" variant="subtitle1" gutterBottom>
+            Layering Options
+          </Typography>
+          <Grid container spacing={0}>
+            {["y", "color"].map((key) => {
+              return (
+                <Grid key={key} item xs xs={12}>
+                  <Typography  component="div">
+                    <Grid component="div" alignContent="center" container spacing={0}>
+                      <Grid item className="switch-label">Independent 
+                       {" "}<span style={{fontStyle: "italic"}}>{key}</span> {key == "color" ? "scheme" : "axis scale"}</Grid>
+                      <Grid item>
+                        <Switch color="primary" size="small"
+                        checked={("resolve" in this.state.spec && "scale" in this.state.spec["resolve"] 
+                                    && this.state.spec["resolve"]["scale"][key] == "independent")} 
+                        onChange={((event) => {
+                          var newSpec = this.state.spec;
+                          var value = event.target.checked ? "independent" : "shared";
+                          if (!("resolve" in newSpec))
+                            newSpec["resolve"] = {};
+                          if (!("scale" in newSpec["resolve"]))
+                            newSpec["resolve"]["scale"] = {}
+                          newSpec["resolve"]["scale"][key] = value;
+                          this.setState({ spec: newSpec })
+                          this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
+                        }).bind(this)} />
+                      </Grid>
+                    </Grid>
+                  </Typography>
+                </Grid>)
+            })}
+          </Grid>
         </div>)
     } else {
       return (<div>{this.GUIEditor(-1)}</div>);
@@ -493,10 +545,6 @@ class VisEditor extends Component {
           </AppBar>
           <TabPanel value={this.state.panelID} index={0}>
             {this.fullGUIEditor()}
-            {/*{"layer" in this.state.spec ? this.GUIEditor(0) : this.GUIEditor(-1)}
-            {"layer" in this.state.spec ? <Divider className="invis-divider" /> : ""}
-            {"layer" in this.state.spec ? <Divider className="invis-divider" /> : ""}
-            {"layer" in this.state.spec ? this.GUIEditor(1) : ""}*/}
           </TabPanel>
           <TabPanel value={this.state.panelID} index={1}>
             <div className="raw">
