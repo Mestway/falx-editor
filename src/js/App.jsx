@@ -35,31 +35,17 @@ class App extends Component {
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="mr-auto">
                 <Link to="/tool" className="nav-link">Tool</Link>
-                <Link to="/about" className="nav-link">About</Link>
+                {/*<Link to="/about" className="nav-link">About</Link>*/}
                 <Link to="/tutorial" className="nav-link">Tutorial</Link>
               </Nav>
             </Navbar.Collapse>
           </Navbar>
           <div id="app-body">
             <Switch>
-              <Route path="/about">
-                <About />
-                <hr />
-                {footer}
-              </Route>
-              <Route path="/tool">
-                <Falx/>
-              </Route>
-              <Route path="/tutorial">
-                <Tutorial />
-                <hr />
-                {footer}
-              </Route>
-              <Route>
-                <About />
-                <hr />
-                {footer}
-              </Route>
+              <Route path="/about"><About /><hr />{footer}</Route>
+              <Route path="/tool"><Falx/></Route>
+              <Route path="/tutorial"><Tutorial /><hr />{footer}</Route>
+              <Route><About /><hr />{footer}</Route>
             </Switch>
             {/*<VisEditor />*/}
           </div>
