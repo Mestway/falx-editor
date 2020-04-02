@@ -172,7 +172,7 @@ class Tutorial extends Component {
             <li>Multi-layered Visualizations (demonstrating more than one types of elements)</li>
             <li>Subplots (demonstrate any chart above with non-empty column attributes)</li>
           </ul>
-          <p>Now you have pretty much learned everything about Falx, it's time to <Link to="/falx">try it out</Link> to create some visualizations. 
+          <p>Now you have pretty much learned everything about Falx, it's time to <Link to="/tool">try it out</Link> to create some visualizations. 
             You can start with examples in the gallary and then try to create your own. :)</p>
       </div>
     );

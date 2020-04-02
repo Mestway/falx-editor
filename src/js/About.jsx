@@ -39,7 +39,7 @@ class About extends Component {
       	
         <h5>Use the Tool</h5>
 
-        <p>Visit the <Link to="/tutorial">tutorial page</Link> to learn how to use Falx, or directly go to the  <Link to="/falx">tool page</Link> to use it! </p>
+        <p>Visit the <Link to="/tutorial">tutorial page</Link> to learn how to use Falx, or directly go to the  <Link to="/tool">tool page</Link> to use it! </p>
       </div>
     );
   }
