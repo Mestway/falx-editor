@@ -51,6 +51,7 @@
     "react-bootstrap": "^1.0.0-beta.16",
     "react-contextmenu": "^2.13.0",
     "react-dom": "^16.12.0",
+    "react-draggable": "^4.2.0",
     "react-files": "^2.4.8",
     "react-filter-box": "^3.3.0",
     "react-json-view": "^1.19.1",

@@ -48,6 +48,8 @@ import { readString } from 'react-papaparse'
 import Recommendations from "./Recommendations.jsx"
 import ChartTemplates from "./ChartTemplates.jsx"
 import ReactTable from "./TableViewer.jsx"
+import Draggable from 'react-draggable'; // The default
+import AnimateOnChange from 'react-animate-on-change';
 
 import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 
@@ -93,11 +95,14 @@ class Falx extends Component {
       constants: [],
       tags: [],
       tempTags: [],
+      tagEditorOpen: -1,
       synthResult: [],
       status: "No result to show",
       dataUploadDialog: false,
       dataUploadText: "",
-      galleryDialog: true
+      galleryDialog: true,
+      updateVisPreview: false
+
     };
     this.onFilesChange = this.onFilesChange.bind(this);
   }
@@ -244,7 +249,7 @@ class Falx extends Component {
   }
   updateTagProperty() {
     const tempTags = [ ...this.state.tempTags ];
-    this.setState({ tags: JSON.parse(JSON.stringify(tempTags)) });
+    this.setState({ tags: JSON.parse(JSON.stringify(tempTags)), updateVisPreview: true });
   }
   runSynthesis() {
 
@@ -252,12 +257,10 @@ class Falx extends Component {
       this.setState({ status: "Error: empty input data", synthResult: []})
       return;
     }
-
     if (this.state.tags.length == 0) {
       this.setState({ status: "Error: empty demonstration", synthResult: []})
       return;
     }
-
     this.setState({ status: "Running...", synthResult: []})
 
     //FALX_SERVER is a environmental vairable defined in wepack.config.js
@@ -306,7 +309,8 @@ class Falx extends Component {
                   </div>);
         });
       return (
-        <div className="tag-card">
+        <div className="tag-card" 
+            onClick={(()=>{this.setState({tagEditorOpen: tagId}); this.revertTempTagProperty();}).bind(this)}>
           <div className="tag-type">{tagObj["type"] + " #" + tagId}</div>
           <div className="tag-body">{content}</div>
         </div>
@@ -323,13 +327,13 @@ class Falx extends Component {
                      onKeyUp={(e) => { if (e.key === "Enter") { this.updateTagProperty();}}}/>*/
 
     const elementTags = this.state.tags.map(function(tag, i) {
-      const tagStr = tagToString(tag, i);
+      const tagStr = tagToString.bind(this)(tag, i);
       // create a editor memu for each element
       const elementEditor = Object.keys(tag["props"])
         .map(function(key) {
           const val = this.state.tempTags[i]["props"][key] == null ? "" : this.state.tempTags[i]["props"][key];
           return (
-            <Grid item xs key={"element-editor-" + i + key} xs={6}>
+            <Grid item xs className="not-draggable" key={"element-editor-" + i + key} xs={6}>
               <TextField 
                 key={"element-editor-field" + i + key}
                 id={"mui-element-editor-input-" + i + key}
@@ -347,37 +351,49 @@ class Falx extends Component {
         );
       }.bind(this));
 
+      var editorStatus = "editor-hidden";
+      if (this.state.tagEditorOpen == i) {
+        editorStatus = "editor-visible";
+      }
+
       return (
         <li key={i} className="tag-boxes">
-          <ContextMenuTrigger className="tag-item" id={"tag" + i} holdToDisplay={0}>
-            {tagStr}
-          </ContextMenuTrigger>
-          <ContextMenu id={"tag" + i} preventHideOnContextMenu={true} 
-                       preventHideOnResize={true} preventHideOnScroll={true}
-                       onShow={()=>{this.revertTempTagProperty();}}>
-            <ContextMenuItem preventClose={true}>
-              <Grid container spacing={1}>
-                <Grid item xs xs={12}>
-                  <Typography variant="body1" component="h2">
-                    Editing <Typography variant="inherit">{tag["type"] + " #" + i}</Typography>
-                  </Typography>
+          {tagStr}
+          <Draggable cancel=".not-draggable">
+            <Card id={"tag" + i} className={"tag-editor-card" + " " + editorStatus}>
+              <CardContent className="tag-editor-card-content">
+                <Grid container spacing={1}>
+                  <Grid item xs xs={10} style={{ cursor: 'move' }}>
+                    <Typography variant="body1" component="h2">
+                      Editing <Typography variant="inherit">{tag["type"] + " #" + i}</Typography>
+                    </Typography>
+                  </Grid>
+                  <Grid item xs xs={2} style={{textAlign: "right",  cursor: 'move'}}>
+                    <CloseIcon fontSize="small" style={{cursor: 'pointer'}}
+                      onClick={() => {this.setState({tagEditorOpen: -1});}}/>
+                  </Grid>
+                  <Divider />
+                  {elementEditor}
                 </Grid>
-                <Divider />
-                {elementEditor}
-              </Grid>
-            </ContextMenuItem>
-            <ContextMenuItem>
-              <ButtonGroup className="left-btn" color="secondary" size="small" aria-label="outlined primary button group">
-                 <MaterialButton aria-label="delete" color="secondary" onClick={() => { this.removeTag(i); }}>
-                  Delete
-                </MaterialButton>
-              </ButtonGroup>
-              <ButtonGroup className="right-btn" color="primary" size="small" aria-label="outlined primary button group">
-                <MaterialButton onClick={() => {this.updateTagProperty(); }}>Save</MaterialButton>
-                <MaterialButton>Cancel</MaterialButton>
-              </ButtonGroup>
-            </ContextMenuItem>
-          </ContextMenu>
+              </CardContent>
+              <CardActions className="tag-editor-card-action">
+                <ButtonGroup className="left-btn" color="secondary" size="small" aria-label="outlined primary button group">
+                  <MaterialButton aria-label="delete" color="secondary" onClick={() => { this.removeTag(i); }}>
+                    Delete
+                  </MaterialButton>
+                </ButtonGroup>
+                <ButtonGroup className="right-btn" color="primary" size="small" aria-label="outlined primary button group">
+                  <MaterialButton 
+                    onClick={() => {this.updateTagProperty(); this.setState({tagEditorOpen: -1});}}>
+                    Save
+                  </MaterialButton>
+                  <MaterialButton onClick={() => {
+                      this.setState({tagEditorOpen: -1});
+                    }}>Cancel</MaterialButton>
+                </ButtonGroup>
+              </CardActions>
+            </Card>
+          </Draggable>
         </li>
       )
     }.bind(this));
@@ -576,11 +592,11 @@ class Falx extends Component {
     }
 
     spec["data"] = data
-    
-    //debug helper: print vis spec with data
-    console.log(JSON.stringify(spec)); 
 
-    return (<VegaLite spec={spec} data={data} tooltip={new Handler().call} actions={false}/>);
+    //debug helper: print vis spec with data
+    //console.log(JSON.stringify(spec)); 
+
+    return (<VegaLite spec={spec} tooltip={new Handler().call} actions={false}/>);
   }
   render() {
     const columns = []
@@ -665,7 +681,8 @@ class Falx extends Component {
                             aria-labelledby="form-dialog-title">
                           <DialogTitle id="form-dialog-title">
                             Gallery
-                            <IconButton className="gallery-close-btn" aria-label="close" onClick={this.handleGalleryDialogClose.bind(this)}>
+                            <IconButton className="gallery-close-btn" aria-label="close" 
+                              onClick={this.handleGalleryDialogClose.bind(this)}>
                               <CloseIcon />
                             </IconButton>
                           </DialogTitle>
@@ -689,7 +706,8 @@ class Falx extends Component {
                                         className="card-media"
                                         image={galleryImages["upload-icon.png"]}
                                       />
-                                      <Typography variant="subtitle1" color="primary" align="center" style={{ fontStyle: "italic" }} component="h6">
+                                      <Typography variant="subtitle1" color="primary" align="center" 
+                                        style={{ fontStyle: "italic" }} component="h6">
                                         Start with your data
                                       </Typography> 
                                     </CardContent>
@@ -814,9 +832,13 @@ class Falx extends Component {
                     </ul>
                   </div>
                 </div>
-                <div className="chart-disp">
+                <AnimateOnChange
+                      baseClassName="chart-disp"
+                      animationClassName="update"
+                      animate={this.state.updateVisPreview}
+                      onAnimationEnd={function() {this.setState({updateVisPreview: false});}.bind(this)}>
                   {this.renderExampleVisualization()}
-                </div>
+                </AnimateOnChange>
               </div>
               <div className="bottom-cntl">
                 <Button variant="outline-primary" onClick={() => {this.runSynthesis();}}>

@@ -3,6 +3,7 @@
 
 $body-height: 100%;
 
+
 .falx {
 	position: relative;
 }
@@ -144,6 +145,22 @@ $body-height: 100%;
       overflow: scroll;
       align-items: center;
       //justify-content: center;
+
+      &.update {
+        animation: bump 500ms $standard-ease;
+      }
+
+      @keyframes bump {
+        0% {
+          background-color: #fff;
+        }
+        50% {
+          background-color: #f0f0f0;
+        }
+        100% {
+          background-color: #fff;
+        }
+      }
 
       .vega-embed {
         margin: auto;
@@ -363,6 +380,53 @@ button:focus {
   padding: 0;
 }
 
+.tag-editor-card {
+
+  padding-top: 5px;
+  padding-bottom: 5px; 
+
+  cursor: default;
+
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: .25rem;
+  color: #373a3c;
+  font-size: 16px;
+  margin: 2px 0 0;
+  //min-width: 160px;
+  max-width: 300px;
+  outline: none;
+  //padding: 10px 0;
+
+  text-align: left;
+  
+
+  .tag-editor-card-content {
+    padding: 8px 16px 4px 16px;
+  }
+  .tag-editor-card-action {
+    display: block;
+    height: 46px;
+    padding: 4px 16px 16px 18px
+  }
+
+  // by default they are invisible
+  position: fixed;
+  opacity: 0;
+  z-index: -1;
+  pointer-events: none; 
+
+  &.editor-visible {
+    position: fixed;
+    opacity: 1;
+    z-index: 999;
+    margin-left: 65px;
+    pointer-events: auto;
+    transition: opacity 250ms ease !important;
+  }
+}
+
 .react-contextmenu {
     background-color: #fff;
     background-clip: padding-box;
@@ -375,7 +439,7 @@ button:focus {
     max-width: 300px;
     outline: none;
     opacity: 0;
-    padding: 10px 0;
+    //padding: 10px 0;
     pointer-events: none;
     text-align: left;
     transition: opacity 250ms ease !important;
