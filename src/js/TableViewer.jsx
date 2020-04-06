@@ -13,7 +13,7 @@ import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 
 import '../scss/TableViewer.scss';
 
-function ReactTable({ columns, data }) {
+function ReactTable({ columns, data, defaultPageSize }) {
   // Use the state and functions returned from useTable to build your UI
   const {
     getTableProps,
@@ -37,7 +37,7 @@ function ReactTable({ columns, data }) {
     {
       columns,
       data,
-      initialState: { pageIndex: 0 },
+      initialState: { pageIndex: 0, pageSize: defaultPageSize },
     },
     usePagination
   )

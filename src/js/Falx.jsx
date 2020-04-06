@@ -63,8 +63,6 @@ function importAll(r) {
 }
 const galleryImages = importAll(require.context('../gallery-images', false, /\.(png|jpe?g|svg)$/));
 
-// Import React Table
-//import "react-table/react-table.css";
 import '../scss/Falx.scss';
 
 const theme = createMuiTheme({
@@ -234,7 +232,7 @@ class Falx extends Component {
     }
     newTags.push(newTag);
     newTempTags.push(JSON.parse(JSON.stringify(newTag)));
-    this.setState({ tags: newTags, tempTags: newTempTags });
+    this.setState({ tags: newTags, tempTags: newTempTags, tagEditorOpen: newTags.length - 1 });
   }
   updateTempTagProperty(index, prop, value) {
     // update the temporary tag information
@@ -257,7 +255,16 @@ class Falx extends Component {
       this.setState({ status: "Error: empty input data", synthResult: []})
       return;
     }
-    if (this.state.tags.length == 0) {
+
+    // remove tags that contain null values
+    const validTags = this.state.tags.filter((element) => {
+      const attributes = Object.keys(element["props"]);
+      return (! attributes.map(x => element["props"][x]).some(x => x == null));
+    })
+
+    console.log(validTags);
+
+    if (validTags.length == 0) {
       this.setState({ status: "Error: empty demonstration", synthResult: []})
       return;
     }
@@ -273,7 +280,7 @@ class Falx extends Component {
       },
       body: JSON.stringify({
         "data": this.state.data,
-        "tags": this.state.tags,
+        "tags": validTags,
         "constants": this.state.constants
       })
     }).then(res => res.json())
@@ -337,14 +344,15 @@ class Falx extends Component {
               <TextField 
                 key={"element-editor-field" + i + key}
                 id={"mui-element-editor-input-" + i + key}
-                label={(key == "column" ? "column" : key) + ""} 
+                label={(key == "column" ? "column" : key)} 
                 margin="dense"
-                size="small"
+                //size="small"
                 autoComplete='off'
                 value={val}
                 placeholder="empty"
                 variant="outlined"
-                InputLabelProps={{shrink: true,}}
+                //error={this.state.tempTags[i]["props"][key] == null}
+                InputLabelProps={{shrink: true, required: (this.state.tempTags[i]["props"][key] == null)}}
                 onChange={(e) => this.updateTempTagProperty(i, key, e.target.value)}
                 onKeyUp={(e) => { if (e.key === "Enter") { this.updateTagProperty();}}}/>
             </Grid>
@@ -356,8 +364,11 @@ class Falx extends Component {
         editorStatus = "editor-visible";
       }
 
+      const tagAttrs = Object.keys(tag["props"]);
+      const tagIncomplete = tagAttrs.map(x => tag["props"][x]).some(x => x == null);
+
       return (
-        <li key={i} className="tag-boxes">
+        <li key={i} className={"tag-boxes " + (tagIncomplete ? "incomplete" : "")}>
           {tagStr}
           <Draggable cancel=".not-draggable">
             <Card id={"tag" + i} className={"tag-editor-card" + " " + editorStatus}>
@@ -403,11 +414,17 @@ class Falx extends Component {
   renderExampleVisualization() {
     // visualize example tags created by the users in a VegaLite chart
 
-    const markTypes = [...new Set(this.state.tags.map((d, i) => {return d["type"];}))];
+    // remove tags that contain null values
+    const validTags = this.state.tags.filter((element) => {
+      const attributes = Object.keys(element["props"]);
+      return (! attributes.map(x => element["props"][x]).some(x => x == null));
+    })
+
+    const markTypes = [...new Set(validTags.map((d, i) => {return d["type"];}))];
     var previewElements = []
-    for (const i in this.state.tags){
-      const markType = this.state.tags[i]["type"];
-      const tagObj = this.state.tags[i];
+    for (const i in validTags){
+      const markType = validTags[i]["type"];
+      const tagObj = validTags[i];
 
       // the function to remove unused properties
       const removeUnusedProps = (props) => {
@@ -555,10 +572,10 @@ class Falx extends Component {
       "values": previewElements
     };
 
-    var spec = {"height": 150};
+    var spec = {"height": 120};
     if (layerSpecs.length == 1) {
-      var width = 150;
-      var height = 150;
+      var width = 120;
+      var height = 120;
 
       for (const key in layerSpecs[0]) {
         spec[key] = layerSpecs[0][key];
@@ -569,14 +586,14 @@ class Falx extends Component {
         if (spec["encoding"]["x"]["type"] == "nominal") {
           width = 30 * globalFieldValues["x"].values.length;
         } else {
-          width = 150;
+          width = 120;
         }
       }
       if ("y" in spec["encoding"]) {
         if (spec["encoding"]["y"]["type"] == "nominal") {
           height = 30 * globalFieldValues["y"].values.length;
         } else {
-          height = 150;
+          height = 120;
         }
       }
 
@@ -594,7 +611,7 @@ class Falx extends Component {
     spec["data"] = data
 
     //debug helper: print vis spec with data
-    //console.log(JSON.stringify(spec)); 
+    console.log(JSON.stringify(spec)); 
 
     return (<VegaLite spec={spec} tooltip={new Handler().call} actions={false}/>);
   }
@@ -779,7 +796,7 @@ class Falx extends Component {
                     data={this.state.data}
                     //resolveData={data => this.state.data.map(row => row)}
                     columns={columns}
-                    pageSize={Math.min(this.state.data.length, 10)}
+                    defaultPageSize={Math.min(this.state.data.length, 8)}
                     showPaginationBottom={true}
                     showPageSizeOptions={false}
                     className="-striped -highlight"
@@ -800,9 +817,9 @@ class Falx extends Component {
                 </div>
                 <div className="element-disp">
                   <div className="input-tag">
-                    <ul className="input-tag__tags">
+                    <div className="input-tag__tags">
                       {elementTags}
-                      <li className="tag-boxes" id="add-btn-li" key="plus">
+                      <div className="tag-boxes" id="add-btn-li" key="plus">
                         <ContextMenuTrigger id="add-visual-element" className="okok" holdToDisplay={0}>
                           <Tooltip title="Add new element">
                             <IconButton aria-label="add" color="primary">
@@ -828,9 +845,12 @@ class Falx extends Component {
                                 </Button>))}
                           </ContextMenuItem>
                         </ContextMenu>
-                      </li>
-                    </ul>
+                      </div>
+                    </div>
                   </div>
+                </div>
+                <div className="seg-title-small">
+                  <div className="title">Demonstration Preview</div>
                 </div>
                 <AnimateOnChange
                       baseClassName="chart-disp"
