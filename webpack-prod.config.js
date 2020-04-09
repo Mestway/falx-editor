@@ -48,7 +48,7 @@ module.exports = {
       filename: "./index.html"
     }),
     new webpack.DefinePlugin({
-      FALX_SERVER: JSON.stringify("http://clwang-desktop.cs.washington.edu:5000"),
+      FALX_SERVER: JSON.stringify(""), // requires that the front-end is served from the same port
     })
   ],
   devServer: {
