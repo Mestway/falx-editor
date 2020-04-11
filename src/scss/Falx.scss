@@ -29,6 +29,11 @@ $body-height: 100%;
   }
 }
 
+.MuiTooltip-tooltip {
+  font-size: 12pt !important;
+  padding: 6px 10px !important;
+}
+
 .input-panel {
 
   .seg-title-small {
@@ -114,12 +119,26 @@ $body-height: 100%;
       display: block;
     }
 
+    .task-display {
+      //height: 60px;
+      margin-top: 5px;
+      margin-bottom: 5px;
+      overflow: scroll;
+      display: block;
+      color: slategrey;
+
+      .task-description {
+        max-width: 80%;
+        text-align: center;
+        margin: auto;
+      }
+    }
+
     .element-disp {
 
       $ele-disp-height: 21vh;
 
       max-height: $ele-disp-height;
-      min-height: 180px;
       width: 100%;
 
       display: flex;

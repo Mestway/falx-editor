@@ -11,6 +11,7 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloseIcon from '@material-ui/icons/Close';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -20,6 +21,8 @@ import CardActions from '@material-ui/core/CardActions';
 import CardMedia from '@material-ui/core/CardMedia';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
+import Paper from '@material-ui/core/Paper';
+
 
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
@@ -32,6 +35,9 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip'
 import IconButton from '@material-ui/core/IconButton';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
+
 
 import { ContextMenu, MenuItem as ContextMenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Files from 'react-files';
@@ -88,6 +94,7 @@ class Falx extends Component {
 
     super(props);
     this.state = {
+      task: "",
       data: data,
       spec: null,
       constants: [],
@@ -99,8 +106,9 @@ class Falx extends Component {
       dataUploadDialog: false,
       dataUploadText: "",
       galleryDialog: true,
-      updateVisPreview: false
-
+      updateVisPreview: false,
+      loadGalleryInExerciseMode: false,
+      displayPanelSize: 650
     };
     this.onFilesChange = this.onFilesChange.bind(this);
   }
@@ -289,13 +297,14 @@ class Falx extends Component {
           const synthStatus = (result.length == 0) ? "No solution found ..." : "idle";
           this.setState({
             synthResult: result,
-            status: synthStatus
+            status: synthStatus,
+            displayPanelSize: 450,
           })
         },
         (error) => {
           this.setState({
             synthResult: [],
-            status: "Error"
+            status: "Error",
           });
         }
       );
@@ -629,13 +638,25 @@ class Falx extends Component {
 
     const galleryItems = TaskGallery
       .map(function(exampleTask, i) {
+
+        var galleryTags = JSON.parse(JSON.stringify(exampleTask["tags"]));
+        if (this.state.loadGalleryInExerciseMode) {
+          // create empty tags in exercise mode
+          galleryTags = galleryTags.map(e => { 
+            var props = {}
+            Object.entries(e["props"]).forEach(([key, val]) => { props[key] = null });
+            return { "type": e["type"], "props": props }})
+        }
+
         return (<Grid className="gallery-card" item xs={3} key={i}>
                   <Card
                     onClick={() => {
                       this.setState({
                         data: JSON.parse(JSON.stringify(exampleTask["data"])),
-                        tags: JSON.parse(JSON.stringify(exampleTask["tags"])),
-                        tempTags: JSON.parse(JSON.stringify(exampleTask["tags"]))});
+                        tags: JSON.parse(JSON.stringify(galleryTags)),
+                        tempTags: JSON.parse(JSON.stringify(galleryTags)),
+                        task: "task" in exampleTask ? exampleTask["task"] : ""
+                      });
                       this.handleGalleryDialogClose();
                     }}>
                     <CardActionArea>
@@ -678,7 +699,8 @@ class Falx extends Component {
     return (
       <ThemeProvider theme={theme}>
         <div className="editor">
-          <SplitPane className="editor-plane" split="vertical" minSize={450} defaultSize={450}>
+          <SplitPane className="editor-plane" split="vertical" 
+              minSize={450} size={this.state.displayPanelSize}>
             <div className="input-panel">
               <div className="input-display">
                 <div className="seg-title">
@@ -704,25 +726,36 @@ class Falx extends Component {
                             </IconButton>
                           </DialogTitle>
                           <DialogContent>
+                            <div>
+                              <Typography component="span">
+                                <Grid component="label" container justify="space-between" alignItems="center" spacing={1}>
+                                  <Grid item> Start by selecting an example below or upload your data: </Grid>
+                                  <Tooltip
+                                   // leaveDelay={5000000}
+                                    arrow
+                                    title={<div>In exercise mode, only input data is loaded, it's your task to create demonstrations.</div>}>
+                                    <Grid item>
+                                        <span>
+                                          Exercise mode 
+                                          <HelpOutlineIcon 
+                                            style={{fontSize: "12px", color: "grey", verticalAlign: "super"}}/>: {this.state.loadGalleryInExerciseMode ? "On" : "Off"}
+                                        </span>
+                                      <Switch checked={this.state.loadGalleryInExerciseMode}
+                                        onChange={((event) => {this.setState({loadGalleryInExerciseMode : event.target.checked})}).bind(this)}
+                                        name="loadGalleryInExerciseMode" color="primary"/>
+                                    </Grid>
+                                  </Tooltip>
+                                </Grid>
+                              </Typography>
+                            </div>
                             <Grid container>
                               {galleryItems}
                               <Grid className="gallery-card" item xs={3}>
-                                <Card
-                                  className="upload-data-card"
-                                  variant="outlined"
-                                  onClick={() => {
-                                    this.setState({
-                                      dataUploadDialog: true,
-                                      galleryDialog: false
-                                    })
-                                  }}>
+                                <Card className="upload-data-card" variant="outlined"
+                                  onClick={() => {this.setState({ dataUploadDialog: true, galleryDialog: false})}}>
                                   <CardActionArea>
                                     <CardContent className="card-content" >
-                                      <CardMedia
-                                        component="img"
-                                        className="card-media"
-                                        image={galleryImages["upload-icon.png"]}
-                                      />
+                                      <CardMedia component="img" className="card-media" image={galleryImages["upload-icon.png"]} />
                                       <Typography variant="subtitle1" color="primary" align="center" 
                                         style={{ fontStyle: "italic" }} component="h6">
                                         Start with your data
@@ -741,14 +774,15 @@ class Falx extends Component {
                           Upload Data
                         </MaterialButton>
                         <Dialog open={this.state.dataUploadDialog} 
+                            fullWidth
+                            maxWidth="sm"
                             onClose={(e) => {return this.handleDataUploadDialogClose.bind(this)(false)}}
                             aria-labelledby="form-dialog-title">
                           <DialogTitle id="form-dialog-title">Upload Data</DialogTitle>
                           <DialogContent>
                             <DialogContentText>
-                              Upload a .csv or .json file from your local storage:
+                              Upload a .csv or .json file:
                             </DialogContentText>
-
                             <DialogContentText>
                               <MaterialButton color="primary" variant="outlined">
                                 <Files className='files-dropzone' onChange={this.onFilesChange}
@@ -768,10 +802,10 @@ class Falx extends Component {
                             </DialogContentText>
                             
                             <DialogContentText>
-                              Or, paste your input data (csv or json format) into the following box:
+                              Or, copy and paste data (.csv or .json) to the following box:
                             </DialogContentText>
                             <TextField autoFocus margin="dense"
-                              id="dataUploadBox" label="Upload data" type="text"
+                              id="dataUploadBox" label="Input data" type="text"
                               fullWidth multiline rows={10} rowsMax={20}
                               onChange={this.handleUploadedDataChange.bind(this)}
                             />
@@ -802,6 +836,16 @@ class Falx extends Component {
                     className="-striped -highlight"
                   />
                 </div>
+                {( this.state.task == "" ? 
+                    "": 
+                    (<div>
+                      <div className="seg-title">
+                        <div className="title">Task</div>
+                      </div>
+                      <div className="task-display">
+                        <div className="task-description">{this.state.task}</div>
+                      </div>
+                    </div>))}
                 <div className="seg-title">
                   <div className="title">Demonstration</div>
                   <Dropdown className="clickable-style title-action">
@@ -815,7 +859,7 @@ class Falx extends Component {
                     </Dropdown.Menu>
                   </Dropdown>
                 </div>
-                <div className="element-disp">
+                <div className="element-disp" style={{minHeight: this.state.task == "" ? "180px": "0px"}}>
                   <div className="input-tag">
                     <div className="input-tag__tags">
                       {elementTags}

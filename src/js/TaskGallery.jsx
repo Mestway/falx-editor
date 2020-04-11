@@ -3,6 +3,7 @@ const TaskGallery = [
     "name": "Budgeted vs Actual",
     "chart type": "Grouped Bar Chart",
     "preview": "budget.png",
+    "task": "For each Bucket, create a bar chart to compare the budget and actual spending (label each bar as \"Budgeted\" and \"Actual\").",
     "data": [
       { "Bucket": "Bucket E", "Budgeted": 100, "Actual": 115 },
       { "Bucket": "Bucket D", "Budgeted": 100, "Actual": 90 },
@@ -19,6 +20,7 @@ const TaskGallery = [
     "name": "Profits",
     "chart type": "Line Chart + Bar Chart",
     "preview": "quarter-line.png",
+    "task": "Create a line chart to show the actual profits change at each quarter, and create a bar chart to show the number of units per quarter.",
     "data": [
       { "Quarter": "Quarter1", "Number of Units": 23, "Actual Profits": 3358 },
       { "Quarter": "Quarter2", "Number of Units": 27, "Actual Profits": 3829 },
@@ -33,6 +35,7 @@ const TaskGallery = [
   }, {
     "name": "Profits Area Chart",
     "preview": "quarter-area.png",
+    "task": "Creat an area chart to show the actual profits change during the four quarters.",
     "data": [
       { "Quarter": "Quarter1", "Number of Units": 23, "Actual Profits": 3358 },
       { "Quarter": "Quarter2", "Number of Units": 27, "Actual Profits": 3829 },
@@ -46,6 +49,7 @@ const TaskGallery = [
   }, {
     "name": "Confidence Interval",
     "preview": "confidence-interval.png",
+    "task": "Create a line chart to show how the mean value changes from Y1 to Y5. Then, create an area chart to show upper and lower range on top of the line chart.",
     "data": [
       {"Value":"means","Y1":0.52,"Y2":0.57,"Y3":0.6,"Y4":0.63,"Y5":0.63},
       {"Value":"stddev","Y1":0.1328,"Y2":0.1321,"Y3":0.1303,"Y4":0.1266,"Y5":0.1225},
@@ -61,6 +65,7 @@ const TaskGallery = [
   }, {
     "name": "Heatmap",
     "preview": "heatmap.png",
+    "task": "Create a faceted heat map to show the sales value for each product at each quarter of different years. (For each year, create a subplot shows the sales value for each products at each quarter, the color should reflect sales value.)",
     "data": [{"product":"Product1_2011","Q4":3,"Q3":5,"Q2":5,"Q1":10},
              {"product":"Product2_2011","Q4":5,"Q3":7,"Q2":5,"Q1":2},
              {"product":"Product3_2011","Q4":3,"Q3":9,"Q2":10,"Q1":7},
@@ -87,6 +92,7 @@ const TaskGallery = [
   }, {
     "name": "Waterfall Chart",
     "preview": "waterfall.png",
+    "task": "Create a waterfall chart to show changes of net cash flow, use color to reflect the value change.",
     "data": [
       {"Net Cash Flow": 80000, "Month": "Start"},
       {"Net Cash Flow": -5003, "Month": "Jan"},
@@ -110,6 +116,7 @@ const TaskGallery = [
   }, {
     "name": "Subplots",
     "preview": "subplots.png",
+    "task": "For each area (North_America, EMEA, ...), create a line chart subplot that shows the value change between phases of the project (each quarter should use a different color to distinguish among them).",
     "data": [
       {"C1":"Q1","C2":"Targeted","North_America":56,"EMEA":66,"APAC":48,"LATAM":48},
       {"C1":"Q1","C2":"Engaged","North_America":52,"EMEA":65,"APAC":47,"LATAM":48},
@@ -131,6 +138,7 @@ const TaskGallery = [
   }, {
     "name": "Scatter Subplots",
     "preview": "subplots-point.png",
+    "task": "For each region (North, West), create a scatter plot as a subplot to show the sales value for each year. Use different color to distinguish the Choc from Bisc.",
     "data": [
       {"Year":"2007","SOUTH-Choc":10,"SOUTH-Bisc":4,"WEST-Choc":6,"WEST-Bisc":4,"NORTH-Choc":14,"NORTH-Bisc":6},
       {"Year":"2008","SOUTH-Choc":11,"SOUTH-Bisc":5,"WEST-Choc":10,"WEST-Bisc":5,"NORTH-Choc":18,"NORTH-Bisc":6.7},
@@ -186,6 +194,7 @@ const TaskGallery = [
   }, {
     "name": "Line Chart",
     "preview": "line-chart.png",
+    "task": "Create a line chart to show how values changes from id 0 to 11 for each column. Values from different columns should have different colors.",
     "data": [
       {"Consuntivo 2010":42560,"Consuntivo 2011":64146,"Obiettivo 2011":51072.0,"id":0},
       {"Consuntivo 2010":46368,"Consuntivo 2011":74043,"Obiettivo 2011":64915.2,"id":1},

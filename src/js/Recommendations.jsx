@@ -46,7 +46,7 @@ class Recommendations extends Component {
       tableProgs: props.tableProgs,
       updateFocus: false,
       focusIndex: 0,
-      showInfoPane: true
+      showInfoPane: window.innerWidth > 1400 ? true : false
     };
   }
   updateSpec(index, newSpec) {
@@ -230,12 +230,13 @@ class Recommendations extends Component {
               </div>
             </div>
             <div className="info">
-                <button data-tip={this.state.showInfoPane ? "Collapse the editor" : "Open the editor"} 
-                        className="expand-button" 
+                <Tooltip placement="left" 
+                  title={this.state.showInfoPane ? "Collapse the editor" : "Open the editor"}>
+                <button className="expand-button" 
                         onClick={() => { this.setState({ showInfoPane: !this.state.showInfoPane }); }}>
                   {expandButton}
                 </button>
-                <ReactTooltip />
+                </Tooltip>
                 <VisEditor tableProg={this.state.tableProgs[this.state.focusIndex]} 
                            spec={this.state.specs[this.state.focusIndex]}
                            specIndex={this.state.focusIndex}
