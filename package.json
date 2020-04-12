@@ -65,7 +65,7 @@
     "react-tooltip": "^3.11.6",
     "react-vega": "^7.2.1",
     "react-window": "^1.8.5",
-    "regenerator-runtime": "^0.13.3",
+    "regenerator-runtime": "^0.13.5",
     "validatorjs": "^3.18.1",
     "vega": "^5.9.1",
     "vega-embed": "^3.30.0",

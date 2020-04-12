@@ -45,7 +45,6 @@ class App extends Component {
               <Route path="/about"><About /><hr />{footer}</Route>
               <Route path="/tool"><Falx/></Route>
               <Route path="/tutorial"><Tutorial /><hr />{footer}</Route>
-              <Route><About /><hr />{footer}</Route>
             </Switch>
             {/*<VisEditor />*/}
           </div>

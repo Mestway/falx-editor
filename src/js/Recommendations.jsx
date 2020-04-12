@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import classNames from 'classnames';
 
 import SplitPane from 'react-split-pane';
-import { VegaLite } from 'react-vega';
+import { VegaLite, createClassFromSpec } from 'react-vega';
 import AnimateOnChange from 'react-animate-on-change';
 
 import AppBar from '@material-ui/core/AppBar';
@@ -19,10 +19,20 @@ import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import Tooltip from '@material-ui/core/Tooltip'
 import IconButton from '@material-ui/core/IconButton'
+import Button from '@material-ui/core/Button';
+
+import "regenerator-runtime/runtime.js";
 
 import VisEditor from "./VisEditor.jsx"
+import { EncodeEntryName, Loader, LoaderOptions, Renderers, Spec as VgSpec, TooltipHandler, View } from 'vega';
 
 import '../scss/Recommendations.scss';
+
+import * as vegaImport from 'vega';
+import * as vegaLiteImport from 'vega-lite';
+
+const vega = vegaImport;
+const vegaLite = vegaLiteImport
 
 const COLLAPSED_INFO_PANE_SIZE = 24;
 const DEFAULT_INFO_PANE_SIZE = 402;
@@ -63,13 +73,29 @@ class Recommendations extends Component {
     });
   }
 
-  downloadVis(spec) {
+  downloadVis(spec, ext) {
+    // spec: vega lite spec
+    // ext: extension (svg / png)
+
     const element = document.createElement("a");
     const file = new Blob([spec], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = "vis-save.json";
-    document.body.appendChild(element); // Required for this to work in FireFox
-    element.click();
+
+    var vgSpec = vegaLite.compile(JSON.parse(spec)).spec;
+    var view = new vega.View(vega.parse(vgSpec), {renderer: 'none'});
+
+    // generate a PNG snapshot and then download the image
+    view.toImageURL(ext).then(function(url) {
+      var link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('target', '_blank');
+      link.setAttribute('download', 'vega-export.' + ext);
+      link.dispatchEvent(new MouseEvent('click'));
+    }).catch(function(error) { /* error handling */ });
+
+    // element.href = URL.createObjectURL(file);
+    // element.download = "vis-save.json";
+    // document.body.appendChild(element); // Required for this to work in FireFox
+    // element.click();
   }
   openInVegaEditor(specStr) {
     const editorURL = "https://vega.github.io/editor/";
@@ -208,16 +234,22 @@ class Recommendations extends Component {
               minSize={24} maxSize={-400}>
             <div className={classNames({'vis-focus': true})}>
               <div className="save-btn-area">
-              <Tooltip title="Download Visualization Script">
-                <IconButton aria-label="save" onClick={() => this.downloadVis(JSON.stringify(focusedSpec, null, '\t'))}>
-                  <SaveAltIcon color="primary"/>
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Open in Vega Editor">
-                <IconButton aria-label="vega-editor" onClick={() => this.openInVegaEditor(JSON.stringify(focusedSpec, null, '\t'))}>
-                  <OpenInNewIcon color="primary"/>
-                </IconButton>
-              </Tooltip>
+                {"Actions:  "}
+                <Button size="small"  aria-label="save" 
+                  color="primary" style={{minWidth: "0px"}}
+                  onClick={() => this.downloadVis(JSON.stringify(focusedSpec, null, '\t'), "png")}>
+                  Download (.png)
+                </Button>
+                {" | "}
+                <Button size="small" color="primary" style={{minWidth: "0px"}}
+                  aria-label="save" onClick={() => this.downloadVis(JSON.stringify(focusedSpec, null, '\t'), "svg")}>
+                  Download (.svg)
+                </Button>
+                {" | "}
+                <Button aria-label="vega-editor" size="small" color="primary" style={{minWidth: "0px"}}
+                  onClick={() => this.openInVegaEditor(JSON.stringify(focusedSpec, null, '\t'))}>
+                  Open in vega editor
+                </Button>
               </div>
               <div className="main-vis-panel">
                 <AnimateOnChange
