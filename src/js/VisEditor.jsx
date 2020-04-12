@@ -453,11 +453,12 @@ class VisEditor extends Component {
               autoCompleteHandler = {customAutoCompleteHandler}/>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Button fullWidth variant="outlined" 
-                    onClick={(event) => this.saveTempFilters.bind(this)(layerID)}> {"Save Filter"} </Button>
+            <Button fullWidth variant="outlined" color="primary" size="small"
+                    onClick={(event) => this.saveTempFilters.bind(this)(layerID)}
+                    style={{textTransform: "none"}}> {"Save Filter"} </Button>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Button fullWidth variant="outlined" 
+            <Button fullWidth variant="outlined" color="primary" size="small" style={{textTransform: "none"}}
                     onClick={(event) => this.clearFilters.bind(this)(layerID)}> {"Clear Filter"} </Button>
           </Grid>
         </Grid>
