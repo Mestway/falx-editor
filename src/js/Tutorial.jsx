@@ -101,7 +101,7 @@ class Tutorial extends Component {
 
         <h4 id="step2">Step 2: Create a demonstration</h4>
         <p>Now, we'll create a demonstration to convey our visualization intent to Falx. 
-          The idea is that we'll create a mini visualization that visualizes only a few data points from input data, 
+          The idea is that we'll create a mini visualization that visualizes only a few data points from the input data, 
           and let Falx create the full visualization by generalizing our demonstration to the full dataset.</p>
         
         <p>In this task, since <a href="#our-goal">our goal</a> is to create a faceted heatmap for the sales data that is composed of rectangles, 
@@ -109,8 +109,8 @@ class Tutorial extends Component {
           We’ll use the “Demonstration” panel to create the mini heatmap.</p>
         
         <p style={{clear:"both"}}>Starting from an empty canvas, let’s create a mini heatmap that contains only one rectangle to visualize the very first entry in the sales dataset 
-          --- the sales value for Product1 at Quarter4 of year 2011 (which is 3). 
-          To do so, we can click the "+" button in the demonstration panel and add a rectangle and edit its properties as follows:
+          --- the sales value for Product1 in Quarter4 of year 2011 is 3. 
+          To do so, we can click the "+" button in the demonstration panel and add a rectangle (a "rect") and edit its properties as follows:
         </p>
         
         <div style={{width: "100%"}}>
@@ -125,7 +125,7 @@ class Tutorial extends Component {
           </figure>
         </div>
         
-        <p style={{clear:"both"}}>After finishing editing its properties, click “save edits”. The rectangle will show up in the “Demonstration” panel, 
+        <p style={{clear:"both"}}>After finishing editing its properties, click "Save". The rectangle will show up in the “Demonstration” panel, 
           and the mini visualization will be displayed in the “Demonstration preview” section. 
           The mini visualization looks like this:
         </p>
@@ -156,7 +156,7 @@ class Tutorial extends Component {
 
         <h4 id="step4">Step 4: Enrich the demonstration and re-run Falx </h4>
 
-        <p>Right now, there are quite a lot of visualizations created by Falx that generalize our demonstration --- every one of them contain the rectangle we provided in the mini visualization. However, it can be inconvenient for us to navigate through all of them to decide which is <a href="#our-goal">the one we want</a> due to the number of created visualizations. </p>
+        <p>Right now, there are quite a lot of visualizations created by Falx that generalize our demonstration --- every one of them contain the rectangle we provided in the mini visualization. However, it is inconvenient for us to navigate through all of them to decide which is <a href="#our-goal">the one we want</a> due to the number of created visualizations. </p>
         <p>The cause of Falx generating quite a lot of visualizations is that our demonstration is inherently ambiguous: in our demonstration, we specified that “we want a heatmap that at contains the given rectangle (the sales value 3 for Product1, year 2011, Q4)”, but we didn’t provide much clue to Falx about things like “should the final visualization contain entries from Q3?” and “Should the final visualization include data from 2013?”.</p>
         <p>Of course, we don’t need to tell everything to Falx (since that’s a lot of work), But, we can easily help Falx by enriching our demonstration to reduce ambiguity. Here, besides the first rectangle we provided, we can add another rectangle to the mini heatmap. For example, we can add a new rectangle to show the sales data for Product2 at Quarter3 of year 2011 (which is 7):</p>
 
@@ -176,7 +176,7 @@ class Tutorial extends Component {
           </figure>
         </div>
 
-        <p>We can again use the “Synthesize” button to ask Falx to find visualizations that generalize the mini heatmap. Since our demonstration this time contains more information about our objective, it is less ambiguous to Falx, and Falx finds less visualizations that satisfy our demonstration and in a shorter amount of time. Visualizations created by Falx are displayed in the editor panel. </p>
+        <p>We can again use the “Synthesize” button to ask Falx to find visualizations that generalize the mini heatmap. Since our demonstration this time contains more information about our objective, it is less ambiguous to Falx, and Falx finds fewer number of visualizations that satisfy our demonstration and in a shorter amount of time. Visualizations created by Falx are displayed in the editor panel. </p>
 
         <div className="centered-img">
           <figure>
@@ -184,9 +184,9 @@ class Tutorial extends Component {
           </figure>
         </div>
 
-        <p>As we can see, Falx only returns 4 visualizations this time due to reduced ambiguity from the demonstration, and the last visualization is <a href="#our-goal">the one we want</a>. Click on it to view it in the editor. After obtaining the desired visualization, we can post-process the visualization to fix some minor problems of the visualization (e.g., axis titles) and then export it.</p>
+        <p>As we can see, Falx only returns 4 visualizations this time due to reduced ambiguity from the demonstration, and the last visualization is the one we want (<a href="#our-goal">here</a>). Click on it to view it in the editor. After obtaining the desired visualization, we can post-process the visualization to fix some minor problems of the visualization (e.g., axis titles) and then export it.</p>
 
-        <p className="tips">Tips: In general, we don’t have to create a lot of examples to Falx -- we can always start with 1-2 examples in our mini visualization. We only need to add more examples if (1) Falx failed to create the desired visualization or (2) there are too many visualizations shown up in the output panel that makes navigation difficult. More examples can both help disambiguate our intent and speed up Falx.</p>
+        <p className="tips">Tips: In general, we don’t have to create a lot of examples to Falx -- we can always start with 1-2 examples in our mini visualization. We only need to add more examples if (1) Falx failed to create the desired visualization or (2) there are too many visualizations showing up in the output panel that makes navigation difficult. More examples can both help disambiguate our intent and speed up Falx.</p>
 
         <hr />
 
@@ -217,7 +217,7 @@ class Tutorial extends Component {
             <li>Scatter Plot (demonstrating points)</li>
             <li>Area Chart (demonstrating areas)</li>
             <li>Bar Chart (demonstrating bars)</li>
-            <li>Heatmap (demonstrating rectangulars)</li>
+            <li>Heatmap (demonstrating rectangles)</li>
             <li>Stacked Bar Chart (demonstrating bars with different colors)</li>
             <li>Stacked Area Chart (demonstrating areas with different colors)</li>
             <li>Multi-layered Visualizations (demonstrating more than one types of elements)</li>
