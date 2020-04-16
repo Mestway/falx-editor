@@ -13,7 +13,7 @@ class About extends Component {
     return (
       <div className="about-page">
 
-      	<h2>Automated Data Visualization with <span className="tool-name">Falx</span></h2>
+      	<h2>Automated Data Visualization with <Link to="/tool">Falx</Link></h2>
         <br />
         <h5>What's Falx?</h5>
 
@@ -33,9 +33,7 @@ class About extends Component {
 
         <img className="centered-img" src={AboutExample} height="450px" alt="torchlight in the sky" />
 
-        <p> With <span className="tool-name">Falx</span>, we don't need to worry about data reshaping or visualization scripting --- 
-    			 <span className="tool-name">Falx</span> automatically prepares the data and generates the visualization script for you. 
-    			<span className="tool-name">Falx</span> generates the data preparation script in R and the visualization script in Vega-Lite that can be edited later. </p>
+        <p> With <span className="tool-name">Falx</span>, we don't need to worry about data reshaping or visualization scripting --- <span className="tool-name">Falx</span> automatically prepares the data and generates the visualization script for you. <span className="tool-name">Falx</span> generates the data preparation script in R and the visualization script in Vega-Lite that can be edited later. </p>
       	
         <h5>Use the Tool</h5>
 

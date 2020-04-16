@@ -163,11 +163,13 @@ class Recommendations extends Component {
           // ignore multi-layered charts for now
         }
       }
-      specCopy["width"] = Math.min(Math.max(specCopy["width"] * (90.0 / specCopy["height"]), minWidth), maxWidth);
-      
-      // set spec size height to 90 (to fix the carousel)
-      specCopy["height"] = 90;
 
+      if (specCopy["height"] > 90) {
+        specCopy["width"] = Math.min(Math.max(specCopy["width"] * (90.0 / specCopy["height"]), minWidth), maxWidth);
+        // set spec size height to 90 (to fix the carousel)
+        specCopy["height"] = 90;
+      }
+      
       if (!("layer" in specCopy)) {
         for (const key in specCopy["encoding"]) {
           specCopy["encoding"][key]["axis"] = {"labelLimit": 30, "title": null}
@@ -182,8 +184,8 @@ class Recommendations extends Component {
             specCopy["layer"][i]["encoding"][key]["axis"] = {"labelLimit": 30, "title": null}
           }
           if (disableXLabels) {
-            specCopy["encoding"]["x"]["axis"]["labels"] = false;
-            specCopy["encoding"]["x"]["axis"]["ticks"] = false;
+            specCopy["layer"][i]["encoding"]["x"]["axis"]["labels"] = false;
+            specCopy["layer"][i]["encoding"]["x"]["axis"]["ticks"] = false;
           }
         }
       }

@@ -61,6 +61,7 @@ import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 
 
 import TaskGallery from "./TaskGallery.jsx"
+//import TaskGallery from "./StudyTasks.jsx"
 
 function importAll(r) {
   let images = {};
@@ -200,7 +201,7 @@ class Falx extends Component {
     const newTempTags = [ ...this.state.tempTags ];
     newTags.splice(i, 1);
     newTempTags.splice(i, 1);
-    this.setState({ tags: newTags, tempTags: newTempTags });
+    this.setState({ tagEditorOpen: -1, tags: newTags, tempTags: newTempTags });
   }
   addTagElement(tagName) {
     // add a new element to tags of the current input example
@@ -311,7 +312,9 @@ class Falx extends Component {
   }
   renderElementTags() {
     // Render element tags that displays current visual elements created by the user
-    function tagToString(tagObj, tagId) {
+    function tagToString(tagObj, index) {
+
+      const tagId = index + 1;
       // maps each tag to a string
       const tagObjKeys = Object.keys(tagObj["props"])
           .filter(function(key) { return tagObj["props"][key] !== ""; });
@@ -326,7 +329,7 @@ class Falx extends Component {
         });
       return (
         <div className="tag-card" 
-            onClick={(()=>{this.setState({tagEditorOpen: tagId}); this.revertTempTagProperty();}).bind(this)}>
+            onClick={(()=>{this.setState({tagEditorOpen: index}); this.revertTempTagProperty();}).bind(this)}>
           <div className="tag-type">{tagObj["type"] + " #" + tagId}</div>
           <div className="tag-body">{content}</div>
         </div>
@@ -385,7 +388,7 @@ class Falx extends Component {
                 <Grid container spacing={1}>
                   <Grid item xs xs={10} style={{ cursor: 'move' }}>
                     <Typography variant="body1" component="h2">
-                      Editing <Typography variant="inherit">{tag["type"] + " #" + i}</Typography>
+                      Editing <Typography variant="inherit">{tag["type"] + " #" + (i + 1)}</Typography>
                     </Typography>
                   </Grid>
                   <Grid item xs xs={2} style={{textAlign: "right",  cursor: 'move'}}>
@@ -434,6 +437,7 @@ class Falx extends Component {
     for (const i in validTags){
       const markType = validTags[i]["type"];
       const tagObj = validTags[i];
+      const elementID = markType + " #" + (parseInt(i) + 1);
 
       // the function to remove unused properties
       const removeUnusedProps = (props) => {
@@ -448,8 +452,8 @@ class Falx extends Component {
                        "y": tagObj["props"]["y1"], "color": tagObj["props"]["color"], "detail": i};
         var props_r = {"mark": markType, "x": tagObj["props"]["x2"], 
                        "y": tagObj["props"]["y2"], "color": tagObj["props"]["color"], "detail": i};
-        props_l["element-id"] = markType + " #" + i;
-        props_r["element-id"] = markType + " #" + i;
+        props_l["element-id"] = elementID;
+        props_r["element-id"] = elementID;
         previewElements.push(removeUnusedProps(props_l));
         previewElements.push(removeUnusedProps(props_r));
       } else if (markType == "area") {
@@ -460,14 +464,14 @@ class Falx extends Component {
         var props_r = {"mark": markType, "x": tagObj["props"]["x_right"], 
                         "y": tagObj["props"]["y_top_right"], "y2": tagObj["props"]["y_bot_right"], 
                         "color": tagObj["props"]["color"], "detail": i};
-        props_l["element-id"] = markType + " #" + i;
-        props_r["element-id"] = markType + " #" + i;
+        props_l["element-id"] = elementID;
+        props_r["element-id"] = elementID;
         previewElements.push(removeUnusedProps(props_l));
         previewElements.push(removeUnusedProps(props_r));
       } else {
         var props = removeUnusedProps(tagObj["props"]);
         props["mark"] = markType;
-        props["element-id"] = markType + " #" + i;
+        props["element-id"] = elementID;
         previewElements.push(props);
       } 
     }
@@ -515,10 +519,14 @@ class Falx extends Component {
         if (channel == "x"){
           return "nominal"; // vType === "string" ? "nominal" : "quantitative";
         } else {
-          return vType === "string" ? "nominal" : "quantitative"
+          return vType === "string" ? "nominal" : "quantitative";
         }
-      } 
-      return vType === "string" ? "nominal" : "quantitative"
+      }
+      if (mark == "rect") {
+        if (channel == "x" || channel == "y")
+          return "nominal";
+      }
+      return vType === "string" ? "nominal" : "quantitative";
     }
 
     const globalFieldValues = processElementValues(previewElements);
@@ -749,9 +757,8 @@ class Falx extends Component {
                               </Typography>
                             </div>
                             <Grid container>
-                              {galleryItems}
                               <Grid className="gallery-card" item xs={3}>
-                                <Card className="upload-data-card" variant="outlined"
+                                <Card className="upload-data-card" variant="outlined" 
                                   onClick={() => {this.setState({ dataUploadDialog: true, galleryDialog: false})}}>
                                   <CardActionArea>
                                     <CardContent className="card-content" >
@@ -764,6 +771,7 @@ class Falx extends Component {
                                   </CardActionArea>
                                 </Card>
                               </Grid>
+                              {galleryItems}
                             </Grid>
                           </DialogContent>           
                         </Dialog>
