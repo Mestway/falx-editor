@@ -59,7 +59,6 @@ import AnimateOnChange from 'react-animate-on-change';
 
 import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 
-
 import TaskGallery from "./TaskGallery.jsx"
 //import TaskGallery from "./StudyTasks.jsx"
 
