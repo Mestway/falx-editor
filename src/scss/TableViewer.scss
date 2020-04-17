@@ -1,7 +1,16 @@
 @import "base";
 
 .react-table-cell {
-	padding: 3px !important;
+	padding: 3px 6px 3px 6px !important;
+	cursor: pointer;
+}
+
+.react-table-cell-header {
+//	font-weight: bold;
+}
+
+.react-table-cell:hover {
+	background-color: rgba(0,0,0,0.05);
 }
 
 .react-table {
@@ -31,3 +40,13 @@
   	}
 }
 
+.tipIcon {
+	
+	.MuiPopover-paper {
+		padding: 4px 8px;
+		font-size: 0.875rem;
+		font-weight: 500;
+		background-color: rgba(97, 97, 97, 0.9);
+		color: white;
+	}
+}

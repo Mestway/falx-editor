@@ -10,6 +10,7 @@ import TableRow from '@material-ui/core/TableRow'
 import IconButton from '@material-ui/core/IconButton';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
+import Popover from '@material-ui/core/Popover';
 
 import '../scss/TableViewer.scss';
 
@@ -32,15 +33,34 @@ function ReactTable({ columns, data, defaultPageSize }) {
     nextPage,
     previousPage,
     setPageSize,
-    state: { pageIndex, pageSize },
+    state: { pageIndex, pageSize},
   } = useTable(
     {
       columns,
       data,
-      initialState: { pageIndex: 0, pageSize: defaultPageSize },
+      initialState: { pageIndex: 0, pageSize: defaultPageSize, showCopied: false, pointerX: 0, pointerY: 0 },
     },
     usePagination
   )
+
+  const [showCopied, setShowCopied] = React.useState(false);
+  const [tipPositionX, setTipPositionX] = React.useState(0);
+  const [tipPositionY, setTipPositionY] = React.useState(0);
+
+  const handleClickCopy = (x, y) => {
+    setTipPositionX(x);
+    setTipPositionY(y);
+    setShowCopied(true);
+
+    setTimeout(function () {
+      setShowCopied(false);
+    }, 300);
+  }
+
+  const showTips = (event, cellValue) => {
+                       navigator.clipboard.writeText(cellValue); 
+                       event.persist();
+                       handleClickCopy(event.clientX, event.clientY);}
 
   // Render the UI for your table
   return (
@@ -50,7 +70,8 @@ function ReactTable({ columns, data, defaultPageSize }) {
           {headerGroups.map(headerGroup => (
             <TableRow {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map(column => (
-                <TableCell className="react-table-cell" {...column.getHeaderProps()}>
+                <TableCell className="react-table-cell react-table-cell-header" onClick={(e) => showTips(e, cell.value)} 
+                    {...column.getHeaderProps()}> 
                   {column.render('Header')}
                 </TableCell>
               ))}
@@ -64,7 +85,8 @@ function ReactTable({ columns, data, defaultPageSize }) {
               <TableRow {...row.getRowProps()}>
                 {row.cells.map(cell => {
                   return (
-                    <TableCell className="react-table-cell" {...cell.getCellProps()}>
+                    <TableCell className="react-table-cell" onClick={(e) => showTips(e, cell.value)}
+                        {...cell.getCellProps()}>
                       {cell.render('Cell')}
                     </TableCell>
                   )
@@ -92,6 +114,23 @@ function ReactTable({ columns, data, defaultPageSize }) {
           <KeyboardArrowRight />
         </IconButton>
       </div>
+
+      <Popover 
+        className="tipIcon"
+        anchorReference="anchorPosition"
+        open={showCopied}
+        anchorPosition={{ top: tipPositionY, left: tipPositionX }}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+      >
+        copied!
+      </Popover>
     </>
   )
 }
