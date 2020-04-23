@@ -70,7 +70,7 @@ function ReactTable({ columns, data, defaultPageSize }) {
           {headerGroups.map(headerGroup => (
             <TableRow {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map(column => (
-                <TableCell className="react-table-cell react-table-cell-header" onClick={(e) => showTips(e, cell.value)} 
+                <TableCell className="react-table-cell react-table-cell-header" onClick={(e) => {console.log(column); showTips(e, column.Header)}} 
                     {...column.getHeaderProps()}> 
                   {column.render('Header')}
                 </TableCell>

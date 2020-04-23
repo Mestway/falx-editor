@@ -8,6 +8,7 @@ import Select from '@material-ui/core/Select';
 
 import Dropdown from 'react-bootstrap/Dropdown';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloseIcon from '@material-ui/icons/Close';
@@ -22,7 +23,7 @@ import CardMedia from '@material-ui/core/CardMedia';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import Paper from '@material-ui/core/Paper';
-
+import Badge from '@material-ui/core/Badge';
 
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
@@ -37,6 +38,9 @@ import Tooltip from '@material-ui/core/Tooltip'
 import IconButton from '@material-ui/core/IconButton';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
+import Popper from '@material-ui/core/Popper';
+import Fade from '@material-ui/core/Fade';
+import MessageIcon from '@material-ui/icons/Message';
 
 
 import { ContextMenu, MenuItem as ContextMenuItem, ContextMenuTrigger } from "react-contextmenu";
@@ -96,6 +100,7 @@ class Falx extends Component {
     this.state = {
       task: "",
       data: data,
+      dataValues: [],
       spec: null,
       constants: [],
       tags: [],
@@ -103,6 +108,8 @@ class Falx extends Component {
       tagEditorOpen: -1,
       synthResult: [],
       status: "No result to show",
+      message: [],
+      messageOpen: false,
       dataUploadDialog: false,
       dataUploadText: "",
       galleryDialog: true,
@@ -111,7 +118,83 @@ class Falx extends Component {
       displayPanelSize: 650
     };
     this.onFilesChange = this.onFilesChange.bind(this);
+    this.messageBtnRef = React.createRef();
   }
+
+  // handles tag updates
+  updateTags(newTags, dataValues=null) {
+    // use this function to wrap all tag updates
+    this.setState({tags: newTags});
+
+    const values = dataValues == null ? this.state.dataValues : dataValues;
+    if (dataValues != null) {
+      // update data values if it is null
+      this.setState({dataValues : dataValues});
+    } 
+
+    var newMessage = []
+    for (var i = 0; i < newTags.length; i ++) {
+      const tag = newTags[i];
+      for (const [key, value] of Object.entries(tag["props"])) {
+        if (typeof value == "string" && isNaN(value)) {
+          // if we find an entry from the demo that cannot be derived from the input data
+          if (values.length > 0 && values.indexOf(value) == -1) {
+            newMessage.push(<span>Falx won't be able to derive the value <span className="message-color-style">{value}</span> 
+              {" "} (in <span className="message-color-style">{tag["type"] + " #" + (i + 1)}</span>) from the input table.</span>);
+          }
+        }
+      }
+    }
+    if (newMessage.length > 0) {
+      newMessage.push(<span>To proceeed, try fix value errors (if they are typos) or delete elements that contain errors to simplify the visualization task.</span>)
+    }
+   
+    this.updateMessage(newMessage, "demo");
+  }
+  updateData(data, tags=[]) {
+    // use this function to wrap all data updates
+    // calculate what values are contained in the input table
+    var values = []
+    var splittedValues = []
+    for (var i = 0; i < data.length; i ++) {
+      const row = data[i];
+      for (const [key, value] of Object.entries(row)) {
+        if (i == 0) {
+          values.push(key);
+        }
+        values.push(row[key]);
+      }
+    }
+    values = Array.from(new Set(values));
+    values.forEach(v => {
+      if (typeof v == "string") {
+        ["-", "_"].forEach(sep => {
+          if (v.indexOf(sep) > -1) {
+            v.split(sep).forEach(seg => {
+              splittedValues.push(seg);
+            })
+          }
+        })
+      }
+    })
+    // stores all possible values that can be derived form the input table
+    const dataValues = Array.from(new Set(values.concat(splittedValues)));
+    this.setState({data: data, dataValues: dataValues});
+    this.updateTags(tags, dataValues);
+  }
+  updateMessage(rawMessages, source) {
+    // update message will delete message of the same type and then set older message as "old"
+
+    const newMessage = rawMessages.map(m => ({"source": source, "body": m, status: "new"}));
+
+    // if (newMessage.length > 0)
+    //   newMessage.push("Please check if there is a typo in the input. Or, consider removing attributes.")
+    const updatedMessage = newMessage.concat(this.state.message
+      .filter(m => (m["source"] != source))
+      .map(m => ({"source": m["source"], "status": "old", "body": m["body"]})));
+    this.setState({message: updatedMessage, messageOpen: updatedMessage.length > 0});
+  }
+
   // the following two function deals with upload data from file
   onFilesChange(files) {
     const file = files[0]
@@ -137,9 +220,7 @@ class Falx extends Component {
         // load json data
         data =  JSON.parse(event.target.result);
       }
-      this.setState({
-        data: data
-      });
+      this.updateData(data);
     }.bind(this);
     reader.readAsText(file);
     this.setState({ dataUploadDialog: false });
@@ -186,21 +267,22 @@ class Falx extends Component {
           this.setState({dataUploadTextError: true});
         }
       }
-      this.setState({ data: data });
+      this.updateData(data);
     }
     this.setState({ dataUploadDialog: false });
   }
   handleUploadedDataChange(e) {
     this.setState({ dataUploadText: e.target.value});
   }
-  // handles tag updates
   removeTag(i) {
     // add a tag
     const newTags = [ ...this.state.tags ];
     const newTempTags = [ ...this.state.tempTags ];
     newTags.splice(i, 1);
     newTempTags.splice(i, 1);
-    this.setState({ tagEditorOpen: -1, tags: newTags, tempTags: newTempTags });
+    // set tempTags and update tags
+    this.setState({ tagEditorOpen: -1, tempTags: newTempTags });
+    this.updateTags(newTags);
   }
   addTagElement(tagName) {
     // add a new element to tags of the current input example
@@ -240,7 +322,8 @@ class Falx extends Component {
     }
     newTags.push(newTag);
     newTempTags.push(JSON.parse(JSON.stringify(newTag)));
-    this.setState({ tags: newTags, tempTags: newTempTags, tagEditorOpen: newTags.length - 1 });
+    this.setState({ tempTags: newTempTags, tagEditorOpen: newTags.length - 1 });
+    this.updateTags(newTags);
   }
   updateTempTagProperty(index, prop, value) {
     // update the temporary tag information
@@ -255,7 +338,8 @@ class Falx extends Component {
   }
   updateTagProperty() {
     const tempTags = [ ...this.state.tempTags ];
-    this.setState({ tags: JSON.parse(JSON.stringify(tempTags)), updateVisPreview: true });
+    this.updateTags(JSON.parse(JSON.stringify(tempTags)));
+    this.setState({ updateVisPreview: true });
   }
   runSynthesis() {
 
@@ -293,13 +377,32 @@ class Falx extends Component {
       })
     }).then(res => res.json())
       .then(
-        (result) => {
+        (response) => {
+          const result = response["result"];
           const synthStatus = (result.length == 0) ? "No solution found ..." : "idle";
           this.setState({
             synthResult: result,
             status: synthStatus,
-            displayPanelSize: 450,
+            displayPanelSize: 450
           })
+
+          var messages = []
+          if (result.length == 0) {
+            if (result.status == "timeout") {
+              messages.push(
+                <span>Falx timed out on this task, consider adding more elements in the demonstration to help Falx solves faster.</span>)
+            } else {
+              messages.push(
+                <span>Falx cannot find any program that matches the demonstration. It's possible that the demonstration contains error or the visualization requires some data transformation unsupported by Falx.
+                {" "} To proceed, please check possible errors or simplify the visualization.</span>)
+            }
+          }
+          if (result.length > 10) {
+            messages.push(
+              <span>Falx found {result.length} visualizations that match the demonstration. Adding more examples can help Falx narrow down the correct solution.</span>)
+          }
+
+          this.updateMessage(messages, "synthesis");
         },
         (error) => {
           this.setState({
@@ -367,8 +470,8 @@ class Falx extends Component {
                 onChange={(e) => this.updateTempTagProperty(i, key, e.target.value)}
                 onKeyUp={(e) => { if (e.key === "Enter") { this.updateTagProperty();}}}/>
             </Grid>
-        );
-      }.bind(this));
+          );
+        }.bind(this));
 
       var editorStatus = "editor-hidden";
       if (this.state.tagEditorOpen == i) {
@@ -631,6 +734,20 @@ class Falx extends Component {
 
     return (<VegaLite spec={spec} tooltip={new Handler().call} actions={false}/>);
   }
+  renderMessage() {
+    // if (newMessage.length > 0)
+    //   newMessage.push("Please check if there is a typo in the input. Or, consider removing attributes.")
+    if (this.state.message.length > 0) {
+      return (
+        <ul style={{paddingLeft: "20px"}}>
+          {this.state.message.map((s, i) => <li key={"message" + i} style={{"opacity": s["status"] == "new" ? 1 : 0.5}}>
+            {s["status"] == "new" ? (<span className="message-color-style">[new]{" "}</span>) : ""} 
+            {s["body"]}</li>)}
+        </ul>);
+    } else {
+      return <p style={{fontStyle: "italic", color: "gray"}}>No message yet</p>
+    }
+  }
   render() {
     const columns = []
     if (this.state.data.length > 0) {
@@ -658,9 +775,8 @@ class Falx extends Component {
         return (<Grid className="gallery-card" item xs={3} key={i}>
                   <Card
                     onClick={() => {
+                      this.updateData(JSON.parse(JSON.stringify(exampleTask["data"])), JSON.parse(JSON.stringify(galleryTags)));
                       this.setState({
-                        data: JSON.parse(JSON.stringify(exampleTask["data"])),
-                        tags: JSON.parse(JSON.stringify(galleryTags)),
                         tempTags: JSON.parse(JSON.stringify(galleryTags)),
                         task: "task" in exampleTask ? exampleTask["task"] : ""
                       });
@@ -685,9 +801,10 @@ class Falx extends Component {
     const menuItems = Object.keys(ChartTemplates)
       .map(function(key) {
         return (<Dropdown.Item as="div" key={key} 
-                onClick={() => {this.setState({
-                  tags: JSON.parse(JSON.stringify(ChartTemplates[key]["tags"])),
-                  tempTags: JSON.parse(JSON.stringify(ChartTemplates[key]["tags"])),
+                onClick={() => {
+                  this.updateTags(JSON.parse(JSON.stringify(ChartTemplates[key]["tags"])));
+                  this.setState({
+                    tempTags: JSON.parse(JSON.stringify(ChartTemplates[key]["tags"])),
                 })}}>{key}</Dropdown.Item>)
       }.bind(this));
 
@@ -703,11 +820,68 @@ class Falx extends Component {
                                 {this.state.status == "Running..." ? 
                                     <div><p>Running...</p> <CircularProgress /></div> 
                                   : this.state.status}</div>));
+
+    
+    // the system message btn and the popper message
+    const messageBtn = (
+      <Draggable cancel=".not-draggable">
+        <Badge style={{
+              position: "absolute",
+              left: "calc(100% - 200px)",
+              top: "calc(100% - 50px)",
+              zIndex: 10,
+              // zIndex: this.state.message.length == 0 ? -99 : 10,
+              // opacity: this.state.message.length == 0 ? 0 : 1
+            }} 
+          color="secondary" 
+          badgeContent={this.state.message.length}>
+          <MaterialButton 
+            onClick={(e =>  {this.setState({ messageOpen: ! this.state.messageOpen })}).bind(this)}
+            ref={this.messageBtnRef}
+            variant="contained"
+            color="secondary"
+            size="small"
+            startIcon={<MessageIcon />}
+            //endIcon={this.state.messageOpen ? <ArrowDropDownIcon /> : <ArrowDropUpIcon />}
+          >
+              System Message
+          </MaterialButton>
+        </Badge>
+      </Draggable>);
+
+    const messagePopper = (
+      <Popper style={{zIndex: 10}} 
+          open={this.state.messageOpen /*&& this.state.message.length > 0 */} 
+          anchorEl={this.messageBtnRef.current} placement="top-end" transition>
+        {({ TransitionProps }) => (
+          <Fade {...TransitionProps} timeout={150}>
+            <Card style={{maxWidth: "400px"}} variant="outlined">
+              <CardContent style={{fontSize: "16px", "padding": "12px"}}>
+                <Grid container spacing={1}>
+                  <Grid item xs xs={10} style={{fontWeight: "bold"}}>System Message</Grid>
+                  <Grid item xs xs={2} style={{textAlign: "right"}}>
+                    <CloseIcon fontSize="small" style={{cursor: 'pointer'}}
+                      onClick={() => {this.setState({messageOpen: false});}}/>
+                  </Grid>
+                  <Divider />
+                  <Grid item xs xs={12} style={{ cursor: 'move' }}>
+                    {this.renderMessage()}
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Fade>
+        )}
+      </Popper>)
+
     return (
       <ThemeProvider theme={theme}>
         <div className="editor">
           <SplitPane className="editor-plane" split="vertical" 
-              minSize={450} size={this.state.displayPanelSize}>
+              minSize={450} size={this.state.displayPanelSize}
+              onDragFinished={size => {
+                this.setState({ displayPanelSize: size })
+              }}>
             <div className="input-panel">
               <div className="input-display">
                 <div className="seg-title">
@@ -837,7 +1011,7 @@ class Falx extends Component {
                     data={this.state.data}
                     //resolveData={data => this.state.data.map(row => row)}
                     columns={columns}
-                    defaultPageSize={Math.min(this.state.data.length, 8)}
+                    defaultPageSize={Math.min(this.state.data.length + 1, 8)}
                     showPaginationBottom={true}
                     showPageSizeOptions={false}
                     className="-striped -highlight"
@@ -919,7 +1093,9 @@ class Falx extends Component {
             </div>
             { recommendations }
           </SplitPane>
-         </div>
+        </div>
+        {messagePopper}
+        {messageBtn}
       </ThemeProvider>
     );
   }

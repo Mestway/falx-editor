@@ -49,7 +49,7 @@ const TaskGallery = [
   }, {
     "name": "Confidence Interval",
     "preview": "confidence-interval.png",
-    "task": "Create a line chart to show how the mean value changes from Y1 to Y5. Then, create an area chart to show upper and lower range on top of the line chart.",
+    "task": "Create a line chart to show the trend of the mean value from Y1 to Y5. Then, create an area chart to show upper and lower range on top of the line chart.",
     "data": [
       {"Value":"means","Y1":0.52,"Y2":0.57,"Y3":0.6,"Y4":0.63,"Y5":0.63},
       {"Value":"stddev","Y1":0.1328,"Y2":0.1321,"Y3":0.1303,"Y4":0.1266,"Y5":0.1225},
@@ -65,7 +65,7 @@ const TaskGallery = [
   }, {
     "name": "Heatmap",
     "preview": "heatmap.png",
-    "task": "Create a faceted heat map to show the sales value for each product at each quarter of different years. (For each year, create a subplot shows the sales value for each products at each quarter, the color should reflect sales value.)",
+    "task": "Create a faceted heat map to show sales value for each product in each quarter during 2011-2013. For each year, create a subplot (a heatmap) that uses color to reflect the sales value.",
     "data": [{"product":"Product1_2011","Q4":3,"Q3":5,"Q2":5,"Q1":10},
              {"product":"Product2_2011","Q4":5,"Q3":7,"Q2":5,"Q1":2},
              {"product":"Product3_2011","Q4":3,"Q3":9,"Q2":10,"Q1":7},
@@ -86,13 +86,12 @@ const TaskGallery = [
              {"product":"Product6_2013","Q4":8,"Q3":10,"Q2":6,"Q1":4}],
     "tags": [
       {"type": "rect", "props": { "x": "Q2", "y": "Product4",  "color": 8, "column": "2011"}},
-      {"type": "rect", "props": { "x": "Q2", "y": "Product5",  "color": 1, "column": "2011"}},
       {"type": "rect", "props": { "x": "Q1", "y": "Product3",  "color": 7, "column": "2011"}}
     ]
   }, {
     "name": "Waterfall Chart",
     "preview": "waterfall.png",
-    "task": "Create a waterfall chart to show changes of net cash flow, use color to reflect the value change.",
+    "task": "Create a waterfall chart to show changes of net cash flow, use color to show different between the value of the current month and that from the last month.",
     "data": [
       {"Net Cash Flow": 80000, "Month": "Start"},
       {"Net Cash Flow": -5003, "Month": "Jan"},
@@ -116,7 +115,7 @@ const TaskGallery = [
   }, {
     "name": "Subplots",
     "preview": "subplots.png",
-    "task": "For each area (North_America, EMEA, ...), create a line chart subplot that shows the value change between phases of the project (each quarter should use a different color to distinguish among them).",
+    "task": "For each area (North_America, EMEA, ...), create a line chart as a subplot to show the price change between phases (Targeted, Pitched, Engaged, Adopted) of the project. Use lines with different colors to distinguish prices from different quarters.",
     "data": [
       {"C1":"Q1","C2":"Targeted","North_America":56,"EMEA":66,"APAC":48,"LATAM":48},
       {"C1":"Q1","C2":"Engaged","North_America":52,"EMEA":65,"APAC":47,"LATAM":48},
@@ -133,7 +132,7 @@ const TaskGallery = [
     ],
     "tags": [
       {"type": "line", "props": {"x1": "Targeted", "y1": 56, "x2": "Engaged", "y2": 52, "color": "Q1", "column": "North_America"}},
-      {"type": "line", "props": {"x1": "Targeted", "y1": 56, "x2": "Engaged", "y2": 54, "color": "Q2", "column": "EMEA"}},
+      //{"type": "line", "props": {"x1": "Targeted", "y1": 56, "x2": "Engaged", "y2": 54, "color": "Q2", "column": "EMEA"}},
     ]
   }, {
     "name": "Scatter Subplots",
