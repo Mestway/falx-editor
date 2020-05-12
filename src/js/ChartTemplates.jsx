@@ -4,47 +4,40 @@ const ChartTemplates = {
     },
     "Simple Bar Chart": {
         "tags": [
-            {"type": "bar", "props": { "x": null, "y": null}},
-            {"type": "bar", "props": { "x": null, "y": null}}
+            {"type": "bar", "props": { "x": null, "y": null, "color": "", "column": ""}},
+            {"type": "bar", "props": { "x": null, "y": null, "color": "", "column": ""}}
         ]
     },
     "Stacked Bar Chart": {
         "tags": [
-            {"type": "bar", "props": { "x": null, "y": null, "color": null}},
-            {"type": "bar", "props": { "x": null, "y": null, "color": null}},
-            {"type": "bar", "props": { "x": null, "y": null, "color": null}},
-        ]
-    },
-    "Faceted Bar Chart": {
-        "tags": [
-            {"type": "bar", "props": { "x": null, "y": null, "column": null}},
-            {"type": "bar", "props": { "x": null, "y": null, "column": null}},
-            {"type": "bar", "props": { "x": null, "y": null, "column": null}},
+            {"type": "bar", "props": { "x": null, "y": null, "color": null, "column": ""}},
+            {"type": "bar", "props": { "x": null, "y": null, "color": null, "column": ""}},
+            {"type": "bar", "props": { "x": null, "y": null, "color": null, "column": ""}},
         ]
     },
     "Waterfall Chart": {
         "tags": [
-            {"type": "bar", "props": { "x": null, "y": null, "y2": null, "color": null}},
-            {"type": "bar", "props": { "x": null, "y": null, "y2": null, "color": null}},
+            {"type": "bar", "props": { "x": null, "y": null, "y2": null, "color": null, "column": ""}},
+            {"type": "bar", "props": { "x": null, "y": null, "y2": null, "color": null, "column": ""}},
         ]
     },
     "Scatter Plot": {
         "tags": [
-            {"type": "point", "props": { "x": null, "y": null, "color": null}},
-            {"type": "point", "props": { "x": null, "y": null, "color": null}},
+            {"type": "point", "props": { "x": null, "y": null, "color": null, "column": ""}},
+            {"type": "point", "props": { "x": null, "y": null, "color": null, "column": ""}},
         ]
     },
     "Line Chart": {
         "tags": [
-            {"type": "line", "props": {"x1": null, "y1": null, "x2": null, "y2": null, "color": null}},
-            {"type": "line", "props": {"x1": null, "y1": null, "x2": null, "y2": null, "color": null}},
+            {"type": "line", "props": {"x1": null, "y1": null, "x2": null, "y2": null, "color": null, "column": ""}},
+            {"type": "line", "props": {"x1": null, "y1": null, "x2": null, "y2": null, "color": null, "column": ""}},
         ]
     },
     "Heatmap": {
         "tags": [
-            {"type": "rect", "props": { "x": null, "y": null, "color": null}},
-            {"type": "rect", "props": { "x": null, "y": null, "color": null}},
-            {"type": "rect", "props": { "x": null, "y": null, "color": null}},
+            {"type": "rect", "props": { "x": null, "y": null, "color": null, "column": ""}},
+            {"type": "rect", "props": { "x": null, "y": null, "color": null, "column": ""}},
+            {"type": "rect", "props": { "x": null, "y": null, "color": null, "column": ""}},
         ]
     },
     // "Culminative Sum": {

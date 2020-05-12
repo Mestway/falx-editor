@@ -34,8 +34,8 @@ class Tutorial extends Component {
           <li><a href="#step1">Step 1: Upload Data</a></li>
           <li><a href="#step2">Step 2: Create a demonstration</a></li>
           <li><a href="#step3">Step 3: Run Falx</a></li>
-          <li><a href="#step4">Step 4: Enrich the demonstration and re-run Falx</a></li>
-          <li><a href="#step5">Step 5: (Optional): Post-processing</a></li>
+          {/*<li><a href="#step4">Step 4: Enrich the demonstration and re-run Falx</a></li>*/}
+          <li><a href="#step4">Step 4: (Optional): Post-processing</a></li>
           <li><a href="#summary">Summary</a></li>
         </ul>
 
@@ -150,10 +150,18 @@ class Tutorial extends Component {
           </figure>
         </div>
 
-        <p>We can click on some of them to view them in the editor to check if <a href="#our-goal">the desired one</a> is indeed created by Falx.</p>
+        <p>We can click on some of them to view them in the editor to check if <a href="#our-goal">the desired one</a> is indeed created by Falx. Visualizations created by Falx are displayed in the editor panel. </p>
+
+        <div className="centered-img">
+          <figure>
+            <img className="step-img" src={tutorialImages["step3-result-full.png"]} width="80%" />
+          </figure>
+        </div>
+
+        <p>As we can see, the first visualization is the one we want (<a href="#our-goal">here</a>). Click on it to view it in the editor. After obtaining the desired visualization, we can post-process it to fix some minor problems of the visualization (e.g., axis titles) and then export it.</p>
 
         <hr />
-
+{/*
         <h4 id="step4">Step 4: Enrich the demonstration and re-run Falx </h4>
 
         <p>Right now, there are quite a lot of visualizations created by Falx that generalize our demonstration --- every one of them contain the rectangle we provided in the mini visualization. However, it is inconvenient for us to navigate through all of them to decide which is <a href="#our-goal">the one we want</a> due to the number of created visualizations. </p>
@@ -188,9 +196,9 @@ class Tutorial extends Component {
 
         <p className="tips">Tips: In general, we don’t have to create a lot of examples to Falx -- we can always start with 1-2 examples in our mini visualization. We only need to add more examples if (1) Falx failed to create the desired visualization or (2) there are too many visualizations showing up in the output panel that makes navigation difficult. More examples can both help disambiguate our intent and speed up Falx.</p>
 
-        <hr />
+        <hr />*/}
 
-        <h4 id="step5">Step 5 (Optional): Post-processing</h4>
+        <h4 id="step4">Step 4 (Optional): Post-processing</h4>
         <p>When we find a desired visualization that requires some fine-tuning, the GUI editor can help. The editor allows us to conduct the following edits:</p>
         
         <ul>

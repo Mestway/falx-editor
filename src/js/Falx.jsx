@@ -146,7 +146,7 @@ class Falx extends Component {
       }
     }
     if (newMessage.length > 0) {
-      newMessage.push(<span>To proceeed, try fix value errors (if they are typos) or delete elements that contain errors to simplify the visualization task.</span>)
+      newMessage.push(<span>To proceed, try fixing value errors (if they are typos) or removing elements that contain errors.</span>)
     }
    
     this.updateMessage(newMessage, "demo");
@@ -393,13 +393,17 @@ class Falx extends Component {
                 <span>Falx timed out on this task, consider adding more elements in the demonstration to help Falx solves faster.</span>)
             } else {
               messages.push(
-                <span>Falx cannot find any program that matches the demonstration. It's possible that the demonstration contains error or the visualization requires some data transformation unsupported by Falx.
-                {" "} To proceed, please check possible errors or simplify the visualization.</span>)
+                <span>Falx cannot find any program that matches the demonstration. 
+                {" "} It's possible that the demonstration contains value errors (e.g., typos) or the visualization requires some data transformation unsupported by Falx.
+                {" "} To proceed, try fixing value errors or simplifying the visualization.</span>)
             }
-          }
-          if (result.length > 10) {
+          } else if (result.length > 10) {
             messages.push(
-              <span>Falx found {result.length} visualizations that match the demonstration. Adding more examples can help Falx narrow down the correct solution.</span>)
+              <span>Falx found <span className="message-color-style">{result.length}</span> visualizations that match the demonstration. 
+                {" "} Consider adding more examples to help Falx narrow down the correct solution.</span>)
+          } else {
+            messages.push(
+              <span>Falx found <span className="message-color-style">{result.length}</span> visualization(s) that match the demonstration.</span>)
           }
 
           this.updateMessage(messages, "synthesis");
@@ -409,6 +413,8 @@ class Falx extends Component {
             synthResult: [],
             status: "Error",
           });
+          const messages = [<span>Sorry! Falx encounted a system error. Please <a href="https://github.com/Mestway/falx/issues" target="_blank">file us an issue</a>.</span>];
+          this.updateMessage(messages, "synthesis");
         }
       );
   }
@@ -438,15 +444,6 @@ class Falx extends Component {
       );
     }
 
-    /*<label htmlFor={"element-editor-input-" + i + key}>{key == "column" ? "column" : key}</label>
-              <input type="text" className="element-prop-editor" 
-                     name={"input-box" + Math.random()} // use this to prevent Chrome to auto complete
-                     id={"element-editor-input-" + i + key}
-                     placeholder="empty"
-                     value={val}
-                     onChange={(e) => this.updateTempTagProperty(i, key, e.target.value)}
-                     onKeyUp={(e) => { if (e.key === "Enter") { this.updateTagProperty();}}}/>*/
-
     const elementTags = this.state.tags.map(function(tag, i) {
       const tagStr = tagToString.bind(this)(tag, i);
       // create a editor memu for each element
@@ -473,11 +470,7 @@ class Falx extends Component {
           );
         }.bind(this));
 
-      var editorStatus = "editor-hidden";
-      if (this.state.tagEditorOpen == i) {
-        editorStatus = "editor-visible";
-      }
-
+      const editorStatus = this.state.tagEditorOpen == i ? "editor-visible" : "editor-hidden";
       const tagAttrs = Object.keys(tag["props"]);
       const tagIncomplete = tagAttrs.map(x => tag["props"][x]).some(x => x == null);
 
@@ -519,8 +512,7 @@ class Falx extends Component {
               </CardActions>
             </Card>
           </Draggable>
-        </li>
-      )
+        </li>)
     }.bind(this));
 
     return elementTags;
@@ -740,8 +732,8 @@ class Falx extends Component {
     if (this.state.message.length > 0) {
       return (
         <ul style={{paddingLeft: "20px"}}>
-          {this.state.message.map((s, i) => <li key={"message" + i} style={{"opacity": s["status"] == "new" ? 1 : 0.5}}>
-            {s["status"] == "new" ? (<span className="message-color-style">[new]{" "}</span>) : ""} 
+          {this.state.message.map((s, i) => <li key={"message" + i} style={{"opacity": s["status"] == "new" ? 1 : 0.3, marginBottom: "8px"}}>
+            {s["status"] == "new" ? (<span style={{fontSize: "12px", opacity: 0.7}}>[new]{" "}</span>) : ""} 
             {s["body"]}</li>)}
         </ul>);
     } else {
