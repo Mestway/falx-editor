@@ -99,7 +99,7 @@ class Falx extends Component {
     super(props);
     this.state = {
       task: "",
-      data: data,
+      data: [],
       dataValues: [],
       spec: null,
       constants: [],
@@ -112,10 +112,10 @@ class Falx extends Component {
       messageOpen: false,
       dataUploadDialog: false,
       dataUploadText: "",
-      galleryDialog: true,
+      galleryDialog: false,
       updateVisPreview: false,
       loadGalleryInExerciseMode: false,
-      displayPanelSize: 650
+      displayPanelSize: 450
     };
     this.onFilesChange = this.onFilesChange.bind(this);
     this.messageBtnRef = React.createRef();
@@ -151,7 +151,7 @@ class Falx extends Component {
    
     this.updateMessage(newMessage, "demo");
   }
-  updateData(data, tags=[]) {
+  updateData(data, tags=[], task="") {
     // use this function to wrap all data updates
     // calculate what values are contained in the input table
     var values = []
@@ -179,12 +179,15 @@ class Falx extends Component {
     })
     // stores all possible values that can be derived form the input table
     const dataValues = Array.from(new Set(values.concat(splittedValues)));
-    this.setState({data: data, dataValues: dataValues});
+    this.setState({data: data, dataValues: dataValues, displayPanelSize: 600});
     this.updateTags(tags, dataValues);
+    this.setState({
+      tempTags: JSON.parse(JSON.stringify(tags)),
+      task: task
+    });
   }
   updateMessage(rawMessages, source) {
     // update message will delete message of the same type and then set older message as "old"
-
     const newMessage = rawMessages.map(m => ({"source": source, "body": m, status: "new"}));
 
     // if (newMessage.length > 0)
@@ -583,7 +586,7 @@ class Falx extends Component {
     }
 
     if (markTypes.length == 0) {
-      return (<div className="grey-message">Add elements above to enable preview.</div>);
+      return (<div className="grey-message">Click "+" to add elements to your demonstration.</div>);
     }
     if (allNull) {
       return (<div className="grey-message">Edit elements above to enable preview.</div>);
@@ -679,9 +682,7 @@ class Falx extends Component {
       }
     })
 
-    const data = {
-      "values": previewElements
-    };
+    const data = { "values": previewElements };
 
     var spec = {"height": 120};
     if (layerSpecs.length == 1) {
@@ -752,6 +753,19 @@ class Falx extends Component {
       }
     }
 
+    var tablePreview = (<div className="grey-message">Start by loading an example from the gallery or uploading your own input data.</div>);
+    if (this.state.data.length > 0) { 
+      tablePreview = (<ReactTable
+        data={this.state.data}
+        //resolveData={data => this.state.data.map(row => row)}
+        columns={columns}
+        defaultPageSize={this.state.data.length == 0 ? 5 : Math.min(this.state.data.length + 1, 8)}
+        showPaginationBottom={true}
+        showPageSizeOptions={false}
+        className="-striped -highlight"
+      />);
+    }
+
     const galleryItems = TaskGallery
       .map(function(exampleTask, i) {
 
@@ -767,11 +781,11 @@ class Falx extends Component {
         return (<Grid className="gallery-card" item xs={3} key={i}>
                   <Card
                     onClick={() => {
-                      this.updateData(JSON.parse(JSON.stringify(exampleTask["data"])), JSON.parse(JSON.stringify(galleryTags)));
-                      this.setState({
-                        tempTags: JSON.parse(JSON.stringify(galleryTags)),
-                        task: "task" in exampleTask ? exampleTask["task"] : ""
-                      });
+                      this.updateData(
+                        JSON.parse(JSON.stringify(exampleTask["data"])), 
+                        JSON.parse(JSON.stringify(galleryTags)),
+                        "task" in exampleTask ? exampleTask["task"] : "");
+                      this.setState({ tempTags: JSON.parse(JSON.stringify(galleryTags)) });
                       this.handleGalleryDialogClose();
                     }}>
                     <CardActionArea>
@@ -999,15 +1013,7 @@ class Falx extends Component {
                   </div>
                 </div>
                 <div className="table-display">
-                  <ReactTable
-                    data={this.state.data}
-                    //resolveData={data => this.state.data.map(row => row)}
-                    columns={columns}
-                    defaultPageSize={Math.min(this.state.data.length + 1, 8)}
-                    showPaginationBottom={true}
-                    showPageSizeOptions={false}
-                    className="-striped -highlight"
-                  />
+                  {tablePreview}
                 </div>
                 {( this.state.task == "" ? 
                     "": 
@@ -1021,7 +1027,7 @@ class Falx extends Component {
                     </div>))}
                 <div className="seg-title">
                   <div className="title">Demonstration</div>
-                  <Dropdown className="clickable-style title-action">
+                  {/*<Dropdown className="clickable-style title-action">
                     <Dropdown.Toggle as="div">
                       <MaterialButton size="small" color="primary" variant="outlined">
                         Templates <ArrowDropDownIcon />
@@ -1030,7 +1036,7 @@ class Falx extends Component {
                     <Dropdown.Menu>
                       {menuItems}
                     </Dropdown.Menu>
-                  </Dropdown>
+                  </Dropdown>*/}
                 </div>
                 <div className="element-disp" style={{minHeight: this.state.task == "" ? "180px": "0px"}}>
                   <div className="input-tag">
@@ -1038,7 +1044,7 @@ class Falx extends Component {
                       {elementTags}
                       <div className="tag-boxes" id="add-btn-li" key="plus">
                         <ContextMenuTrigger id="add-visual-element" className="okok" holdToDisplay={0}>
-                          <Tooltip title="Add new element">
+                          <Tooltip title="Add a new element">
                             <IconButton aria-label="add" color="primary">
                               <AddIcon />
                             </IconButton>
@@ -1062,6 +1068,7 @@ class Falx extends Component {
                                 </Button>))}
                           </ContextMenuItem>
                         </ContextMenu>
+
                       </div>
                     </div>
                   </div>
