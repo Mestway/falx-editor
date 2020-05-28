@@ -54,7 +54,7 @@ function ReactTable({ columns, data, defaultPageSize }) {
 
     setTimeout(function () {
       setShowCopied(false);
-    }, 300);
+    }, 500);
   }
 
   const showTips = (event, cellValue) => {

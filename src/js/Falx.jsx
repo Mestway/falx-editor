@@ -89,6 +89,107 @@ const theme = createMuiTheme({
   }
 });
 
+// for hooks to refer to previous components
+function usePrevious(value) {
+  const ref = React.useRef();
+  React.useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
+// the tag editor element
+function TagEditor({tagId, tagProps, editorOpen, 
+                    updateTagProperty, closeTagEditor, removeTag}) {
+
+  const [tag, setTag] = React.useState(tagProps);
+  const prevTagProps = usePrevious(tagProps)
+  const prevTagId = usePrevious(tagId)
+
+  React.useEffect(() => {
+    // rerender the component when parent property updated
+    if (JSON.stringify(prevTagProps) != JSON.stringify(tagProps)) {
+      setTag(tagProps);
+    }
+  });
+
+  const handleChange = (key, value) => {
+    const tempTag = JSON.parse(JSON.stringify(tag));
+    tempTag["props"][key] = value;
+    setTag(tempTag);
+  };
+
+  const handleClose = () => {
+    setTag(tagProps);
+    closeTagEditor();
+  }
+
+  const elementEditor = Object.keys(tag["props"])
+    .map(function(key) {
+      const val = tag["props"][key] == null ? "" : tag["props"][key];
+      return (
+        <Grid item xs className="not-draggable" key={"element-editor-" + tagId + key} xs={6}>
+          <TextField 
+            key={"element-editor-field" + tagId + key}
+            id={"mui-element-editor-input-" + tagId + key}
+            label={(key == "column" ? "column" : key)} 
+            margin="dense"
+            //size="small"
+            autoComplete='off'
+            value={val}
+            placeholder="empty"
+            variant="outlined"
+            //error={tag["props"][key] == null}
+            InputLabelProps={{shrink: true, required: (tag["props"][key] == null)}}
+            onChange={(e) => handleChange(key, e.target.value)}
+            onKeyUp={(e) => { if (e.key === "Enter") { updateTagProperty(tagId, tag); closeTagEditor(); }}}
+          />
+        </Grid>
+      );
+    }.bind(this));
+
+  const editorStatus = editorOpen ? "editor-visible" : "editor-hidden";
+
+  const tagEditor = (
+    <Draggable cancel=".not-draggable">
+      <Card id={"tag" + tagId} className={"tag-editor-card" + " " + editorStatus}>
+        <CardContent className="tag-editor-card-content">
+          <Grid container spacing={1}>
+            <Grid item xs xs={10} style={{ cursor: 'move' }}>
+              <Typography variant="body1" component="h2">
+                Editing <Typography variant="inherit">{tag["type"] + " #" + (tagId + 1)}</Typography>
+              </Typography>
+            </Grid>
+            <Grid item xs xs={2} style={{textAlign: "right",  cursor: 'move'}}>
+              <CloseIcon fontSize="small" style={{cursor: 'pointer'}}
+                onClick={handleClose}/>
+            </Grid>
+            <Divider />
+            {elementEditor}
+          </Grid>
+        </CardContent>
+        <CardActions className="tag-editor-card-action">
+          <ButtonGroup className="left-btn" color="secondary" size="small" aria-label="outlined primary button group">
+            <MaterialButton aria-label="delete" color="secondary" onClick={() => { removeTag(tagId); }}>
+              Delete
+            </MaterialButton>
+          </ButtonGroup>
+          <ButtonGroup className="right-btn" color="primary" size="small" aria-label="outlined primary button group">
+            <MaterialButton 
+              onClick={() => {updateTagProperty(tagId, tag); handleClose();}}>
+              Save
+            </MaterialButton>
+            <MaterialButton onClick={handleClose}>
+              Cancel
+            </MaterialButton>
+          </ButtonGroup>
+        </CardActions>
+      </Card>
+    </Draggable>)
+
+  return tagEditor;
+}
+
 class Falx extends Component {
   constructor(props) {
 
@@ -101,11 +202,11 @@ class Falx extends Component {
       task: "",
       data: [],
       dataValues: [],
-      spec: null,
+      //spec: null,
       constants: [],
       tags: [],
-      tempTags: [],
       tagEditorOpen: -1,
+      synthTaskToken: 0, // the token represents the current synthesis task is running
       synthResult: [],
       status: "No result to show",
       message: [],
@@ -115,7 +216,8 @@ class Falx extends Component {
       galleryDialog: false,
       updateVisPreview: false,
       loadGalleryInExerciseMode: false,
-      displayPanelSize: 450
+      displayPanelSize: 450,
+      demoHistory: [] // log all demonstrations created by the user
     };
     this.onFilesChange = this.onFilesChange.bind(this);
     this.messageBtnRef = React.createRef();
@@ -181,10 +283,7 @@ class Falx extends Component {
     const dataValues = Array.from(new Set(values.concat(splittedValues)));
     this.setState({data: data, dataValues: dataValues, displayPanelSize: 600});
     this.updateTags(tags, dataValues);
-    this.setState({
-      tempTags: JSON.parse(JSON.stringify(tags)),
-      task: task
-    });
+    this.setState({ task: task });
   }
   updateMessage(rawMessages, source) {
     // update message will delete message of the same type and then set older message as "old"
@@ -280,17 +379,13 @@ class Falx extends Component {
   removeTag(i) {
     // add a tag
     const newTags = [ ...this.state.tags ];
-    const newTempTags = [ ...this.state.tempTags ];
     newTags.splice(i, 1);
-    newTempTags.splice(i, 1);
-    // set tempTags and update tags
-    this.setState({ tagEditorOpen: -1, tempTags: newTempTags });
+    this.setState({ tagEditorOpen: -1 });
     this.updateTags(newTags);
   }
   addTagElement(tagName) {
     // add a new element to tags of the current input example
     const newTags = [ ...this.state.tags ];
-    const newTempTags = [ ...this.state.tempTags ];
     var newTag = null
     if (tagName === "bar") {
       newTag = {"type": "bar", "props": {"x": null, "y": null, "color": "", "column": ""}}
@@ -324,25 +419,21 @@ class Falx extends Component {
       }
     }
     newTags.push(newTag);
-    newTempTags.push(JSON.parse(JSON.stringify(newTag)));
-    this.setState({ tempTags: newTempTags, tagEditorOpen: newTags.length - 1 });
+    this.setState({ tagEditorOpen: newTags.length - 1 });
     this.updateTags(newTags);
   }
-  updateTempTagProperty(index, prop, value) {
-    // update the temporary tag information
-    const newTempTags = [ ...this.state.tempTags ];
-    newTempTags[index]["props"][prop] = value;
-    this.setState({ tempTags: newTempTags });
-  }
-  revertTempTagProperty() {
-    // when the menu is closed, revert temp tag properties to current set properties
-    const tags = [ ...this.state.tags ];
-    this.setState({ tempTags: JSON.parse(JSON.stringify(tags)) });
-  }
-  updateTagProperty() {
-    const tempTags = [ ...this.state.tempTags ];
-    this.updateTags(JSON.parse(JSON.stringify(tempTags)));
+  updateTagProperty(tagId, tag) {
+    const tempTags = JSON.parse(JSON.stringify([ ...this.state.tags ]));
+    tempTags[tagId] = tag;
+    this.updateTags(tempTags);
     this.setState({ updateVisPreview: true });
+  }
+  updateSynthResultHandle(index, newSpec) {
+    var newResults = this.state.synthResult;
+    newResults[index]["vl_spec"] = newSpec;
+    this.setState({
+      synthResult: newResults
+    })
   }
   runSynthesis() {
 
@@ -363,63 +454,98 @@ class Falx extends Component {
       this.setState({ status: "Error: empty demonstration", synthResult: []})
       return;
     }
-    this.setState({ status: "Running...", synthResult: []})
 
-    //FALX_SERVER is a environmental vairable defined in wepack.config.js
-    // prepare tags to match falx API
-    fetch(FALX_SERVER + "/falx", {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        "data": this.state.data,
-        "tags": validTags,
-        "constants": this.state.constants
+    const taskToken = Date.now();
+
+
+    const demoHistory = this.state.demoHistory;
+    demoHistory.push(this.state.tags);
+    this.setState({ status: "Running...", synthResult: [], synthTaskToken: taskToken, demoHistory: demoHistory});
+
+    const taskParameter = {
+      "data": this.state.data,
+      "tags": validTags,
+      "constants": this.state.constants,
+      "token": taskToken // the token for the current synthesis task
+    }
+
+    // the function to update synthesis result
+    const updateResult = (response) => {
+
+      const result = response["result"];
+
+      const synthStatus = (result.length == 0) ? (response["mode"] == "full" ? "No solution found ..." : "Running...") : "idle";
+
+      console.log(this.state.synthTaskToken);
+      console.log(response["token"]);
+
+      if (this.state.synthTaskToken != response["token"]) {
+        console.log("[info] ignore current synthesis result since task token changed")
+        return
+      }
+
+      const proceededResult = result.map((d) => { 
+        return {"vl_spec": JSON.parse(d["vl_spec"]), "script": d["rscript"] }; 
       })
-    }).then(res => res.json())
-      .then(
-        (response) => {
-          const result = response["result"];
-          const synthStatus = (result.length == 0) ? "No solution found ..." : "idle";
-          this.setState({
-            synthResult: result,
-            status: synthStatus,
-            displayPanelSize: 450
-          })
 
-          var messages = []
-          if (result.length == 0) {
-            if (result.status == "timeout") {
-              messages.push(
-                <span>Falx timed out on this task, consider adding more elements in the demonstration to help Falx solves faster.</span>)
-            } else {
-              messages.push(
-                <span>Falx cannot find any program that matches the demonstration. 
-                {" "} It's possible that the demonstration contains value errors (e.g., typos) or the visualization requires some data transformation unsupported by Falx.
-                {" "} To proceed, try fixing value errors or simplifying the visualization.</span>)
-            }
-          } else if (result.length > 10) {
-            messages.push(
-              <span>Falx found <span className="message-color-style">{result.length}</span> visualizations that match the demonstration. 
-                {" "} Consider adding more examples to help Falx narrow down the correct solution.</span>)
-          } else {
-            messages.push(
-              <span>Falx found <span className="message-color-style">{result.length}</span> visualization(s) that match the demonstration.</span>)
-          }
+      const fullResult = [].concat(this.state.synthResult, proceededResult.slice(this.state.synthResult.length));
 
-          this.updateMessage(messages, "synthesis");
-        },
-        (error) => {
-          this.setState({
-            synthResult: [],
-            status: "Error",
-          });
-          const messages = [<span>Sorry! Falx encounted a system error. Please <a href="https://github.com/Mestway/falx/issues" target="_blank">file us an issue</a>.</span>];
-          this.updateMessage(messages, "synthesis");
+      this.setState({
+        synthResult: fullResult,
+        status: synthStatus,
+        displayPanelSize: 450
+      })
+
+      var messages = []
+
+      if (fullResult.length == 0) {
+        if (response["mode"] == "full") {
+          messages.push(
+            <span>Falx cannot find any program that matches the demonstration. 
+            {" "} It's possible that the demonstration contains value errors (e.g., typos) or the visualization requires some data transformation unsupported by Falx.
+            {" "} To proceed, try fixing value errors or simplifying the visualization.</span>)
+        } else {
+          messages.push(<span>Falx hasn't found any solution yet, it is still running...</span>)
         }
-      );
+      } else if (fullResult.length > 10) {
+        messages.push(
+          <span>Falx found <span className="message-color-style">{fullResult.length}</span> visualizations that match the demonstration. 
+            {" "} Consider adding more examples to help Falx narrow down the correct solution.</span>)
+      } else {
+        messages.push(
+          <span>Falx found <span className="message-color-style">{fullResult.length}</span> visualization(s) that match the demonstration.</span>)
+      }
+
+      this.updateMessage(messages, "synthesis");
+    }
+
+    for (const mode of ["lightweight", "full"]) {
+      taskParameter["mode"] = mode;
+      //FALX_SERVER is a environmental vairable defined in wepack.config.js
+      // prepare tags to match falx API
+      fetch(FALX_SERVER + "/falx", {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(taskParameter)
+      }).then(res => res.json())
+        .then(
+          (response) => {
+            updateResult.bind(this)(response);
+          },
+          (error) => {
+            this.setState({
+              synthResult: [],
+              status: "Error",
+            });
+            const messages = [<span>Sorry! Falx encounted a system error. Please 
+              <a href="https://github.com/Mestway/falx/issues" target="_blank">file us an issue</a>.</span>];
+            this.updateMessage(messages, "synthesis");
+          }
+        );
+    }
   }
   renderElementTags() {
     // Render element tags that displays current visual elements created by the user
@@ -440,7 +566,7 @@ class Falx extends Component {
         });
       return (
         <div className="tag-card" 
-            onClick={(()=>{this.setState({tagEditorOpen: index}); this.revertTempTagProperty();}).bind(this)}>
+            onClick={(()=>{this.setState({tagEditorOpen: index});}).bind(this)}>
           <div className="tag-type">{tagObj["type"] + " #" + tagId}</div>
           <div className="tag-body">{content}</div>
         </div>
@@ -448,31 +574,8 @@ class Falx extends Component {
     }
 
     const elementTags = this.state.tags.map(function(tag, i) {
-      const tagStr = tagToString.bind(this)(tag, i);
-      // create a editor memu for each element
-      const elementEditor = Object.keys(tag["props"])
-        .map(function(key) {
-          const val = this.state.tempTags[i]["props"][key] == null ? "" : this.state.tempTags[i]["props"][key];
-          return (
-            <Grid item xs className="not-draggable" key={"element-editor-" + i + key} xs={6}>
-              <TextField 
-                key={"element-editor-field" + i + key}
-                id={"mui-element-editor-input-" + i + key}
-                label={(key == "column" ? "column" : key)} 
-                margin="dense"
-                //size="small"
-                autoComplete='off'
-                value={val}
-                placeholder="empty"
-                variant="outlined"
-                //error={this.state.tempTags[i]["props"][key] == null}
-                InputLabelProps={{shrink: true, required: (this.state.tempTags[i]["props"][key] == null)}}
-                onChange={(e) => this.updateTempTagProperty(i, key, e.target.value)}
-                onKeyUp={(e) => { if (e.key === "Enter") { this.updateTagProperty();}}}/>
-            </Grid>
-          );
-        }.bind(this));
 
+      const tagStr = tagToString.bind(this)(tag, i);
       const editorStatus = this.state.tagEditorOpen == i ? "editor-visible" : "editor-hidden";
       const tagAttrs = Object.keys(tag["props"]);
       const tagIncomplete = tagAttrs.map(x => tag["props"][x]).some(x => x == null);
@@ -480,41 +583,10 @@ class Falx extends Component {
       return (
         <li key={i} className={"tag-boxes " + (tagIncomplete ? "incomplete" : "")}>
           {tagStr}
-          <Draggable cancel=".not-draggable">
-            <Card id={"tag" + i} className={"tag-editor-card" + " " + editorStatus}>
-              <CardContent className="tag-editor-card-content">
-                <Grid container spacing={1}>
-                  <Grid item xs xs={10} style={{ cursor: 'move' }}>
-                    <Typography variant="body1" component="h2">
-                      Editing <Typography variant="inherit">{tag["type"] + " #" + (i + 1)}</Typography>
-                    </Typography>
-                  </Grid>
-                  <Grid item xs xs={2} style={{textAlign: "right",  cursor: 'move'}}>
-                    <CloseIcon fontSize="small" style={{cursor: 'pointer'}}
-                      onClick={() => {this.setState({tagEditorOpen: -1});}}/>
-                  </Grid>
-                  <Divider />
-                  {elementEditor}
-                </Grid>
-              </CardContent>
-              <CardActions className="tag-editor-card-action">
-                <ButtonGroup className="left-btn" color="secondary" size="small" aria-label="outlined primary button group">
-                  <MaterialButton aria-label="delete" color="secondary" onClick={() => { this.removeTag(i); }}>
-                    Delete
-                  </MaterialButton>
-                </ButtonGroup>
-                <ButtonGroup className="right-btn" color="primary" size="small" aria-label="outlined primary button group">
-                  <MaterialButton 
-                    onClick={() => {this.updateTagProperty(); this.setState({tagEditorOpen: -1});}}>
-                    Save
-                  </MaterialButton>
-                  <MaterialButton onClick={() => {
-                      this.setState({tagEditorOpen: -1});
-                    }}>Cancel</MaterialButton>
-                </ButtonGroup>
-              </CardActions>
-            </Card>
-          </Draggable>
+          <TagEditor tagId={i} tagProps={tag} editorOpen={this.state.tagEditorOpen == i} 
+            updateTagProperty={this.updateTagProperty.bind(this)} 
+            closeTagEditor={(() => {this.setState({tagEditorOpen: -1})}).bind(this)} 
+            removeTag={this.removeTag.bind(this)} />
         </li>)
     }.bind(this));
 
@@ -785,7 +857,6 @@ class Falx extends Component {
                         JSON.parse(JSON.stringify(exampleTask["data"])), 
                         JSON.parse(JSON.stringify(galleryTags)),
                         "task" in exampleTask ? exampleTask["task"] : "");
-                      this.setState({ tempTags: JSON.parse(JSON.stringify(galleryTags)) });
                       this.handleGalleryDialogClose();
                     }}>
                     <CardActionArea>
@@ -809,24 +880,24 @@ class Falx extends Component {
         return (<Dropdown.Item as="div" key={key} 
                 onClick={() => {
                   this.updateTags(JSON.parse(JSON.stringify(ChartTemplates[key]["tags"])));
-                  this.setState({
-                    tempTags: JSON.parse(JSON.stringify(ChartTemplates[key]["tags"])),
-                })}}>{key}</Dropdown.Item>)
+                }}>{key}</Dropdown.Item>)
       }.bind(this));
 
     const data = this.state.data;
 
-    var specs = this.state.synthResult.map((d) => {return JSON.parse(d["vl_spec"]); });
+    var specs = this.state.synthResult.map((d) => {return d["vl_spec"]; });
     const tableProgs = this.state.synthResult.map((d) => { return d["rscript"]; })
 
     const elementTags = this.renderElementTags();
     const recommendations = (specs.length > 0 ? 
-                              (<Recommendations specs={specs} tableProgs={tableProgs}/>) : 
+                              (<Recommendations specs={specs} tableProgs={tableProgs} 
+                                  demoHistory={this.state.demoHistory}
+                                  inputData={this.state.data}
+                                  updateSpecHandle={this.updateSynthResultHandle.bind(this)}/>) : 
                               (<div className="output-panel">
                                 {this.state.status == "Running..." ? 
                                     <div><p>Running...</p> <CircularProgress /></div> 
                                   : this.state.status}</div>));
-
     
     // the system message btn and the popper message
     const messageBtn = (
@@ -840,7 +911,8 @@ class Falx extends Component {
               // opacity: this.state.message.length == 0 ? 0 : 1
             }} 
           color="secondary" 
-          badgeContent={this.state.message.length}>
+          //badgeContent={this.state.message.length}
+        >
           <MaterialButton 
             onClick={(e =>  {this.setState({ messageOpen: ! this.state.messageOpen })}).bind(this)}
             ref={this.messageBtnRef}
@@ -1068,7 +1140,6 @@ class Falx extends Component {
                                 </Button>))}
                           </ContextMenuItem>
                         </ContextMenu>
-
                       </div>
                     </div>
                   </div>

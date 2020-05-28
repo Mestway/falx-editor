@@ -56,6 +56,7 @@ class Recommendations extends Component {
       tableProgs: props.tableProgs,
       updateFocus: false,
       focusIndex: 0,
+      focusIndexHistory: [0],
       showInfoPane: window.innerWidth > 1400 ? true : false // hide the panel by defaul
     };
   }
@@ -65,14 +66,37 @@ class Recommendations extends Component {
     this.setState({
       specs: newSpecs
     })
+    // also tell the parents that the synthesis result needs update
+    this.props.updateSpecHandle(index, newSpec);
   }
   setFocusIndex(focusIndex) {
+    // update the focus index history to keep trace of it
+    const focusIndexHistory = this.state.focusIndexHistory;
+    focusIndexHistory.push(focusIndex);
+
     this.setState({
       focusIndex: focusIndex,
-      updateFocus: true
+      updateFocus: true,
+      focusIndexHistory: focusIndexHistory
     });
   }
+  downloadInteractionTrace(spec) {
 
+    const trace = {
+      "demo_history": this.props.demoHistory,
+      "input_data": this.props.inputData,
+      "output_visualization": spec,
+      "focused_indexes": this.state.focusIndexHistory
+    }
+
+    const file = new Blob([JSON.stringify(trace, null, 4)], {type: 'text/plain'});
+
+    var link = document.createElement('a');
+    link.setAttribute('href', URL.createObjectURL(file));
+    link.setAttribute('target', '_blank');
+    link.setAttribute('download', "falx_log.json");
+    link.dispatchEvent(new MouseEvent('click'));
+  }
   downloadVis(spec, ext) {
     // spec: vega lite spec
     // ext: extension (svg / png)
@@ -90,7 +114,7 @@ class Recommendations extends Component {
       link.setAttribute('target', '_blank');
       link.setAttribute('download', 'vega-export.' + ext);
       link.dispatchEvent(new MouseEvent('click'));
-    }).catch(function(error) { /* error handling */ });
+    });//.catch(function(error) { /* error handling */ });
 
     // element.href = URL.createObjectURL(file);
     // element.download = "vis-save.json";
@@ -239,14 +263,20 @@ class Recommendations extends Component {
                 {"Actions:  "}
                 <Button size="small"  aria-label="save" 
                   color="primary" style={{minWidth: "0px"}}
+                  onClick={() => this.downloadInteractionTrace(focusedSpec)}>
+                  Download
+                </Button>
+                {" | "}
+                <Button size="small"  aria-label="save" 
+                  color="primary" style={{minWidth: "0px"}}
                   onClick={() => this.downloadVis(JSON.stringify(focusedSpec, null, '\t'), "png")}>
                   Download (.png)
                 </Button>
-                {" | "}
+                {/*{" | "}
                 <Button size="small" color="primary" style={{minWidth: "0px"}}
                   aria-label="save" onClick={() => this.downloadVis(JSON.stringify(focusedSpec, null, '\t'), "svg")}>
                   Download (.svg)
-                </Button>
+                </Button>*/}
                 {" | "}
                 <Button aria-label="vega-editor" size="small" color="primary" style={{minWidth: "0px"}}
                   onClick={() => this.openInVegaEditor(JSON.stringify(focusedSpec, null, '\t'))}>

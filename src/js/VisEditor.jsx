@@ -266,7 +266,7 @@ class VisEditor extends Component {
     })
     this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
   }
-  handleEncPropChange(layerID, channel, prop, value) {
+  handleEncPropChange(layerID, channel, prop, value, propagateToMain = true) {
     // change the layer's (defined by layerID) channel's property (specified by key) into value (value)'
     var newSpec = this.state.spec;
     if (layerID != -1)
@@ -276,7 +276,9 @@ class VisEditor extends Component {
     this.setState({
       spec: newSpec
     })
-    this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
+    if (propagateToMain) {
+      this.props.visSpecUpdateHandle(this.props.specIndex, this.state.spec)
+    }
   }
   genEncodingEdit(layerID, channel, encoding) {
     const sortValue = ("sort" in encoding && encoding["sort"] != null) ? encoding["sort"] : "default";
@@ -287,8 +289,13 @@ class VisEditor extends Component {
         </Grid>
         <Grid className="label-grid" item xs={12} sm={4}>
           <TextField id="title" name="title" 
-              onChange={(event) => this.handleEncPropChange.bind(this)(layerID, channel, "title", event.target.value)} 
-             label={"title"} value={("title" in encoding) ? encoding["title"] : encoding["field"]} fullWidth />
+              onChange={(event) => this.handleEncPropChange.bind(this)(layerID, channel, "title", event.target.value, false)} 
+              onKeyUp={((e) => { 
+                if (e.key === "Enter") { 
+                  this.props.visSpecUpdateHandle(this.props.specIndex, this.state.spec); 
+                }
+              }).bind(this)}
+              label={"title"} value={("title" in encoding) ? encoding["title"] : encoding["field"]} fullWidth />
         </Grid>
         <Grid item xs={12} sm={5}>
           <InputLabel shrink htmlFor="enc-type-selector">
@@ -301,6 +308,7 @@ class VisEditor extends Component {
                 x => <MenuItem key={x} value={x} selected={x == encoding["type"]}>{x}</MenuItem>)}
           </Select>
         </Grid>
+
         {/*<Grid item xs={12} sm={3}>
           <InputLabel shrink htmlFor="sort-selector">
             sort
@@ -315,7 +323,6 @@ class VisEditor extends Component {
         </Grid>*/}
       </Grid>)
   }
-
   onParseOk(expressions, layerID, layerSpec) {
     var data = [];
     //var newData = new SimpleResultProcessing(this.options).process(data,expressions);
@@ -422,8 +429,9 @@ class VisEditor extends Component {
                       <Switch color="primary" size="small"
                       checked={!("stack" in layerSpec["encoding"]["y"]) || layerSpec["encoding"]["y"]["stack"] != null} 
                       onChange={(event) => {
-                          this.handleEncPropChange.bind(this)(layerID, "y", "stack", event.target.checked ? true : null);
-                       }} name="checkedC" />
+                        this.handleEncPropChange.bind(this)(layerID, "y", "stack", event.target.checked ? true : null);
+                      }} 
+                      name="checkedC" />
                     </Grid>
                     <Grid item className="switch-label">Stacked Bar</Grid>
                   </Grid>
@@ -437,8 +445,16 @@ class VisEditor extends Component {
         <Typography className="config-sec-title" variant="subtitle1" gutterBottom>
           Properties
         </Typography>
+        <Divider className="invis-divider" />
         {Object.keys(layerSpec["encoding"]).map(
            (key, index) => this.genEncodingEdit(layerID, key, layerSpec["encoding"][key]))}
+         <Grid container alignItems="center" spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <Button fullWidth variant="outlined" color="primary" size="small"
+                    onClick={((event) => {this.props.visSpecUpdateHandle(this.props.specIndex, this.state.spec);}).bind(this)}
+                    style={{textTransform: "none"}}> {"Save Edits"} </Button>
+          </Grid>
+        </Grid>
         <Divider className="invis-divider" />
         <Typography className="config-sec-title" variant="subtitle1" gutterBottom>
           Filter

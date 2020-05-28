@@ -180,6 +180,7 @@
         .expand-icon {
           padding-left: 10px;
           font-size: 20px;
+          margin:auto;
         }
       }
     }
@@ -221,6 +222,8 @@
           padding: 12px 0 12px 0;  // should add up to the padding in non-full
           flex-grow: 0;
 
+
+
           &.selected {
             border: 1px solid $med-blue;
 
@@ -260,11 +263,14 @@
         height: calc(196px);  // subtract padding on top / bottom and border
         //width: calc(196px - 32px);  // subtract padding on left / right
         min-width: calc(196px - 32px);  // subtract padding on left / right
-        justify-content: center;
+        //justify-content: center;
         padding: 24px 16px 24px 16px;  // should add up to the margin + padding in `full`
         cursor: pointer;
         flex-grow: 0;
         flex-shrink: 0;
+
+        max-width: 600px;
+        overflow: hidden;
 
         &.scroll {
           flex-grow: 0;
