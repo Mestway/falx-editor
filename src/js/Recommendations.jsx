@@ -81,7 +81,6 @@ class Recommendations extends Component {
     });
   }
   downloadInteractionTrace(spec, tableProg) {
-
     const trace = {
       "demo_history": this.props.demoHistory,
       "input_data": this.props.inputData,
