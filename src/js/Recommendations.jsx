@@ -80,13 +80,14 @@ class Recommendations extends Component {
       focusIndexHistory: focusIndexHistory
     });
   }
-  downloadInteractionTrace(spec) {
+  downloadInteractionTrace(spec, tableProg) {
 
     const trace = {
       "demo_history": this.props.demoHistory,
       "input_data": this.props.inputData,
       "output_visualization": spec,
-      "focused_indexes": this.state.focusIndexHistory
+      "focused_indexes": this.state.focusIndexHistory,
+      "rscript": tableProg
     }
 
     const file = new Blob([JSON.stringify(trace, null, 4)], {type: 'text/plain'});
@@ -230,6 +231,8 @@ class Recommendations extends Component {
 
     // copy to force an update in vega lite
     const focusedSpec = JSON.parse(JSON.stringify(this.state.specs[this.state.focusIndex]));
+    const focusedRScript = this.state.tableProgs[this.state.focusIndex];
+
     const maxWidth = 1600;
     if (focusedSpec["width"] > maxWidth) {
       // in case we don't have enough room to show ticks and labels
@@ -263,7 +266,7 @@ class Recommendations extends Component {
                 {"Actions:  "}
                 <Button size="small"  aria-label="save" 
                   color="primary" style={{minWidth: "0px"}}
-                  onClick={() => this.downloadInteractionTrace(focusedSpec)}>
+                  onClick={() => this.downloadInteractionTrace(focusedSpec, focusedRScript)}>
                   Download
                 </Button>
                 {" | "}

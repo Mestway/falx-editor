@@ -473,7 +473,6 @@ class Falx extends Component {
     const updateResult = (response) => {
 
       const result = response["result"];
-
       const synthStatus = (result.length == 0) ? (response["mode"] == "full" ? "No solution found ..." : "Running...") : "idle";
 
       console.log(this.state.synthTaskToken);
@@ -485,7 +484,7 @@ class Falx extends Component {
       }
 
       const proceededResult = result.map((d) => { 
-        return {"vl_spec": JSON.parse(d["vl_spec"]), "script": d["rscript"] }; 
+        return {"vl_spec": JSON.parse(d["vl_spec"]), "rscript": d["rscript"] }; 
       })
 
       const fullResult = [].concat(this.state.synthResult, proceededResult.slice(this.state.synthResult.length));

@@ -259,7 +259,7 @@
       .context-chart {
         position: relative;
         display: flex;
-        align-items: center;
+        //align-items: center;
         height: calc(196px);  // subtract padding on top / bottom and border
         //width: calc(196px - 32px);  // subtract padding on left / right
         min-width: calc(196px - 32px);  // subtract padding on left / right
