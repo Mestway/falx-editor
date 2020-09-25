@@ -281,7 +281,7 @@ class Falx extends Component {
     })
     // stores all possible values that can be derived form the input table
     const dataValues = Array.from(new Set(values.concat(splittedValues)));
-    this.setState({data: data, dataValues: dataValues, displayPanelSize: 600});
+    this.setState({data: data, dataValues: dataValues, displayPanelSize: 600, demoHistory: []});
     this.updateTags(tags, dataValues);
     this.setState({ task: task });
   }
@@ -681,8 +681,9 @@ class Falx extends Component {
 
     function decideEncodingType(mark, channel, vType) {
       // given mark type, channel and value type, decide the encoding type
-      if (channel == "column") 
+      if (channel == "column" || channel == "detail") {
         return "nominal";
+      }
       if (mark == "bar") {
         if (channel == "x"){
           return "nominal"; // vType === "string" ? "nominal" : "quantitative";
@@ -717,6 +718,27 @@ class Falx extends Component {
         if (channel != "x2" && channel != "y2") {
           // x2, y2 requires no type information as they should be consistent with x,y enc type
           encoding[channel]["type"] = decideEncodingType(mark, channel, fieldValues[channel].type);
+        }
+
+        if (encoding[channel]["type"] == "quantitative") {
+          var values = fieldValues[channel].values.map(x => parseFloat(x));
+
+          if (channel == "y" && "y2" in fieldValues) {
+            values = values.concat(fieldValues["y2"].values.map(x => parseFloat(x)));
+          }
+
+          const maxVal = Math.max(...values);
+          const minVal = Math.min(...values);
+          const domainExtent = 0.1 * (maxVal - minVal);
+          if (minVal - 0 > 5 * (maxVal - minVal)) {
+
+            // do not start at non-zero when it's area chart or stacked bar chart
+            if (mark != "area" && !(mark == "bar" && "color" in fieldValues && channel == "y")) {
+              encoding[channel]["scale"] = {"zero": false, "domain": [minVal - domainExtent, maxVal + domainExtent]};
+            }
+          } else {
+            encoding[channel]["scale"] = {"domain": [minVal < 0 ? minVal - domainExtent : 0, maxVal + domainExtent]};
+          }
         }
 
         if (channel == "x" && globalFieldValues["x"].type == "string") {
@@ -1031,6 +1053,7 @@ class Falx extends Component {
                         onClick={this.handleDataUploadDialogOpen.bind(this)}>
                           Upload Data
                         </MaterialButton>
+                        
                         <Dialog open={this.state.dataUploadDialog} 
                             fullWidth
                             maxWidth="sm"
@@ -1060,7 +1083,7 @@ class Falx extends Component {
                             </DialogContentText>
                             
                             <DialogContentText>
-                              Or, copy and paste data (.csv or .json) to the following box:
+                              Or, copy and paste data (.csv or .json) to the following box to upload:
                             </DialogContentText>
                             <TextField autoFocus margin="dense"
                               id="dataUploadBox" label="Input data" type="text"

@@ -26,6 +26,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Paper from '@material-ui/core/Paper';
 import FormControl from '@material-ui/core/FormControl';
 import Switch from '@material-ui/core/Switch';
+import Slider from '@material-ui/core/Slider';
 
 import BuildIcon from '@material-ui/icons/Build';
 import SettingsIcon from '@material-ui/icons/Settings';
@@ -243,7 +244,15 @@ class VisEditor extends Component {
     })
     this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
   }
-
+  handleSpecPropChange(key, value) {
+    // change the spec's top level value
+    var newSpec = this.state.spec;
+    newSpec[key] = value;
+    this.setState({
+      spec: newSpec
+    })
+    this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
+  }
   handleMarkChange(layerID, value) {
     // change the layer's (defined by layerID) property (specified by key) into value (value)'
     var newSpec = this.state.spec;
@@ -415,7 +424,7 @@ class VisEditor extends Component {
             <Select fullWidth labelId="label" id="select" 
                 value={markType} 
                 onChange={(event) => this.handleMarkChange.bind(this)(layerID, event.target.value)}>
-              {["bar", "line", "rect", "point", "area"].map(item => 
+              {["bar", "line", "rect", "point", "area", "circle"].map(item => 
                   <MenuItem key={item} value={item} selected={markType == item}>{item}</MenuItem>)}
             </Select>
           </Grid>
@@ -455,6 +464,40 @@ class VisEditor extends Component {
                     style={{textTransform: "none"}}> {"Save Edits"} </Button>
           </Grid>
         </Grid>
+        <Divider className="invis-divider" />
+
+        <Grid container alignItems="center" spacing={8}>
+          <Grid item xs={12} sm={6}>
+            <Typography id="discrete-slider-always" className="config-sec-title" variant="subtitle1" gutterBottom>
+              Width
+            </Typography>
+            <Slider
+              defaultValue={this.state.spec["width"]}
+              step={10}
+              min={60}
+              max={1500}
+              marks={[{value: 80,label: '80px'}, {value: 1500,label: '1500px'}]}
+              onChangeCommitted={((evt, newVal) => {this.handleSpecPropChange.bind(this)("width", newVal);})}
+              valueLabelDisplay="auto"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Typography id="discrete-slider-always" className="config-sec-title" variant="subtitle1" gutterBottom>
+              Height
+            </Typography>
+            <Slider
+              defaultValue={this.state.spec["height"]}
+              step={10}
+              min={60}
+              max={1500}
+              marks={[{value: 80,label: '80px'}, {value: 1500,label: '1500px'}]}
+              onChangeCommitted={((evt, newVal) => {this.handleSpecPropChange.bind(this)("height", newVal);})}
+              valueLabelDisplay="auto"
+            />
+          </Grid>
+        </Grid>
+
+        
         <Divider className="invis-divider" />
         <Typography className="config-sec-title" variant="subtitle1" gutterBottom>
           Filter

@@ -40,9 +40,13 @@ const DEFAULT_INFO_PANE_SIZE = 402;
 class Recommendations extends Component {
   static getDerivedStateFromProps(props, state) {
     if (props.specs !== state.specs) {
+      const focusIndexHistory = state.focusIndexHistory;
+      focusIndexHistory.push(-1);
+
       return { 
         specs: props.specs,
-        tableProgs: props.tableProgs
+        tableProgs: props.tableProgs,
+        focusIndexHistory: focusIndexHistory
       };
     }
     return null;
