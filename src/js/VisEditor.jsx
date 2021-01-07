@@ -703,7 +703,7 @@ class VisEditor extends Component {
     var lineInterpolateEditor = "";
     if (markType == "line") {
       const interpolate = ((layerSpec["mark"].constructor == Object && 
-                              "interpolate" in layerSpec["mark"]) ? 
+                              "interpolate" in layerSpec["mark"] && layerSpec["mark"]["interpolate"] != null) ? 
                             layerSpec["mark"]["interpolate"] : "default");
       lineInterpolateEditor = (
         <Grid item xs xs={4}>
