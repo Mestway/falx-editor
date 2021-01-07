@@ -267,12 +267,12 @@ class Recommendations extends Component {
             <div className={classNames({'vis-focus': true})}>
               <div className="save-btn-area">
                 {"Actions:  "}
-                <Button size="small"  aria-label="save" 
+                {/*<Button size="small"  aria-label="save" 
                   color="primary" style={{minWidth: "0px"}}
                   onClick={() => this.downloadInteractionTrace(focusedSpec, focusedRScript)}>
                   Download
                 </Button>
-                {" | "}
+                {" | "}*/}
                 <Button size="small"  aria-label="save" 
                   color="primary" style={{minWidth: "0px"}}
                   onClick={() => this.downloadVis(JSON.stringify(focusedSpec, null, '\t'), "png")}>
@@ -315,6 +315,7 @@ class Recommendations extends Component {
           </SplitPane>
         </div>
         <div className={classNames({'context': true})}>
+          <div className="title" style={{width: "100%"}}>Synthesized Visualizations ({this.state.specs.length} synthesized)</div>
           <div className="carousel">
             {contextCharts}
           </div>

@@ -58,8 +58,8 @@
   }
 
   .invis-divider {
-    margin: 7px 0px;
-    height: 5px;
+    margin: 3px 0px;
+    height: 3px;
     background: none;
   }
 
@@ -94,9 +94,9 @@
     font-size: 15px;
   }
 
-  input {
-    margin-top: 9px;
-  }
+  // input {
+  //   margin-top: 9px;
+  // }
 
   .MuiInputBase-input.Mui-disabled {
     color: black;
@@ -126,4 +126,95 @@
 .config-sec-title-2 {
   color: rgba(0,0,0,0.76);
   font-style: italic;
+}
+
+// .expander-grid-list {
+//   padding-bottom: 12px !important;
+// }
+
+
+.field-chip {
+  width: 100%;
+  box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12);
+
+  color: #007bff;
+  border: 1px solid #007bff;
+  background-color: transparent;
+  height: 32px;
+  display: inline-flex;
+  outline: 0;
+  padding: 0;
+  font-size: 0.8125rem;
+  box-sizing: border-box;
+  transition: background-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  align-items: center;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  white-space: nowrap;
+  border-radius: 16px;
+  vertical-align: middle;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.field-chip:hover {
+  background: rgba(173,216,230 ,0.5);
+  box-shadow: none;
+}
+
+.unused-expander-grid {
+  width: auto !important;
+  padding-left: 0px !important;
+  padding-right: 12px !important;
+}
+
+.unused-expander-card {
+  width: auto;
+  box-shadow: none !important;
+  border: dashed 0.1px lightblue;
+
+  padding: 2px 2px 2px 2px;
+  .expander-card-header {
+    padding-bottom: 2px !important;
+    padding: 0px 0px 0px 0px;
+    //margin: 0px 0px 0px 12px;
+    .channel-shelf {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+  }
+
+}
+
+.expander-grid {
+  padding: 4px 0px 4px 0px !important;
+}
+
+.expander-card {
+  width: 100%;
+  box-shadow: none !important;
+  border: dashed 0.1px lightblue;
+
+  padding: 2px 2px 2px 2px;
+  .expander-card-header {
+    padding-bottom: 2px !important;
+    padding: 0px 0px 0px 0px;
+    //margin: 0px 0px 0px 12px;
+    .channel-shelf {
+      padding: 3px 3px 3px 12px;
+    }
+  }
+  .expander-card-body {
+    padding: 12px 12px 0px 12px;
+  }
+  .expander-card-body:last-child {
+    padding-bottom: 12px !important;
+  }
+}
+
+.layer-editor-switch {
+  min-height: 32px !important;
+}
+
+.layer-switch-tab {
+  min-height: 32px !important;
 }

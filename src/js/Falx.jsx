@@ -42,6 +42,8 @@ import Popper from '@material-ui/core/Popper';
 import Fade from '@material-ui/core/Fade';
 import MessageIcon from '@material-ui/icons/Message';
 
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 
 import { ContextMenu, MenuItem as ContextMenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Files from 'react-files';
@@ -975,6 +977,7 @@ class Falx extends Component {
 
     return (
       <ThemeProvider theme={theme}>
+        <DndProvider backend={HTML5Backend} >
         <div className="editor">
           <SplitPane className="editor-plane" split="vertical" 
               minSize={450} size={this.state.displayPanelSize}
@@ -1188,6 +1191,7 @@ class Falx extends Component {
         </div>
         {messagePopper}
         {messageBtn}
+        </DndProvider>
       </ThemeProvider>
     );
   }
