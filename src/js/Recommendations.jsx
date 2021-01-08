@@ -21,10 +21,23 @@ import Tooltip from '@material-ui/core/Tooltip'
 import IconButton from '@material-ui/core/IconButton'
 import Button from '@material-ui/core/Button';
 
+import Draggable from 'react-draggable';
+import { Resizable, ResizableBox } from 'react-resizable';
+
+import Card from '@material-ui/core/Card';
+import { CardHeader } from '@material-ui/core';
+import CardActions from '@material-ui/core/CardActions';
+import CardMedia from '@material-ui/core/CardMedia';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import CardContent from '@material-ui/core/CardContent';
+import ExpandLessIcon from '@material-ui/icons/ExpandLess';
+
 import "regenerator-runtime/runtime.js";
 
 import VisEditor from "./VisEditor.jsx"
 import { EncodeEntryName, Loader, LoaderOptions, Renderers, Spec as VgSpec, TooltipHandler, View } from 'vega';
+
+import ReactTable from "./TableViewer.jsx"
 
 import '../scss/Recommendations.scss';
 
@@ -61,6 +74,7 @@ class Recommendations extends Component {
       updateFocus: false,
       focusIndex: 0,
       focusIndexHistory: [0],
+      dataVisible: false,
       showInfoPane: window.innerWidth > 1400 ? true : false // hide the panel by defaul
     };
   }
@@ -163,6 +177,61 @@ class Recommendations extends Component {
     setTimeout(send, step);    
   }
 
+  renderTransformedData(switchFunc) {
+    // render viewer for transformed data
+    const visibleStatus = this.state.dataVisible ? "visible" : "";
+    const transformedData = this.state.specs[this.state.focusIndex]["data"]["values"];
+    const columns = []
+    if (transformedData.length > 0) {
+      var columnNames = [];
+      // for multi-layered data, column names may come from different layers
+      for (var i = 0; i < transformedData.length; i ++) {
+        const keys = Object.keys(transformedData[i]);
+        for (var j = 0; j < keys.length; j ++) {
+          if (columnNames.includes(keys[j])) {
+            continue
+          } else {
+            columnNames.push(keys[j])
+          }
+        }
+      }
+      for (const i in columnNames) {
+        columns.push({
+          Header: columnNames[i],
+          accessor: columnNames[i]
+        })
+      }
+    }
+
+    var tablePreview = "";
+    if (transformedData.length > 0) { 
+      tablePreview = (<ReactTable
+        data={transformedData}
+        //resolveData={data => this.state.data.map(row => row)}
+        columns={columns}
+        defaultPageSize={transformedData.length == 0 ? 5 : Math.min(transformedData.length + 1, 20)}
+        paginationOption={true}//{transformedData.length + 1 < 20 ? false : true}
+        enableClickCopy={false}
+        className="-striped -highlight"
+      />);
+    }
+
+    return (
+      <Draggable cancel=".not-draggable">
+        <Card className={"transformed-data-viewer" + " " + visibleStatus}>
+          <CardContent>
+            <div style={{textAlign: "left", cursor: "move"}}>
+              <IconButton color="primary" fontSize="small" aria-label="settings" onClick={switchFunc}>
+                <ExpandLessIcon />
+              </IconButton>
+              <span style={{fontWeight: "bold", "padding": "0px 12px"}}>Transformed Data</span>
+            </div>
+            {tablePreview}
+          </CardContent>
+        </Card>
+      </Draggable>);
+  }
+
   render() {
 
     const contextCharts = this.state.specs.map((spec, index) => {
@@ -185,11 +254,7 @@ class Recommendations extends Component {
       var disableXLabels = false;
       if (specCopy["width"] / 20 > (maxWidth / 8)) {
         disableXLabels = true;
-        if (!("layer" in specCopy)) {
-          
-        } else {
-          // ignore multi-layered charts for now
-        }
+        if (!("layer" in specCopy)) { } else { } // ignore multi-layered charts for now 
       }
 
       if (specCopy["height"] > 90) {
@@ -275,6 +340,18 @@ class Recommendations extends Component {
                 {" | "}*/}
                 <Button size="small"  aria-label="save" 
                   color="primary" style={{minWidth: "0px"}}
+                  onClick={(() => { this.setState({dataVisible: !this.state.dataVisible}); }).bind(this)}>
+                  {this.state.dataVisible ? "Hide" : "View"} transformed data
+                </Button>
+                {" | "}
+                <Button size="small"  aria-label="save" 
+                  color="primary" style={{minWidth: "0px"}}
+                  onClick={null}>
+                  Bookmark
+                </Button>
+                {" | "}
+                <Button size="small"  aria-label="save" 
+                  color="primary" style={{minWidth: "0px"}}
                   onClick={() => this.downloadVis(JSON.stringify(focusedSpec, null, '\t'), "png")}>
                   Download (.png)
                 </Button>
@@ -286,9 +363,10 @@ class Recommendations extends Component {
                 {" | "}
                 <Button aria-label="vega-editor" size="small" color="primary" style={{minWidth: "0px"}}
                   onClick={() => this.openInVegaEditor(JSON.stringify(focusedSpec, null, '\t'))}>
-                  Open in vega editor
+                  Open in Vega Editor
                 </Button>
               </div>
+              {this.renderTransformedData((() => { this.setState({dataVisible: !this.state.dataVisible}); }).bind(this))}
               <div className="main-vis-panel">
                 <AnimateOnChange
                       baseClassName="chart"

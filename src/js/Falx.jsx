@@ -60,6 +60,7 @@ import { readString } from 'react-papaparse'
 import Recommendations from "./Recommendations.jsx"
 import ChartTemplates from "./ChartTemplates.jsx"
 import ReactTable from "./TableViewer.jsx"
+import TagEditor from "./TagEditor.jsx"
 import Draggable from 'react-draggable'; // The default
 import AnimateOnChange from 'react-animate-on-change';
 
@@ -90,107 +91,6 @@ const theme = createMuiTheme({
     },
   }
 });
-
-// for hooks to refer to previous components
-function usePrevious(value) {
-  const ref = React.useRef();
-  React.useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
-
-// the tag editor element
-function TagEditor({tagId, tagProps, editorOpen, 
-                    updateTagProperty, closeTagEditor, removeTag}) {
-
-  const [tag, setTag] = React.useState(tagProps);
-  const prevTagProps = usePrevious(tagProps)
-  const prevTagId = usePrevious(tagId)
-
-  React.useEffect(() => {
-    // rerender the component when parent property updated
-    if (JSON.stringify(prevTagProps) != JSON.stringify(tagProps)) {
-      setTag(tagProps);
-    }
-  });
-
-  const handleChange = (key, value) => {
-    const tempTag = JSON.parse(JSON.stringify(tag));
-    tempTag["props"][key] = value;
-    setTag(tempTag);
-  };
-
-  const handleClose = () => {
-    setTag(tagProps);
-    closeTagEditor();
-  }
-
-  const elementEditor = Object.keys(tag["props"])
-    .map(function(key) {
-      const val = tag["props"][key] == null ? "" : tag["props"][key];
-      return (
-        <Grid item xs className="not-draggable" key={"element-editor-" + tagId + key} xs={6}>
-          <TextField 
-            key={"element-editor-field" + tagId + key}
-            id={"mui-element-editor-input-" + tagId + key}
-            label={(key == "column" ? "column" : key)} 
-            margin="dense"
-            //size="small"
-            autoComplete='off'
-            value={val}
-            placeholder="empty"
-            variant="outlined"
-            //error={tag["props"][key] == null}
-            InputLabelProps={{shrink: true, required: (tag["props"][key] == null)}}
-            onChange={(e) => handleChange(key, e.target.value)}
-            onKeyUp={(e) => { if (e.key === "Enter") { updateTagProperty(tagId, tag); closeTagEditor(); }}}
-          />
-        </Grid>
-      );
-    }.bind(this));
-
-  const editorStatus = editorOpen ? "editor-visible" : "editor-hidden";
-
-  const tagEditor = (
-    <Draggable cancel=".not-draggable">
-      <Card id={"tag" + tagId} className={"tag-editor-card" + " " + editorStatus}>
-        <CardContent className="tag-editor-card-content">
-          <Grid container spacing={1}>
-            <Grid item xs xs={10} style={{ cursor: 'move' }}>
-              <Typography variant="body1" component="h2">
-                Editing <Typography variant="inherit">{tag["type"] + " #" + (tagId + 1)}</Typography>
-              </Typography>
-            </Grid>
-            <Grid item xs xs={2} style={{textAlign: "right",  cursor: 'move'}}>
-              <CloseIcon fontSize="small" style={{cursor: 'pointer'}}
-                onClick={handleClose}/>
-            </Grid>
-            <Divider />
-            {elementEditor}
-          </Grid>
-        </CardContent>
-        <CardActions className="tag-editor-card-action">
-          <ButtonGroup className="left-btn" color="secondary" size="small" aria-label="outlined primary button group">
-            <MaterialButton aria-label="delete" color="secondary" onClick={() => { removeTag(tagId); }}>
-              Delete
-            </MaterialButton>
-          </ButtonGroup>
-          <ButtonGroup className="right-btn" color="primary" size="small" aria-label="outlined primary button group">
-            <MaterialButton 
-              onClick={() => {updateTagProperty(tagId, tag); handleClose();}}>
-              Save
-            </MaterialButton>
-            <MaterialButton onClick={handleClose}>
-              Cancel
-            </MaterialButton>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-    </Draggable>)
-
-  return tagEditor;
-}
 
 class Falx extends Component {
   constructor(props) {

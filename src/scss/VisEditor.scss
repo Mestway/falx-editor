@@ -35,6 +35,10 @@
   overflow: auto;
   margin: 0px 10px 0px 0px;
 
+  .react-table {
+    max-width: 600px;
+  }
+
   label + .MuiInput-formControl {
     margin-top: 8px;
   }
@@ -80,10 +84,6 @@
       max-width: 600px;
     }
 
-  }
-
-  .label-grid {
-    text-align: center;
   }
 
   .paper {
@@ -217,4 +217,15 @@
 
 .layer-switch-tab {
   min-height: 32px !important;
+}
+
+.react-filter-box {
+  padding: 4px;
+  margin-top: 4px;
+}
+
+.prop-slider {
+  span {
+    font-size: 12px;
+  }
 }

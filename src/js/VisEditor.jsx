@@ -59,9 +59,6 @@ import Tooltip from '@material-ui/core/Tooltip'
 
 import { useDrop } from 'react-dnd';
 import { useDrag } from 'react-dnd';
-import { DndProvider } from 'react-dnd'
-import { HTML5Backend } from 'react-dnd-html5-backend'
-
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -261,9 +258,7 @@ class VisEditor extends Component {
 
   constructor(props) {
     super(props);
-
     var expanderStatus = {};
-
     if ("layer" in props.spec) {
       for (var i = 0; i < props.spec["layer"].length; i ++) {
         
@@ -278,12 +273,10 @@ class VisEditor extends Component {
         }
       }
     } else {
-      
       var channels = Object.keys(props.spec["encoding"]);
       for (var j in channels) {
         const keyId = "expander_-1" + "_" + channels[j];
         expanderStatus[keyId] = false;
-
         const encoding = props.spec["encoding"][channels[j]];
         const titleId = "title_-1" + "_" + channels[j];
         const title = ("title" in encoding) ? encoding["title"][channels[j]] : encoding["field"];
@@ -395,12 +388,14 @@ class VisEditor extends Component {
     // change the spec's top level value
     var newSpec = this.state.spec;
     newSpec[key] = value;
+    newSpec["title"] = {"text": Math.random(0).toString(), "fontSize": 0};
     this.setState({
       spec: newSpec
     })
     if (propagateToMain) {
       this.props.visSpecUpdateHandle(this.props.specIndex, newSpec);
     }
+
   }
   handleMarkChange(layerID, key, value) {
     // change the layer's (defined by layerID) property (specified by key) into value (value)'
@@ -665,32 +660,32 @@ class VisEditor extends Component {
       </ListItem>
     )
   }
-  genWidthHeighSetter(layerSpec) {
+  genWidthHeightSetter(layerSpec) {
     // use a smaller maxWidth / maxHeight if column / row exists.
     const maxWidth = ("column" in layerSpec["encoding"]) ? 200 : 800;
     const maxHeight = ("row" in layerSpec["encoding"]) ? 200 : 600;
     return (
-      <Grid container alignItems="center" spacing={8}>
-        <Grid item xs={12} sm={6}>
+      <Grid container alignItems="center" spacing={3}>
+        <Grid item xs={12} sm={6} style={{padding: "0px 20px"}}>
           <Typography id="discrete-slider-always" className="config-sec-title" variant="subtitle1" gutterBottom>
             Width
           </Typography>
-          <Slider value={this.state.spec["width"]} step={10} min={60} max={maxWidth}
-            marks={[{value: 60,label: '60px'}, {value: maxWidth, label: maxWidth.toString() + 'px'}]}
+          <Slider className="prop-slider" value={this.state.spec["width"]} step={10} min={60} max={maxWidth}
+            marks={[{value: 60, label: '60px'}, {value: maxWidth, label: maxWidth.toString() + 'px'}]}
             onChange={((evt, value) => {this.handleSpecPropChange.bind(this)("width", value, false);})}
-            onChangeCommitted={((evt, newVal) => {this.handleSpecPropChange.bind(this)("width", newVal);})}
+            onChangeCommitted={((evt, newVal) => {this.props.visSpecUpdateHandle(this.props.specIndex, this.state.spec);})}
             valueLabelDisplay="auto"
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} sm={6} style={{padding: "0px 20px"}}>
           <Typography id="discrete-slider-always" className="config-sec-title" variant="subtitle1" gutterBottom>
             Height
           </Typography>
-          <Slider
+          <Slider className="prop-slider"
             value={this.state.spec["height"]} step={10} min={60} max={maxHeight}
-            marks={[{value: 60,label: '60px'}, {value: maxHeight,label: maxHeight.toString() + 'px'}]}
+            marks={[{value: 60, label: '60px'}, {value: maxHeight,label: maxHeight.toString() + 'px'}]}
             onChange={((evt, value) => {this.handleSpecPropChange.bind(this)("height", value, false);})}
-            onChangeCommitted={((evt, newVal) => {this.handleSpecPropChange.bind(this)("height", newVal);})}
+            onChangeCommitted={((evt, newVal) => {this.props.visSpecUpdateHandle(this.props.specIndex, this.state.spec);})}
             valueLabelDisplay="auto"
           />
         </Grid>
@@ -845,13 +840,13 @@ class VisEditor extends Component {
           </Grid>
         </Grid>*/}
         <Divider className="invis-divider" />
-        {this.genWidthHeighSetter(layerSpec)}
+        {this.genWidthHeightSetter(layerSpec)}
         <Divider className="invis-divider" />
         <Typography className="config-sec-title" variant="subtitle1" gutterBottom>
           Filter
         </Typography>
         <Grid container alignItems="center" spacing={3}>
-          <Grid item xs={12}>
+          <Grid item xs={12} style={{padding: "4px"}}>
             <CustomReactFilterBox 
               data = {layerData}
               query={this.displayFilter(this.state.tempFilters[layerID], fieldNameToChannel)}
@@ -859,7 +854,7 @@ class VisEditor extends Component {
               onParseOk={(expr) => this.onParseOk.bind(this)(expr, layerID, layerSpec)}
               autoCompleteHandler = {customAutoCompleteHandler}/>
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={6} style={{paddingTop: "4px"}}>
             <Button fullWidth variant="outlined" color="primary" size="small"
                     onClick={(event) => this.saveTempFilters.bind(this)(layerID)}
                     style={{textTransform: "none"}}> {"Apply Filter"} </Button>
@@ -954,7 +949,7 @@ class VisEditor extends Component {
             <div className="raw">
               <ReactJson src={{"r_script": this.state.tableProg,
                                "vl_spec": this.state.spec}} iconStyle="triangle"
-                displayObjectSize={false} enableClipboard={false} //displayDataTypes={false}
+                displayObjectSize={false} enableClipboard={false} displayDataTypes={false}
                 shouldCollapse={({ src, namespace, type }) => {
                   // collapse "data" field in the namespace
                   if (namespace.indexOf("values") == namespace.length - 1 

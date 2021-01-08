@@ -1,20 +1,24 @@
 @import "base";
 
+
+
 .react-table-cell {
 	padding: 3px 6px 3px 6px !important;
-	cursor: pointer;
 }
+
+.react-table-cell.pointer {
+		cursor: pointer;
+	}
 
 .react-table-cell-header {
 //	font-weight: bold;
 }
 
 .react-table-cell:hover {
-	background-color: rgba(0,0,0,0.05);
+	background-color: rgba(230,230,230,1);
 }
 
 .react-table {
-	max-width: 80% !important;
 	margin: 0 auto;
 	min-height: 240px;
 	max-height: 240px;

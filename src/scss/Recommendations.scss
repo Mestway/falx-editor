@@ -21,6 +21,25 @@
     // transition: width 220ms $standard-ease;
   }
 
+  .transformed-data-viewer {
+    // by default they are invisible
+    position: fixed;
+    opacity: 0;
+    z-index: -1;
+    pointer-events: none; 
+
+    &.visible {
+      position: fixed;
+      opacity: 1;
+      min-width: 400px;
+      z-index: 999;
+      margin: 50px 0px 0px 70px;
+      box-shadow: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
+      pointer-events: auto;
+      transition: opacity 250ms ease !important;
+    }
+  }
+
   .visualizations {
 
     .MuiSvgIcon-colorPrimary {
