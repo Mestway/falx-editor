@@ -33,7 +33,6 @@ const DraggableTableCell = ({ cell, type }) => {
     });
     const opacity = isDragging ? 1 : 1;
     const cursor = isDragging ? "grabbing" : "grab";
-
     const props = type == "Cell" ? cell.getCellProps() : cell.getHeaderProps();
 
     return (
