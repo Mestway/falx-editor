@@ -64,8 +64,6 @@ import TagEditor from "./TagEditor.jsx"
 import Draggable from 'react-draggable'; // The default
 import AnimateOnChange from 'react-animate-on-change';
 
-import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
-
 import TaskGallery from "./TaskGallery.jsx"
 //import TaskGallery from "./StudyTasks.jsx"
 
@@ -78,21 +76,21 @@ const galleryImages = importAll(require.context('../gallery-images', false, /\.(
 
 import '../scss/Falx.scss';
 
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: "#007bff",
-      contrastText: "white" //button text white instead of black
-    }
-  },
-  typography: {
-    button: {
-      textTransform: 'none',
-    },
-  }
-});
-
 class Falx extends Component {
+
+  static getDerivedStateFromProps(props, state) {
+    // load bookmarked item from parent
+    if (props.openedBookmark !== state.openedBookmark) {
+      console.log(props.openedBookmark);
+      let newSpec = {"vl_spec": JSON.parse(props.openedBookmark), "rscript": "" };
+      return {
+        openedBookmark: props.openedBookmark,
+        synthResult: [newSpec].concat(state.synthResult)
+      };
+    }
+    return null;
+  }
+
   constructor(props) {
 
     // randomly select a task from the gallery
@@ -107,6 +105,7 @@ class Falx extends Component {
       //spec: null,
       constants: [],
       tags: [],
+      openedBookmark: props.openedBookmark,
       tagEditorOpen: -1,
       synthTaskToken: 0, // the token represents the current synthesis task is running
       synthResult: [],
@@ -876,8 +875,7 @@ class Falx extends Component {
       </Popper>)
 
     return (
-      <ThemeProvider theme={theme}>
-        <DndProvider backend={HTML5Backend} >
+      <DndProvider backend={HTML5Backend} >
         <div className="editor">
           <SplitPane className="editor-plane" split="vertical" 
               minSize={450} size={this.state.displayPanelSize}
@@ -1091,8 +1089,7 @@ class Falx extends Component {
         </div>
         {messagePopper}
         {messageBtn}
-        </DndProvider>
-      </ThemeProvider>
+      </DndProvider>
     );
   }
 }

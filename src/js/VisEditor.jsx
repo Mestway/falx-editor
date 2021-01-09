@@ -828,15 +828,19 @@ class VisEditor extends Component {
           <List className="expander-grid-list">
            {Object.keys(layerSpec["encoding"]).map(
                (key, index) => this.genEncodingEdit(layerID, key, layerSpec["encoding"][key]))}
-            <Link href="#" style={{"fontSize": "12px"}} 
+            <div style={{display: "flex"}}>
+              {allChannels[markType].filter(x => !Object.keys(layerSpec["encoding"]).includes(x)).map(
+                             key => this.genUnusedEncodingEdit(layerID, key))}
+            </div>
+           {/* <Link href="#" style={{"fontSize": "12px"}} 
               onClick={( (event) => {this.setState({showUnusedChannel: !this.state.showUnusedChannel});}).bind(this)}>
               {this.state.showUnusedChannel ? "- hide unused axes" : "+ show unused axes"}
-            </Link> 
-            {this.state.showUnusedChannel ? 
+            </Link> */}
+            {/*{this.state.showUnusedChannel ? 
               <div style={{display: "flex"}}>
                 {allChannels[markType].filter(x => !Object.keys(layerSpec["encoding"]).includes(x)).map(
                                key => this.genUnusedEncodingEdit(layerID, key))}
-              </div> : ""}
+              </div> : ""}*/}
           </List>
         {/*<Grid container alignItems="center" spacing={3}>
           <Grid item xs={12} sm={6}>

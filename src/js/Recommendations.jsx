@@ -17,6 +17,7 @@ import ReactTooltip from 'react-tooltip'
 
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import BookmarkIcon from '@material-ui/icons/Bookmark';
 import Tooltip from '@material-ui/core/Tooltip'
 import IconButton from '@material-ui/core/IconButton'
 import Button from '@material-ui/core/Button';
@@ -38,7 +39,7 @@ import VisEditor from "./VisEditor.jsx"
 import { EncodeEntryName, Loader, LoaderOptions, Renderers, Spec as VgSpec, TooltipHandler, View } from 'vega';
 
 import ReactTable from "./TableViewer.jsx"
-import { resizeVegaLiteSpec } from "./Utils.jsx"
+import { resizeVegaLiteSpec, openInVegaEditor, downloadVis } from "./Utils.jsx"
 
 import '../scss/Recommendations.scss';
 
@@ -115,66 +116,8 @@ class Recommendations extends Component {
     link.setAttribute('download', "falx_log.json");
     link.dispatchEvent(new MouseEvent('click'));
   }
-  downloadVis(spec, ext) {
-    // spec: vega lite spec
-    // ext: extension (svg / png)
 
-    const element = document.createElement("a");
-    const file = new Blob([spec], {type: 'text/plain'});
-
-    var vgSpec = vegaLite.compile(JSON.parse(spec)).spec;
-    var view = new vega.View(vega.parse(vgSpec), {renderer: 'none'});
-
-    // generate a PNG snapshot and then download the image
-    view.toImageURL(ext).then(function(url) {
-      var link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('target', '_blank');
-      link.setAttribute('download', 'vega-export.' + ext);
-      link.dispatchEvent(new MouseEvent('click'));
-    });//.catch(function(error) { /* error handling */ });
-
-    // element.href = URL.createObjectURL(file);
-    // element.download = "vis-save.json";
-    // document.body.appendChild(element); // Required for this to work in FireFox
-    // element.click();
-  }
-  openInVegaEditor(specStr) {
-    const editorURL = "https://vega.github.io/editor/";
-    const editor = window.open(editorURL);
-
-    const data = {
-      config: {},
-      mode: "vega-lite",
-      renderer: "canvas",
-      spec: specStr
-    };
-    const wait = 10000;
-    const step = 250;
-    // eslint-disable-next-line no-bitwise
-    let count = ~~(wait / step);
-
-    function listen(evt) {
-      if (evt.source === editor) {
-        count = 0;
-        window.removeEventListener('message', listen, false);
-      }
-    }
-    window.addEventListener('message', listen, false);
-
-    // send message
-    // periodically resend until ack received or timeout
-    function send() {
-      if (count <= 0) {
-        return;
-      }
-      console.log(data);
-      editor.postMessage(data, '*');
-      setTimeout(send, step);
-      count -= 1;
-    }
-    setTimeout(send, step);    
-  }
+  
 
   renderTransformedData(switchFunc) {
     // render viewer for transformed data
@@ -241,7 +184,7 @@ class Recommendations extends Component {
 
       return (
         <div key={index} className={classes} onClick={() => {this.setFocusIndex(index);}}>
-          <VegaLite spec={specCopy} renderer="canvas" actions={false} />
+          <VegaLite spec={specCopy} renderer={"svg"} actions={false} />
           <div className="backdrop"></div>
         </div>
       );
@@ -301,22 +244,22 @@ class Recommendations extends Component {
                 <Button size="small"  aria-label="save" 
                   color="primary" style={{minWidth: "0px"}}
                   onClick={() => this.props.bookmarkHandler(this.state.specs[this.state.focusIndex])}>
-                  Bookmark
+                  <BookmarkIcon style={{fontSize: "medium"}}/>{" "} Bookmark
                 </Button>
                 {" | "}
                 <Button size="small"  aria-label="save" 
                   color="primary" style={{minWidth: "0px"}}
-                  onClick={() => this.downloadVis(JSON.stringify(focusedSpec, null, '\t'), "png")}>
+                  onClick={() => downloadVis(JSON.stringify(focusedSpec, null, '\t'), "png")}>
                   Download (.png)
                 </Button>
                 {/*{" | "}
                 <Button size="small" color="primary" style={{minWidth: "0px"}}
-                  aria-label="save" onClick={() => this.downloadVis(JSON.stringify(focusedSpec, null, '\t'), "svg")}>
+                  aria-label="save" onClick={() => downloadVis(JSON.stringify(focusedSpec, null, '\t'), "svg")}>
                   Download (.svg)
                 </Button>*/}
                 {" | "}
                 <Button aria-label="vega-editor" size="small" color="primary" style={{minWidth: "0px"}}
-                  onClick={() => this.openInVegaEditor(JSON.stringify(focusedSpec, null, '\t'))}>
+                  onClick={() => openInVegaEditor(JSON.stringify(focusedSpec, null, '\t'))}>
                   Open in Vega Editor
                 </Button>
               </div>

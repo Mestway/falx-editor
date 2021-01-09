@@ -297,8 +297,18 @@
         flex-grow: 0;
         flex-shrink: 0;
 
-        max-width: 600px;
+        max-width: 500px;
         overflow: hidden;
+
+        .vega-embed {
+          height: 100%;
+        }
+
+        .vega-embed > svg {
+          height: 100%;
+          width: auto;
+          max-width: 400px;
+        }
 
         &.scroll {
           flex-grow: 0;
