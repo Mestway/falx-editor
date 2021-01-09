@@ -38,6 +38,7 @@ import VisEditor from "./VisEditor.jsx"
 import { EncodeEntryName, Loader, LoaderOptions, Renderers, Spec as VgSpec, TooltipHandler, View } from 'vega';
 
 import ReactTable from "./TableViewer.jsx"
+import { resizeVegaLiteSpec } from "./Utils.jsx"
 
 import '../scss/Recommendations.scss';
 
@@ -55,8 +56,7 @@ class Recommendations extends Component {
     if (props.specs !== state.specs) {
       const focusIndexHistory = state.focusIndexHistory;
       focusIndexHistory.push(-1);
-
-      return { 
+      return {
         specs: props.specs,
         tableProgs: props.tableProgs,
         focusIndexHistory: focusIndexHistory
@@ -149,7 +149,6 @@ class Recommendations extends Component {
       renderer: "canvas",
       spec: specStr
     };
-
     const wait = 10000;
     const step = 250;
     // eslint-disable-next-line no-bitwise
@@ -205,15 +204,13 @@ class Recommendations extends Component {
 
     var tablePreview = "";
     if (transformedData.length > 0) { 
-      tablePreview = (<ReactTable
-        data={transformedData}
-        //resolveData={data => this.state.data.map(row => row)}
-        columns={columns}
-        defaultPageSize={transformedData.length == 0 ? 5 : Math.min(transformedData.length + 1, 20)}
-        paginationOption={true}//{transformedData.length + 1 < 20 ? false : true}
-        enableClickCopy={false}
-        className="-striped -highlight"
-      />);
+      tablePreview = (
+        <ReactTable
+          data={transformedData} columns={columns}
+          defaultPageSize={transformedData.length == 0 ? 5 : Math.min(transformedData.length + 1, 20)}
+          paginationOption={true} enableClickCopy={false} useDraggableCell={false}
+          className="-striped -highlight"
+        />);
     }
 
     return (
@@ -240,50 +237,7 @@ class Recommendations extends Component {
         'selected': index === this.state.focusIndex
       })
 
-      const specCopy = JSON.parse(JSON.stringify(spec));
-
-      //specCopy["width"] = 90;
-
-      // no minWidth by default
-      var minWidth = 0;
-      var maxWidth = 90 * 6;
-      if (specCopy["width"] != 200) {
-        minWidth = (specCopy["width"] / 20) * 8;
-      }
-      // in case we don't have enough room to show ticks and labels
-      var disableXLabels = false;
-      if (specCopy["width"] / 20 > (maxWidth / 8)) {
-        disableXLabels = true;
-        if (!("layer" in specCopy)) { } else { } // ignore multi-layered charts for now 
-      }
-
-      if (specCopy["height"] > 90) {
-        specCopy["width"] = Math.min(Math.max(specCopy["width"] * (90.0 / specCopy["height"]), minWidth), maxWidth);
-        // set spec size height to 90 (to fix the carousel)
-        specCopy["height"] = 90;
-      }
-      
-      if (!("layer" in specCopy)) {
-        for (const key in specCopy["encoding"]) {
-          specCopy["encoding"][key]["axis"] = {"labelLimit": 30, "title": null}
-        }
-        if (disableXLabels) {
-          specCopy["encoding"]["x"]["axis"]["labels"] = false;
-          specCopy["encoding"]["x"]["axis"]["ticks"] = false;
-        }
-      } else {
-        for (var i = 0; i < specCopy["layer"].length; i ++) {
-          for (const key in specCopy["layer"][i]["encoding"]) {
-            specCopy["layer"][i]["encoding"][key]["axis"] = {"labelLimit": 30, "title": null}
-          }
-          if (disableXLabels) {
-            specCopy["layer"][i]["encoding"]["x"]["axis"]["labels"] = false;
-            specCopy["layer"][i]["encoding"]["x"]["axis"]["ticks"] = false;
-          }
-        }
-      }
-
-      //console.log(JSON.stringify(specCopy));
+      const specCopy = resizeVegaLiteSpec(JSON.parse(JSON.stringify(spec)));
 
       return (
         <div key={index} className={classes} onClick={() => {this.setFocusIndex(index);}}>
@@ -346,7 +300,7 @@ class Recommendations extends Component {
                 {" | "}
                 <Button size="small"  aria-label="save" 
                   color="primary" style={{minWidth: "0px"}}
-                  onClick={null}>
+                  onClick={() => this.props.bookmarkHandler(this.state.specs[this.state.focusIndex])}>
                   Bookmark
                 </Button>
                 {" | "}

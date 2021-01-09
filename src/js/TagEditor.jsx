@@ -51,10 +51,9 @@ const DroppableTextField = ({tagId, channel, tag, handleChange, handleKeyUp}) =>
     const isActive = canDrop && isOver;
     let backgroundColor = '#FFFFFF';
     if (isActive) {
+        backgroundColor = "rgba(205,210,255, 1)";// "rgba(255,250,205, 1)";
+    } else if (canDrop) {
         backgroundColor = "rgba(255,250,205, 1)";
-    }
-    else if (canDrop) {
-        backgroundColor = "rgba(255,250,205, 0.4)";
     }
 
    const val = tag["props"][channel] == null ? "" : tag["props"][channel];

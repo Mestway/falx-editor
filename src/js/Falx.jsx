@@ -350,7 +350,7 @@ class Falx extends Component {
       return (! attributes.map(x => element["props"][x]).some(x => x == null));
     })
 
-    console.log(validTags);
+    //console.log(validTags);
 
     if (validTags.length == 0) {
       this.setState({ status: "Error: empty demonstration", synthResult: []})
@@ -377,8 +377,7 @@ class Falx extends Component {
       const result = response["result"];
       const synthStatus = (result.length == 0) ? (response["mode"] == "full" ? "No solution found ..." : "Running...") : "idle";
 
-      console.log(this.state.synthTaskToken);
-      console.log(response["token"]);
+      console.log(`Synthesis session: ${this.state.synthTaskToken} (reponse from ${response["token"]})`);
 
       if (this.state.synthTaskToken != response["token"]) {
         console.log("[info] ignore current synthesis result since task token changed")
@@ -718,7 +717,7 @@ class Falx extends Component {
     spec["data"] = data
 
     //debug helper: print vis spec with data
-    console.log(JSON.stringify(spec)); 
+    //console.log(JSON.stringify(spec)); 
 
     return (<VegaLite spec={spec} tooltip={new Handler().call} actions={false}/>);
   }
@@ -814,6 +813,7 @@ class Falx extends Component {
     const elementTags = this.renderElementTags();
     const recommendations = (specs.length > 0 ? 
                               (<Recommendations specs={specs} tableProgs={tableProgs} 
+                                  bookmarkHandler={this.props.bookmarkHandler}
                                   demoHistory={this.state.demoHistory}
                                   inputData={this.state.data}
                                   updateSpecHandle={this.updateSynthResultHandle.bind(this)}/>) : 

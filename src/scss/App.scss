@@ -36,6 +36,11 @@ footer {
   height: 50px;
   box-sizing: border-box;
 
+  .bookmark-icon { }
+  .bookmark-icon:hover {
+    text-decoration: underline;
+  }
+
   &:before {
     content: '';
     position: absolute;
@@ -120,6 +125,52 @@ footer {
   }
 
 }
+
+.bookmark-dialog {
+  .MuiDialog-paper {
+    position: absolute;
+    top: 10%;
+    max-height: 600px;
+  }
+
+  .MuiDialog-paperFullWidth {
+    width: auto;
+    max-width: calc(100% - 256px);
+  }
+
+  .bookmark-close-btn {
+    float: right;
+    padding: 0px 0px 0px;
+  }
+
+  .upload-data-card {
+    border: 1.5px dashed rgba(0, 0, 0, 0.22)
+  }
+
+  .bookmark-card {
+
+    padding: 10px;
+
+    .card-media {
+      margin: auto;
+      height: 144px;
+      max-width: 600px;
+      overflow: scroll;
+      object-fit: contain;
+    } 
+  }
+
+  .vega-embed {
+    height: 100%;
+  }
+
+  .vega-embed > svg {
+    height: 100%;
+    width: auto;
+  }
+}
+
+
 
 .tutorial-table {
   font-size: 12px; 

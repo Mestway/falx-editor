@@ -207,9 +207,14 @@ const DraggableChip = ({ channel, field, updateFunc }) => {
     return (
       <Tooltip
           arrow
-          title={<div style={{"maxWidth": "160px"}}>Drag and drop the field to a different axis to modify the design.</div>}>
-        <span ref={drag} style={{"opacity": opacity, transform: 'translate(0, 0)', "cursor": cursor, overflow: "hidden"}} 
-          size="medium" className="field-chip"><span style={{fontSize: "12px", opacity:0.8, marginRight: "5px"}}>field:</span><span>{field}</span></span>
+          title={<div style={{"maxWidth": "160px"}}>
+            Drag and drop the field to a different axis to modify the design.
+          </div>}>
+        <span ref={drag} style={{"opacity": opacity, transform: 'translate(0, 0)', 
+            "cursor": cursor, overflow: "hidden"}} 
+          size="medium" className="field-chip">
+          <span style={{fontSize: "12px", opacity:0.8, marginRight: "5px"}}>field:</span>
+          <span>{field}</span></span>
       </Tooltip>);
 };
 
@@ -227,14 +232,14 @@ const ChannelShelf = ({field, channel, expandBtn, updateHandle}) => {
     const isActive = canDrop && isOver;
     let backgroundColor = '#FFFFFF';
     if (isActive) {
+        backgroundColor = "rgba(205,210,255, 1)";
+    } else if (canDrop) {
         backgroundColor = "rgba(255,250,205, 1)";
-    }
-    else if (canDrop) {
-        backgroundColor = "rgba(255,250,205, 0.4)";
     }
 
     const content = (field != null) ? (
-      <Grid className="channel-shelf" ref={drop} style={{ "background": backgroundColor}} container alignItems="center" spacing={0} >
+      <Grid className="channel-shelf" ref={drop} 
+          style={{ "background": backgroundColor}} container alignItems="center" spacing={0} >
         <Grid item xs={12} sm={3} style={{overflow: "hidden"}}>
           <span>{channel}</span>
         </Grid>
@@ -245,7 +250,8 @@ const ChannelShelf = ({field, channel, expandBtn, updateHandle}) => {
           {expandBtn}
         </Grid>
       </Grid>) : (
-      <Grid className="channel-shelf" ref={drop} style={{ "background": backgroundColor}} container alignItems="center" spacing={0} >
+      <Grid className="channel-shelf" ref={drop} 
+          style={{ "background": backgroundColor}} container alignItems="center" spacing={0} >
         <Grid item xs={12} sm={12} style={{overflow: "hidden"}}>
           <span>{channel}</span>
         </Grid>

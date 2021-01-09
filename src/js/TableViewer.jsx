@@ -18,12 +18,18 @@ import '../scss/TableViewer.scss';
 
 
 const DraggableTableCell = ({ cell, type }) => {
+    // type is "Header" or "Cell"
+    const props = (type == "Cell") ? cell.getCellProps() : cell.getHeaderProps();
+    const className = (type == "Header") ? "react-table-cell-header react-table-cell" : "react-table-cell";
+    const value = (type == "Cell") ? cell.value : cell.Header
+
     const [{ isDragging }, drag] = useDrag({
-        item: { value: type == "Cell" ? cell.value : cell.Header, type: "cell" },
+        item: { value: value, type: "cell" },
         end: (item, monitor) => {
             const dropResult = monitor.getDropResult();
             if (item && dropResult) {
-              dropResult.handleChange(dropResult.channel, item.value);
+              // convert to string to match the type of values that are typed into the
+              dropResult.handleChange(dropResult.channel, item.value.toString());
               //alert(`You dropped ${item.value} into ${dropResult.tag.toString()}!`);
             }
         },
@@ -33,17 +39,18 @@ const DraggableTableCell = ({ cell, type }) => {
     });
     const opacity = isDragging ? 1 : 1;
     const cursor = isDragging ? "grabbing" : "grab";
-    const props = type == "Cell" ? cell.getCellProps() : cell.getHeaderProps();
-
     return (
-      <TableCell ref={drag} className={"react-table-cell"} 
+      <TableCell ref={drag} className={className} 
             style={{"opacity": opacity, transform: 'translate(0, 0)', "cursor": cursor, overflow: "hidden"}}
           {...props}>
         {cell.render(type)}
-      </TableCell>)
+      </TableCell>); 
 };
 
-function ReactTable({ columns, data, defaultPageSize, paginationOption = true, enableClickCopy = true }) {
+function ReactTable({ columns, data, defaultPageSize, 
+                      paginationOption = true, 
+                      enableClickCopy = true, 
+                      useDraggableCell = true }) {
   // Use the state and functions returned from useTable to build your UI
   const {
     getTableProps,
@@ -93,7 +100,8 @@ function ReactTable({ columns, data, defaultPageSize, paginationOption = true, e
 
   const pagination = paginationOption ? (
     <div className="pagination">
-        <IconButton className="pagination-btn" onClick={() => previousPage()} disabled={!canPreviousPage} aria-label="previous page">
+        <IconButton className="pagination-btn" onClick={() => previousPage()} 
+            disabled={!canPreviousPage} aria-label="previous page">
           <KeyboardArrowLeft />
         </IconButton>
         <span className="info-span">
@@ -102,11 +110,43 @@ function ReactTable({ columns, data, defaultPageSize, paginationOption = true, e
             {pageIndex + 1} of {pageOptions.length}
           </strong>{' '}
         </span>
-        <IconButton className="pagination-btn" onClick={() => nextPage()} disabled={!canNextPage} aria-label="next page">
+        <IconButton className="pagination-btn" 
+            onClick={() => nextPage()} disabled={!canNextPage} aria-label="next page">
           <KeyboardArrowRight />
         </IconButton>
       </div>) : "";
 
+  const cellSwitcher = (cell, type, key) => {
+    // type is "Header" or "Cell"
+    const value = (type == "Header") ? cell.Header : cell.value; 
+    const props = type == "Cell" ? cell.getCellProps() : cell.getHeaderProps();
+    const className = (type == "Header") ? "react-table-cell-header react-table-cell" : "react-table-cell";
+
+    // below is the reference version of the two types of cells
+    /*<TableCell className={"react-table-cell-header react-table-cell"}
+        {...column.getHeaderProps()}> 
+      {column.render('Header')}
+    </TableCell>
+    <TableCell className={"react-table-cell"} {...cell.getCellProps()}>
+      {cell.render('Cell')}
+    </TableCell>*/
+
+    if (useDraggableCell) {
+      return (<DraggableTableCell cell={cell} type={type} key={key}/>);
+    } else if (enableClickCopy) {
+      return (
+        <TableCell className={className + " pointer"}
+            onClick={(e) => {showTips(e, value)}}
+            {...props}> 
+          {cell.render(type)}
+        </TableCell>);
+    } else {
+      return (
+        <TableCell className={className} {...props}> 
+          {cell.render(type)}
+        </TableCell>);
+    }
+  } 
 
   // Render the UI for your table
   return (
@@ -115,18 +155,7 @@ function ReactTable({ columns, data, defaultPageSize, paginationOption = true, e
         <TableHead>
           {headerGroups.map(headerGroup => (
             <TableRow {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column, i) => {
-
-                return (
-                  <DraggableTableCell cell={column} type={"Header"} key={"draggable-cell-header-" + i.toString()}/>
-                  // <TableCell className={"react-table-cell-header react-table-cell " + (enableClickCopy ?  "pointer" : "")}
-                  //     onClick={(e) => { 
-                  //       if (enableClickCopy) {showTips(e, column.Header)}}} 
-                  //     {...column.getHeaderProps()}> 
-                  //   {column.render('Header')}
-                  // </TableCell>
-                 );
-              })}
+              {headerGroup.headers.map((column, i) => cellSwitcher(column, "Header", `draggable-cell-header-${i}`))}
             </TableRow>
           ))}
         </TableHead>
@@ -135,16 +164,7 @@ function ReactTable({ columns, data, defaultPageSize, paginationOption = true, e
             prepareRow(row)
             return (
               <TableRow {...row.getRowProps()}>
-                {row.cells.map((cell, j) => {
-                  return (
-                    <DraggableTableCell cell={cell} type={"Cell"} key={"draggable-cell-body-" + i.toString() + "-" + j.toString()}/>
-                    // <TableCell className={"react-table-cell " + (enableClickCopy ?  "pointer" : "")} 
-                    //       onClick={(e) => {if (enableClickCopy) {showTips(e, cell.value)}}}
-                    //     {...cell.getCellProps()}>
-                    //   {cell.render('Cell')}
-                    // </TableCell>
-                  )
-                })}
+                {row.cells.map((cell, j) => cellSwitcher(cell, "Cell", `draggable-cell-body-${i}-${j}`))}
               </TableRow>
             )
           })}
