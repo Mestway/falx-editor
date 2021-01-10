@@ -10,6 +10,12 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
+import Grid from '@material-ui/core/Grid';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
 //import expandButton from '../images/expand.svg';
 import Octicon from 'react-octicon'
@@ -19,6 +25,8 @@ import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
 import BookmarkIcon from '@material-ui/icons/Bookmark';
+import CloseIcon from '@material-ui/icons/Close';
+
 import Tooltip from '@material-ui/core/Tooltip'
 import Fab from '@material-ui/core/Fab';
 import IconButton from '@material-ui/core/IconButton'
@@ -97,8 +105,10 @@ class Recommendations extends Component {
       dataVisible: false,
       showInfoPane: window.innerWidth > 1400 ? true : false, // hide the panel by defaul
       hoverOnContextChart: -1,
+      gridViewOpen: false
     };
   }
+
   updateSpec(index, newSpec) {
     var newSpecs = this.state.specs;
     newSpecs[index] = newSpec;
@@ -108,6 +118,7 @@ class Recommendations extends Component {
     // also tell the parents that the synthesis result needs update
     this.props.updateSpecHandle(index, newSpec);
   }
+
   setFocusIndex(focusIndex) {
     // update the focus index history to keep trace of it
     const focusIndexHistory = this.state.focusIndexHistory;
@@ -119,6 +130,7 @@ class Recommendations extends Component {
       focusIndexHistory: focusIndexHistory
     });
   }
+
   downloadInteractionTrace(spec, tableProg) {
     const trace = {
       "demo_history": this.props.demoHistory,
@@ -154,13 +166,30 @@ class Recommendations extends Component {
     this.setState({invisibleCharts: invisibleCharts, focusIndex: focusIndex});
   }
 
-  resumeHiddenContextChart() {
+  switchContextChartVisibility(idx) {
+    let invisibleCharts = this.state.invisibleCharts;
+    if (invisibleCharts[idx] == false) {
+      this.hideContextChart(idx);
+    } else {
+      invisibleCharts[idx] = false;
+      this.setState({invisibleCharts: invisibleCharts});
+    }
+  }
+
+  resumeHiddenContextChart(idx = null) {
     let invisibleCharts = this.state.invisibleCharts;
     for (var i = 0; i < invisibleCharts.length; i ++) {
        invisibleCharts[i] = false;
     }
     this.setState({invisibleCharts: invisibleCharts});
   }
+
+  switchGridView() {
+    //alert(JSON.stringify(this.state.bookmarkedSpecs));
+    this.setState({ gridViewOpen: !this.state.gridViewOpen });
+  }
+
+
 
   renderTransformedData(switchFunc) {
     // render viewer for transformed data
@@ -213,6 +242,59 @@ class Recommendations extends Component {
           </CardContent>
         </Card>
       </Draggable>);
+  }
+
+  renderVisGridView() {
+
+    const visItems = this.state.specs
+      .map((function(spec, i) {
+        var tempSpec = resizeVegaLiteSpec(JSON.parse(JSON.stringify(spec)));
+
+        const isHidden = this.state.invisibleCharts[i];
+        const opacity = isHidden ? 0.2 : 1;
+
+        // use svg and css to resize them to fit into tiles
+        return (
+          <Grid className="grid-view-card" item key={i}>
+            <Card onClick={(() => { this.switchContextChartVisibility(i); }).bind(this)}>
+               <CardActionArea>
+                <CardContent className="card-content">
+                  <div className="card-media" style={{opacity}}><VegaLite renderer={"svg"} spec={tempSpec}  actions={false}/></div>
+                </CardContent>
+                {isHidden ? <span style={{position: 'absolute', color:"dimgray", transform: "translate(10px, -170px)"}} ><VisibilityOffIcon /></span> : ""}
+              </CardActionArea>
+            </Card>
+          </Grid>);
+      }).bind(this));
+
+    const gridViewDialog = (
+      <Dialog 
+          className="grid-view-dialog"
+          open={this.state.gridViewOpen} maxWidth={"md"}
+          scroll="paper" fullWidth
+          onClose={this.switchGridView.bind(this)}
+          aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title" style={{color: "rgba(0, 0, 0, 0.6)"}}>
+          Synthesized Visualizations
+          <IconButton className="grid-view-close-btn" aria-label="close" 
+            onClick={this.switchGridView.bind(this)}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Grid container className="grid-view-content">
+            {this.state.specs.length > 0 ? visItems : (
+                <Card><CardContent className="card-content">
+                  <div className="card-media" style={{width: "600px", color: "gray", textAlign: "center"}}>
+                    No visualizations here at the moment.
+                  </div>
+                  </CardContent></Card>)}
+          </Grid>
+        </DialogContent>           
+      </Dialog>
+    );
+
+    return gridViewDialog;
   }
 
   render() {
@@ -278,10 +360,8 @@ class Recommendations extends Component {
 
     let invisibleCount = this.state.invisibleCharts.filter(Boolean).length;
     const countMessage = `${this.state.specs.length} synthesized`;
-    const hiddenMessage = invisibleCount  > 0 ? 
-          (<span>{`, ${invisibleCount} hidden `} 
-              <a href="javascript:void(0);" onClick={this.resumeHiddenContextChart.bind(this)}>(click to resume)</a>
-          </span>) : "";
+    const hiddenMessage = invisibleCount  > 0 ? (<span>{`, ${invisibleCount} hidden `}</span>) : "";
+    const openGridViewLink = <a href="#" onClick={this.switchGridView.bind(this)}>(click to view all)</a>;
 
     return (
       <div className="Recommendations">
@@ -356,7 +436,9 @@ class Recommendations extends Component {
         </div>
         <div className={classNames({'context': true})}>
           <div className="title" style={{width: "100%"}}>
-            Synthesized Visualizations: {countMessage} {hiddenMessage}</div>
+            Synthesized Visualizations: {countMessage} {hiddenMessage} {openGridViewLink}
+            {this.renderVisGridView()}
+          </div>
           <div className="carousel">
             {contextCharts}
           </div>

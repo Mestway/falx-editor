@@ -319,6 +319,7 @@
 
         .vega-embed {
           height: 100%;
+          margin: auto;
         }
 
         .vega-embed > svg {
@@ -376,5 +377,58 @@
         }
       }
     }
+  }
+}
+
+
+.grid-view-dialog {
+  .MuiDialog-paper {
+    position: absolute;
+    top: 10%;
+    max-height: calc(100% - 256px);
+  }
+
+  .MuiDialog-paperFullWidth {
+    width: auto;
+    max-width: calc(100% - 256px);
+  }
+
+  .grid-view-close-btn {
+    float: right;
+    padding: 0px 0px 0px;
+  }
+
+  .upload-data-card {
+    border: 1.5px dashed rgba(0, 0, 0, 0.22)
+  }
+
+  .grid-view-card {
+
+    padding: 10px;
+    position: relative;
+    cursor: pointer;
+
+    .card-media {
+      margin: auto;
+      height: 144px;
+      max-width: 600px;
+      overflow: scroll;
+      object-fit: contain;
+    } 
+
+    .MuiCardContent-root:last-child {
+      padding-bottom: 16px;
+    }
+  }
+
+  .vega-embed {
+    height: 100%;
+    cursor: inherit !important;
+  }
+
+  .vega-embed > svg {
+    height: 100%;
+    max-width: 400px;
+    width: auto;
   }
 }
