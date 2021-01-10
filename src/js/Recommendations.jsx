@@ -17,8 +17,10 @@ import ReactTooltip from 'react-tooltip'
 
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
 import BookmarkIcon from '@material-ui/icons/Bookmark';
 import Tooltip from '@material-ui/core/Tooltip'
+import Fab from '@material-ui/core/Fab';
 import IconButton from '@material-ui/core/IconButton'
 import Button from '@material-ui/core/Button';
 
@@ -57,10 +59,20 @@ class Recommendations extends Component {
     if (props.specs !== state.specs) {
       const focusIndexHistory = state.focusIndexHistory;
       focusIndexHistory.push(-1);
+
+      invisibleCharts = state.invisibleCharts;
+      if (props.specs.length != state.specs.length) {
+        var invisibleCharts = [];
+        for (var i = 0; i < props.specs.length; i ++) {
+          invisibleCharts.push(false);
+        }
+      }
+      
       return {
         specs: props.specs,
         tableProgs: props.tableProgs,
-        focusIndexHistory: focusIndexHistory
+        focusIndexHistory: focusIndexHistory,
+        invisibleCharts: invisibleCharts
       };
     }
     return null;
@@ -69,14 +81,22 @@ class Recommendations extends Component {
     super(props);
     this.setFocusIndex = this.setFocusIndex.bind(this);
     this.previousInfoPaneSize = -1;
+
+    var invisibleCharts = [];
+    for (var i = 0; i < props.specs.length; i ++) {
+      invisibleCharts.push(false);
+    }
+
     this.state = {
       specs: props.specs,
       tableProgs: props.tableProgs,
+      invisibleCharts: invisibleCharts,
       updateFocus: false,
       focusIndex: 0,
       focusIndexHistory: [0],
       dataVisible: false,
-      showInfoPane: window.innerWidth > 1400 ? true : false // hide the panel by defaul
+      showInfoPane: window.innerWidth > 1400 ? true : false, // hide the panel by defaul
+      hoverOnContextChart: -1,
     };
   }
   updateSpec(index, newSpec) {
@@ -117,7 +137,19 @@ class Recommendations extends Component {
     link.dispatchEvent(new MouseEvent('click'));
   }
 
-  
+  hideContextChart(idx) {
+    let invisibleCharts = this.state.invisibleCharts;
+    invisibleCharts[idx] = true;
+    this.setState({invisibleCharts: invisibleCharts});
+  }
+
+  resumeHiddenContextChart() {
+    let invisibleCharts = this.state.invisibleCharts;
+    for (var i = 0; i < invisibleCharts.length; i ++) {
+       invisibleCharts[i] = false;
+    }
+    this.setState({invisibleCharts: invisibleCharts});
+  }
 
   renderTransformedData(switchFunc) {
     // render viewer for transformed data
@@ -180,14 +212,35 @@ class Recommendations extends Component {
         'selected': index === this.state.focusIndex
       })
 
+      if (this.state.invisibleCharts[index]) {
+        return "";
+      }
+
       const specCopy = resizeVegaLiteSpec(JSON.parse(JSON.stringify(spec)));
 
-      return (
-        <div key={index} className={classes} onClick={() => {this.setFocusIndex(index);}}>
+      const hideBtn = (
+        <Tooltip title={"Hide this visualization"}>
+            <Fab className={(this.state.hoverOnContextChart == index) ? "action-visible" : "action-invisible"} 
+                 style={{position: 'absolute', transform: "translate(0px, 120px)"}} 
+                 onClick={(() => {this.hideContextChart(index)}).bind(this)}
+                 size="small" color="secondary" aria-label="open">
+              <VisibilityOffIcon />
+            </Fab>
+          </Tooltip>);
+
+      const card = (
+        <div key={index} className={classes} 
+            className={classes}
+            onMouseEnter={() => {this.setState({hoverOnContextChart: index})}}
+            onMouseLeave={() => {this.setState({hoverOnContextChart: -1})}}
+            onClick={() => {this.setFocusIndex(index);}}>
           <VegaLite spec={specCopy} renderer={"svg"} actions={false} />
           <div className="backdrop"></div>
+          {hideBtn}
         </div>
       );
+
+      return card;
     });
 
     const expandButton =  this.state.showInfoPane ? 
@@ -210,7 +263,14 @@ class Recommendations extends Component {
       }
       focusedSpec["width"] = maxWidth;
     }
-    const vlScript = (<VegaLite spec={focusedSpec} renderer="canvas" actions={false}/>)
+    const vlScript = (<VegaLite spec={focusedSpec} renderer="canvas" actions={false}/>);
+
+    let invisibleCount = this.state.invisibleCharts.filter(Boolean).length;
+    const countMessage = `${this.state.specs.length} synthesized`;
+    const hiddenMessage = invisibleCount  > 0 ? 
+          (<span>{`, ${invisibleCount} hidden `} 
+              <a href="javascript:void(0);" onClick={this.resumeHiddenContextChart.bind(this)}>(click to resume)</a>
+          </span>) : "";
 
     return (
       <div className="Recommendations">
@@ -290,7 +350,8 @@ class Recommendations extends Component {
           </SplitPane>
         </div>
         <div className={classNames({'context': true})}>
-          <div className="title" style={{width: "100%"}}>Synthesized Visualizations ({this.state.specs.length} synthesized)</div>
+          <div className="title" style={{width: "100%"}}>
+            Synthesized Visualizations: {countMessage} {hiddenMessage}</div>
           <div className="carousel">
             {contextCharts}
           </div>

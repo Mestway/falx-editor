@@ -300,6 +300,23 @@
         max-width: 500px;
         overflow: hidden;
 
+        .action-invisible {
+          //position: fixed;
+          opacity: 0;
+          z-index: -1;
+          pointer-events: none; 
+        }
+
+        .action-visible {
+          //position: fixed;
+          opacity: 0.8;
+          z-index: 999;
+          // margin-left: 65px;
+          pointer-events: auto;
+          transition: opacity 250ms ease !important;
+        }
+
+
         .vega-embed {
           height: 100%;
         }
