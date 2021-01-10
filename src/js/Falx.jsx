@@ -198,6 +198,9 @@ class Falx extends Component {
       .filter(m => (m["source"] != source))
       .map(m => ({"source": m["source"], "status": "old", "body": m["body"]})));
     this.setState({message: updatedMessage, messageOpen: updatedMessage.length > 0});
+    setTimeout((() => {
+        this.setState({messageOpen: false});
+    }).bind(this), 5000);
   }
 
   // the following two function deals with upload data from file
@@ -515,7 +518,7 @@ class Falx extends Component {
       return <p style={{fontStyle: "italic", color: "gray"}}>No message yet</p>
     }
   }
-  
+
   render() {
     const columns = []
     if (this.state.data.length > 0) {
