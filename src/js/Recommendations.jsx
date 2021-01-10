@@ -140,7 +140,18 @@ class Recommendations extends Component {
   hideContextChart(idx) {
     let invisibleCharts = this.state.invisibleCharts;
     invisibleCharts[idx] = true;
-    this.setState({invisibleCharts: invisibleCharts});
+
+    var focusIndex = this.state.focusIndex;
+    if (this.state.focusIndex == idx) {
+       focusIndex = 0;
+      for (var i = 0; i < this.state.specs.length; i ++) {
+        if (invisibleCharts[i] == false) {
+          focusIndex = i;
+          break
+        }
+      }
+    }
+    this.setState({invisibleCharts: invisibleCharts, focusIndex: focusIndex});
   }
 
   resumeHiddenContextChart() {
@@ -233,7 +244,7 @@ class Recommendations extends Component {
             className={classes}
             onMouseEnter={() => {this.setState({hoverOnContextChart: index})}}
             onMouseLeave={() => {this.setState({hoverOnContextChart: -1})}}
-            onClick={() => {this.setFocusIndex(index);}}>
+            onClickCapture={() => {this.setFocusIndex(index);}}>
           <VegaLite spec={specCopy} renderer={"svg"} actions={false} />
           <div className="backdrop"></div>
           {hideBtn}
@@ -289,12 +300,6 @@ class Recommendations extends Component {
             <div className={classNames({'vis-focus': true})}>
               <div className="save-btn-area">
                 {"Actions:  "}
-                {/*<Button size="small"  aria-label="save" 
-                  color="primary" style={{minWidth: "0px"}}
-                  onClick={() => this.downloadInteractionTrace(focusedSpec, focusedRScript)}>
-                  Download
-                </Button>
-                {" | "}*/}
                 <Button size="small"  aria-label="save" 
                   color="primary" style={{minWidth: "0px"}}
                   onClick={(() => { this.setState({dataVisible: !this.state.dataVisible}); }).bind(this)}>
