@@ -300,14 +300,15 @@ class Recommendations extends Component {
   render() {
 
     const contextCharts = this.state.specs.map((spec, index) => {
-      const classes = classNames({
-        'context-chart': true,
-        'selected': index === this.state.focusIndex
-      })
 
-      if (this.state.invisibleCharts[index]) {
-        return "";
-      }
+
+      const isHidden = this.state.invisibleCharts[index];
+
+      const classes = classNames({
+        'context-chart': ! isHidden,
+        'selected': index === this.state.focusIndex,
+        'invisible-context-chart': isHidden
+      })
 
       const specCopy = resizeVegaLiteSpec(JSON.parse(JSON.stringify(spec)));
 

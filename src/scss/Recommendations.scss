@@ -284,6 +284,14 @@
       flex-wrap: nowrap;
       transition: flex-wrap $view-switch-speed, width $view-switch-speed;
 
+      .invisible-context-chart {
+        pointer-events: none; 
+        max-width: 0;
+        opacity: 0;
+        visibility: hidden;
+        transition: max-width 60ms linear;
+      }
+
       .context-chart {
         position: relative;
         display: flex;

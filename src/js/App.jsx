@@ -24,6 +24,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import EditIcon from '@material-ui/icons/Edit';
 import DeleteOutlineTwoToneIcon from '@material-ui/icons/DeleteOutlineTwoTone';
 import Fab from '@material-ui/core/Fab';
 import Tooltip from '@material-ui/core/Tooltip'
@@ -40,7 +41,7 @@ import '../scss/App.scss';
 
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 
-import { resizeVegaLiteSpec } from './Utils.jsx'
+import { resizeVegaLiteSpec, openInVegaEditor } from './Utils.jsx'
 
 const theme = createMuiTheme({
   palette: {
@@ -135,10 +136,18 @@ class App extends Component {
                   image={<VegaLite spec={spec}  actions={false}/>}
                 />*/}
               </CardContent>
-              <Tooltip title={"Open in Falx editor"}>
+              <Tooltip title={"Edit in Falx"}>
                 <Fab className={(this.state.activeBookmark == i) ? "bookmark-action-visible" : "bookmark-action-invisible"} 
-                     style={{position: 'absolute', transform: "translate(10px, -50px)"}} 
+                     style={{position: 'absolute', transform: "translate(10px, -150px)"}} 
                      onClick={(() => {this.resumeBookmark(i)}).bind(this)}
+                     size="small" color="primary" aria-label="open">
+                  <EditIcon />
+                </Fab>
+              </Tooltip>
+              <Tooltip title={"Open in Vega Editor"}>
+                <Fab className={(this.state.activeBookmark == i) ? "bookmark-action-visible" : "bookmark-action-invisible"} 
+                     style={{position: 'absolute', transform: "translate(10px, -100px)"}} 
+                     onClick={() => {openInVegaEditor(JSON.stringify(spec))}}
                      size="small" color="primary" aria-label="open">
                   <OpenInNewIcon />
                 </Fab>
@@ -146,7 +155,7 @@ class App extends Component {
               <Tooltip title={"Delete bookmark"}>
                 <Fab className={(this.state.activeBookmark == i) ? "bookmark-action-visible" : "bookmark-action-invisible"} 
                      onClick={(() => {this.removeBookmark(i)}).bind(this)}
-                     style={{position: 'absolute', transform: "translate(60px, -50px)"}} 
+                     style={{position: 'absolute', transform: "translate(10px, -50px)"}} 
                      size="small" color="secondary" aria-label="delete">
                   <DeleteOutlineTwoToneIcon />
                 </Fab>
