@@ -242,7 +242,7 @@ class Recommendations extends Component {
       const card = (
         <div key={index} className={classes} 
             className={classes}
-            onMouseEnter={() => {this.setState({hoverOnContextChart: index})}}
+            onMouseOver={() => {this.setState({hoverOnContextChart: index})}}
             onMouseLeave={() => {this.setState({hoverOnContextChart: -1})}}
             onClickCapture={() => {this.setFocusIndex(index);}}>
           <VegaLite spec={specCopy} renderer={"svg"} actions={false} />
