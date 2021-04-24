@@ -41,6 +41,7 @@ import Switch from '@material-ui/core/Switch';
 import Popper from '@material-ui/core/Popper';
 import Fade from '@material-ui/core/Fade';
 import MessageIcon from '@material-ui/icons/Message';
+import PublishIcon from '@material-ui/icons/Publish';
 
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
@@ -746,30 +747,9 @@ class Falx extends Component {
                             onClose={(e) => {return this.handleDataUploadDialogClose.bind(this)(false)}}
                             aria-labelledby="form-dialog-title">
                           <DialogTitle id="form-dialog-title">Upload Data</DialogTitle>
-                          <DialogContent>
+                          <DialogContent>                           
                             <DialogContentText>
-                              Upload a .csv or .json file:
-                            </DialogContentText>
-                            <DialogContentText>
-                              <MaterialButton color="primary" variant="outlined">
-                                <Files className='files-dropzone' onChange={this.onFilesChange}
-                                  onError={this.onFilesError} accepts={['.csv']} maxFileSize={1000000}
-                                  minFileSize={0} clickable>
-                                  Upload Data (.csv)
-                                </Files>
-                              </MaterialButton>
-                              {" "}
-                              <MaterialButton color="primary" variant="outlined">
-                                <Files className='files-dropzone' onChange={this.onFilesChange}
-                                  onError={this.onFilesError} accepts={['.json']} maxFileSize={1000000}
-                                  minFileSize={0} clickable>
-                                  Upload Data (.json)
-                                </Files>
-                              </MaterialButton>
-                            </DialogContentText>
-                            
-                            <DialogContentText>
-                              Or, copy and paste data (.csv or .json) to the following box to upload:
+                              Copy and paste data (.csv or .json) to the box or upload a local file:
                             </DialogContentText>
                             <TextField autoFocus margin="dense"
                               id="dataUploadBox" label="Input data" type="text"
@@ -778,6 +758,13 @@ class Falx extends Component {
                             />
                           </DialogContent>
                           <DialogActions>
+                             <MaterialButton color="primary" variant="outlined">
+                              <Files className='files-dropzone' onChange={this.onFilesChange}
+                                onError={this.onFilesError} accepts={['.csv', '.json']} maxFileSize={1000000}
+                                minFileSize={0} clickable>
+                                <PublishIcon style={{fontSize: "1rem"}} /> Local File (csv | json)
+                              </Files>
+                            </MaterialButton>
                             <MaterialButton color="primary"
                               onClick={(e) => {return this.handleDataUploadDialogClose.bind(this)(true)}}>
                               Save

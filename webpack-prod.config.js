@@ -32,6 +32,10 @@ module.exports = {
         use: 'file-loader'
       },
       {
+        test: /\.mp4$/,
+        use: 'file-loader?name=videos/[name].[ext]',
+      },
+      {
         test: /\.(jpg|png)$/,
         use: {
           loader: 'url-loader',

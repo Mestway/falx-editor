@@ -257,7 +257,11 @@ export const generateExampleVisualization = (inputTags) => {
             encoding[channel]["scale"] = {"zero": false, "domain": [minVal - domainExtent, maxVal + domainExtent]};
           }
         } else {
-          encoding[channel]["scale"] = {"domain": [minVal < 0 ? minVal - domainExtent : 0, maxVal + domainExtent]};
+          if (mark == "area" || (mark == "bar" && "color" in fieldValues && channel == "y")) {
+            encoding[channel]["scale"] = {}; // avoid overflow
+          } else {
+            encoding[channel]["scale"] = {"domain": [minVal < 0 ? minVal - domainExtent : 0, maxVal + domainExtent]};
+          }
         }
       }
 
@@ -286,6 +290,12 @@ export const generateExampleVisualization = (inputTags) => {
     const markObj = {"type": mark, "opacity": 0.8 }
     if (mark == "line") {
       markObj["point"] = true;
+    }
+
+    // trying to make it order consistent with the demo
+    if (mark == "bar" && "color" in encoding) {
+      encoding["order"] = {};
+      delete encoding["order"];
     }
     
     return {
@@ -333,10 +343,10 @@ export const generateExampleVisualization = (inputTags) => {
     spec["layer"] = layerSpecs;
   }
 
-  spec["data"] = data
+  spec["data"] = data;
 
   //debug helper: print vis spec with data
-  //console.log(JSON.stringify(spec)); 
+  console.log(JSON.stringify(spec)); 
 
   return spec;
 }

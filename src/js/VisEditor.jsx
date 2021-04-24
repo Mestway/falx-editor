@@ -497,20 +497,29 @@ class VisEditor extends Component {
     const markType = (layerSpec["mark"].constructor == Object) ? layerSpec["mark"]["type"] : layerSpec["mark"];
 
     var stackSelector = "";
-    if (channel == "y" && markType == "bar" && "color" in layerSpec["encoding"] && !("y2" in  layerSpec["encoding"]) ) {
-      const isStack = !("y" in layerSpec["encoding"] && "stack" in layerSpec["encoding"]["y"]) || layerSpec["encoding"]["y"]["stack"] != null;
+    if (channel == "y" && (markType == "bar" || markType == "area") && "color" in layerSpec["encoding"] && !("y2" in  layerSpec["encoding"]) ) {
+      var stackType = true;
+      if (!("y" in layerSpec["encoding"] && "stack" in layerSpec["encoding"]["y"])) {
+        // if nothing is specified, stack is true
+        stackType = true;
+      }
+      if ("y" in layerSpec["encoding"] && layerSpec["encoding"]["y"]["stack"] != null) {
+        // is stack is specified, depends on the value
+        stackType = layerSpec["encoding"]["y"]["stack"];
+      }
 
       stackSelector = (
         <Grid item xs={12} sm={6}>
           <InputLabel shrink htmlFor="stack-selector">
             stack option
           </InputLabel>
-          <Select fullWidth value={isStack} 
-              onChange={(event) => this.handleEncPropChange.bind(this)(layerID, "y", "stack", event.target.value ? true : null)} 
+          <Select fullWidth value={stackType} 
+              onChange={(event) => this.handleEncPropChange.bind(this)(layerID, "y", "stack", event.target.value)} 
               inputProps={{name: 'stack', id: 'stack-selector'}}>
-            {[["stacked", true, " (default)"], 
-              ["layered", false, ""]].map(
-                x => <MenuItem key={x[0]} value={x[1]} selected={x[1] == isStack}>{x[0]}{x[2]}</MenuItem>)}
+            {[["stacked", true], 
+              ["layered", false],
+              ["normalize", "normalize"]].map(
+                x => <MenuItem key={x[0]} value={x[1]} selected={x[1] == stackType}>{x[0]}</MenuItem>)}
           </Select>
         </Grid>)
     }

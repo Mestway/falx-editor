@@ -7,6 +7,7 @@ import Files from 'react-files'
 import Falx from "./Falx.jsx"
 import About from "./About.jsx"
 import Tutorial from "./Tutorial.jsx"
+import QuickRef from "./QuickRef.jsx"
 
 import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 
@@ -109,7 +110,7 @@ class App extends Component {
     const footer = (
       <footer>
         <div className="row">
-          Maintained by <a href="http://uwplse.org/">UW PLSE</a>, 2020
+          Maintained by <a href="http://uwplse.org/">UW PLSE</a>, 2021
         </div>
       </footer>);
 
@@ -210,6 +211,7 @@ class App extends Component {
                   <Link to="/tool" className="nav-link">Tool</Link>
                   {/*<Link to="/about" className="nav-link">About</Link>*/}
                   <Link to="/tutorial" className="nav-link">Tutorial</Link>
+                  <Link to="/quickref" className="nav-link">Quick Reference</Link>
                   <span className="nav-link">{"|"}</span>
                   {bookmarks}
                   {bookmarkDialog}
@@ -222,6 +224,7 @@ class App extends Component {
                 <Route path="/about"><About /><hr />{footer}</Route>
                 <Route path="/tool"><Falx bookmarkHandler={this.bookmarkHandler.bind(this)} openedBookmark={this.state.openedBookmark} /></Route>
                 <Route path="/tutorial"><Tutorial /><hr />{footer}</Route>
+                <Route path="/quickref"><QuickRef /><hr />{footer}</Route>
                 <Route><About /><hr />{footer}</Route>
               </Switch>
             </div>

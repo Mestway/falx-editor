@@ -6,6 +6,46 @@
   //text-align: center;
   max-width: 1000px;
 
+  font-weight: 400;
+
+  .list-header {
+    color: steelblue;
+  }
+
+  .sec-link {
+  }
+
+  .sep {
+    margin: 0px 10px;
+    color: grey;
+  }
+
+  h2 {
+    font-size: 1.8rem;
+    //font-weight: 200;
+    margin: 5px 0px 0px 0px;
+  }
+
+  h5 {
+    font-weight: 500;
+    margin: 30px 0px 10px 0px;
+  }
+
+  h4 {
+    margin: 20px 0 20px 0px;
+  }
+
+  .videoTag {
+    display: block;
+    margin: 10px auto;
+  }
+
+  .video-box {
+    
+    padding: 3px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  }
+
   .emph {
   	font-style: italic;
   }
